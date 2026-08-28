@@ -1,23 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-    --color-bg: #ECEFF4;
-    --color-bg-window: #D8DEE9;
-    --color-bg-header: #4C566A;
-    --color-buttons: #5E81AC;
+    --color-bg: #eceff4;
+    --color-bg-window: #d8dee9;
+    --color-bg-header: #4c566a;
+    --color-buttons: #5e81ac;
 
-    --color-accent-student: #8FBCBB;
-    --color-accent-teacher: #B38EAD;
+    --color-accent-student: #8fbcbb;
+    --color-accent-teacher: #b38ead;
 
-    --color-text-light: #ECEFF4;
-    --color-text-dark: #2E3440;
+    --color-text-light: #eceff4;
+    --color-text-dark: #2e3440;
 
-    --color-bg-warning: #EBCB8B;
-    --color-btn-confirm: #A1D078;
-    --color-btn-cancel: #BF616A;
+    --color-bg-warning: #ebcb8b;
+    --color-btn-confirm: #a1d078;
+    --color-btn-cancel: #bf616a;
 
     /*Dark Mode*/
-    --color-bg-dark: #2E3440;
-    --color-bg-window-dark: #4C566A;
-    --color-bg-header-dark: #3B4252;
+    --color-bg-dark: #2e3440;
+    --color-bg-window-dark: #4c566a;
+    --color-bg-header-dark: #3b4252;
 }
