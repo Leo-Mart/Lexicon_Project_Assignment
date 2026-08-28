@@ -6,6 +6,7 @@ namespace LMS.Api.Models;
 public class User : IdentityUser<Guid>
 {
     public string Name { get; set; } = string.Empty;
+    public UserStatus Status { get; set; } = UserStatus.Active;
 
     public DateTime CreatedAt { get; set; }
 

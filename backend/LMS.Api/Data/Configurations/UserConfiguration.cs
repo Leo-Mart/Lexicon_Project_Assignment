@@ -17,6 +17,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired()
             .HasMaxLength(ModelConstants.UserNameMaxLength);
 
+        builder.Property(user => user.Status)
+            .IsRequired()
+            .HasConversion<int>();
+
         builder.Property(user => user.CreatedAt)
             .IsRequired();
 
