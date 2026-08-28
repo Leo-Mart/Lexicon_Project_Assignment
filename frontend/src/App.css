@@ -6,11 +6,13 @@
     background: var(--accent-bg);
     border: 2px solid transparent;
     transition: border-color 0.3s;
+
     margin-bottom: 24px;
 
     &:hover {
         border-color: var(--accent-border);
     }
+
     &:focus-visible {
         outline: 2px solid var(--accent);
         outline-offset: 2px;
@@ -78,6 +80,7 @@
     & > div {
         flex: 1 1 0;
         padding: 32px;
+
         @media (max-width: 1024px) {
             padding: 24px 20px;
         }
@@ -130,6 +133,7 @@
         &:hover {
             box-shadow: var(--shadow);
         }
+
         .button-icon {
             height: 18px;
             width: 18px;
@@ -156,6 +160,7 @@
 #spacer {
     height: 88px;
     border-top: 1px solid var(--border);
+
     @media (max-width: 1024px) {
         height: 48px;
     }
@@ -177,6 +182,7 @@
         left: 0;
         border-left-color: var(--border);
     }
+
     &::after {
         right: 0;
         border-right-color: var(--border);
