@@ -1,22 +1,23 @@
 using LMS.Api.DTOs.Auth;
+using LMS.Api.Enums.Model;
 using LMS.Api.Models;
-using LMS.Api.Services.Interfaces;
+using LMS.Api.Services.Interfaces.Auth;
 using Microsoft.AspNetCore.Identity;
 
 namespace LMS.Api.Services.Implementations.Auth;
 
 public class AuthService : IAuthService
 {
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly UserManager<User> _userManager;
 
-    public AuthService(UserManager<ApplicationUser> userManager)
+    public AuthService(UserManager<User> userManager)
     {
         _userManager = userManager;
     }
 
-    public async Task<ApplicationUser?> AuthenticateAsync(LoginDto loginDto)
+    public async Task<User?> AuthenticateAsync(LoginDto loginDto)
     {
-        ApplicationUser? user = await _userManager.FindByEmailAsync(loginDto.Email);
+        User? user = await _userManager.FindByEmailAsync(loginDto.Email);
 
         if (user is null)
         {
@@ -42,14 +43,14 @@ public class AuthService : IAuthService
         return user;
     }
 
-    public async Task<IList<string>> GetRolesAsync(ApplicationUser user)
+    public async Task<IList<string>> GetRolesAsync(User user)
     {
         return await _userManager.GetRolesAsync(user);
     }
 
-    public async Task<ApplicationUser?> FindActiveUserByIdAsync(Guid userId)
+    public async Task<User?> FindActiveUserByIdAsync(Guid userId)
     {
-        ApplicationUser? user =
+        User? user =
             await _userManager.FindByIdAsync(
                 userId.ToString()
             );

@@ -9,5 +9,5 @@ public interface IAuthService
 
     Task<IList<string>> GetRolesAsync(User user);
 
-    Task<User?> FindUserByIdAsync(Guid userId);
+    Task<User?> FindActiveUserByIdAsync(Guid userId);
 }
