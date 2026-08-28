@@ -1,4 +1,5 @@
-namespace LFS.backend.Models
+using LMS.Api.Enums.Model;
+namespace LMS.Api.Models;
 
 public class Submission
 {

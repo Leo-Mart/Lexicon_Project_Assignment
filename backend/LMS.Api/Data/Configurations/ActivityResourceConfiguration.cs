@@ -1,4 +1,8 @@
-namespace LMS.Data.Configuration;
+using LMS.Api.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace LMS.Api.Data.Configurations;
 
 public class ActivityResourceConfiguration : IEntityTypeConfiguration<ActivityResource>
 {

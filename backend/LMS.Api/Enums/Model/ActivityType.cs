@@ -1,4 +1,5 @@
-namespace LFM.backend.Enum.Model;
+namespace LMS.Api.Enums.Model;
+
 public enum ActivityType
 {
     ELearning = 1,

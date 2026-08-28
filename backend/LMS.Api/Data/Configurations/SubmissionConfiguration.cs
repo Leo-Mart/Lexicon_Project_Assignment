@@ -1,6 +1,9 @@
-using LMS.Constants;
+using LMS.Api.Constants;
+using LMS.Api.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace LMS.Data.Configuration;
+namespace LMS.Api.Data.Configurations;
 
 public class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
 {
@@ -22,7 +25,7 @@ public class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
             .HasConversion<int>();
 
         builder.Property(submission => submission.Feedback)
-            .HasMaxLength(ModelConstants.DescriptionMaxLength);
+            .HasMaxLength(ModelConstants.DescriptionMaxLength)
             .IsRequired(false);
 
         builder.Property(submission => submission.FeedbackByTeacherId)

@@ -1,5 +1,7 @@
-using LMS.Data.Configuration;
-namespace LMS.Data;
+using LMS.Api.Data.Configurations;
+using LMS.Api.Models;
+using Microsoft.EntityFrameworkCore;
+namespace LMS.Api.Data;
 
 public class LMSDbContext : DbContext
 {

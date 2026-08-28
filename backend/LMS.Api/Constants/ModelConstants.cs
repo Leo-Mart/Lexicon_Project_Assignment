@@ -1,4 +1,4 @@
-namespace LMS.Constants;
+namespace LMS.Api.Constants;
 
 public static class ModelConstants
 {

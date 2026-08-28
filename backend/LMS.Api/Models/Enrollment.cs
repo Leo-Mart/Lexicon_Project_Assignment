@@ -1,5 +1,5 @@
 
-namespace LFS.backend.Models
+namespace LMS.Api.Models;
 
 public class Enrollment
 {

@@ -1,7 +1,8 @@
-    
-using LFM.backend.Enum.Model;
 
-namespace LMS.backend.Models;
+using LMS.Api.Enums.Model;
+
+namespace LMS.Api.Models;
+
 public class Activity
 {
     public Guid ActivityId { get; set; }

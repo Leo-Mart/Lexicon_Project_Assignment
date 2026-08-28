@@ -1,6 +1,9 @@
-using LMS.Constants;
+using LMS.Api.Constants;
+using LMS.Api.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace LMS.Data.Configuration;
+namespace LMS.Api.Data.Configurations;
 
 public class ResourceConfiguration : IEntityTypeConfiguration<Resource>
 {
@@ -18,9 +21,9 @@ public class ResourceConfiguration : IEntityTypeConfiguration<Resource>
             .IsRequired()
             .HasMaxLength(ModelConstants.DescriptionMaxLength);
 
-       builder.Property(resource => resource.Content)
-            .HasMaxLength(ModelConstants.LongTextMaxLength)
-            .IsRequired(false);
+        builder.Property(resource => resource.Content)
+             .HasMaxLength(ModelConstants.LongTextMaxLength)
+             .IsRequired(false);
 
         builder.Property(resource => resource.Uri)
             .HasMaxLength(ModelConstants.UriMaxLength)

@@ -1,6 +1,9 @@
-using LMS.Constants;
+using LMS.Api.Constants;
+using LMS.Api.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace LMS.Data.Configuration;
+namespace LMS.Api.Data.Configurations;
 
 public class UserConfiguration : IEntityTypeConfiguration<User>
 {

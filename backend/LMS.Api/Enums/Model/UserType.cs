@@ -1,5 +1,6 @@
 
-namespace LFM.backend.Enum.Model;
+namespace LMS.Api.Enums.Model;
+
 public enum UserType
 {
     Teacher = 1,

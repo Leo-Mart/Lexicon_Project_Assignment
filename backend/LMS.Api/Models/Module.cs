@@ -1,4 +1,4 @@
-namespace LMS.backend.Models;
+namespace LMS.Api.Models;
 
 public class Module
 {
