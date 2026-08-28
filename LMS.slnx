@@ -2,6 +2,15 @@
   <Folder Name="/backend/">
     <Project Path="backend/LMS.Api/LMS.Api.csproj" />
   </Folder>
+  <Folder Name="/backend/Enum/" />
+  <Folder Name="/backend/Enum/Model/">
+    <File Path="UserType.cs" />
+  </Folder>
+  <Folder Name="/backend/Model/">
+    <File Path="Course.cs" />
+    <File Path="Module.cs" />
+    <File Path="User.cs" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/LMS.Api.Tests/LMS.Api.Tests.csproj" />
   </Folder>
