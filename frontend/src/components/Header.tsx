@@ -4,7 +4,7 @@ export default function MainHeader() {
     return (
         <>
             <nav
-                className="bg-nord10 text-nord-fg-text-primary h-15"
+                className="bg-bg-header text-text-light h-15"
                 role="navigation"
             >
                 <ul className="flex justify-center gap-5 text-3xl">
