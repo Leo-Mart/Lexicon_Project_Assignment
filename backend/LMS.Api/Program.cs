@@ -3,6 +3,7 @@ using System.Threading.RateLimiting;
 using LMS.Api.Constants;
 using LMS.Api.Data;
 using LMS.Api.Data.Seed;
+<<<<<<< HEAD
 using LMS.Api.Models;
 using LMS.Api.Services.Implementations.Auth;
 using LMS.Api.Services.Interfaces.Auth;
@@ -10,6 +11,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+=======
+using LMS.Api.Repositories.Implementations;
+using LMS.Api.Repositories.Interfaces;
+using LMS.Api.Services.Implementations;
+using LMS.Api.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
+>>>>>>> 64b8332 (Added course controller, service and repo with GET endpoint. Added Scalar.)
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,10 +28,14 @@ string jwtAudience = builder.Configuration["Jwt:Audience"] ?? throw new InvalidO
 string frontendUrl = builder.Configuration["Frontend:Url"] ?? "http://localhost:5173";
 
 builder.Services.AddDbContext<LMSDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    )
-);
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.MaxDepth = 128;
+});
 
 builder.Services
     .AddIdentityCore<User>()
@@ -88,6 +101,11 @@ builder.Services.AddRateLimiter(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddControllers();
+
+builder.Services.AddScoped<ICourseService, CourseService>();
+
+builder.Services.AddScoped<ICourserepository, CourseRepository>();
 
 var app = builder.Build();
 
@@ -111,10 +129,12 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
 
+<<<<<<< HEAD
 app.UseRouting();
 
 app.UseCors("Frontend");
@@ -124,6 +144,8 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
+=======
+>>>>>>> 64b8332 (Added course controller, service and repo with GET endpoint. Added Scalar.)
 app.MapControllers();
 
 app.Run();
