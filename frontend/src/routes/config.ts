@@ -9,4 +9,8 @@ export const routes = [
         path: "/index",
         component: lazy(() => import("../pages/Courses")),
     },
+    {
+        path: "/login",
+        component: lazy(() => import("../pages/Login")),
+    },
 ];
