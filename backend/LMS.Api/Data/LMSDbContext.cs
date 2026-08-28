@@ -1,16 +1,17 @@
-using LMS.Api.Data.Configurations;
 using LMS.Api.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+
 namespace LMS.Api.Data;
 
-public class LMSDbContext : DbContext
+public class LMSDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 {
     public LMSDbContext(DbContextOptions<LMSDbContext> options)
         : base(options)
     {
     }
 
-    public DbSet<User> Users => Set<User>();
     public DbSet<Course> Courses => Set<Course>();
     public DbSet<Module> Modules => Set<Module>();
     public DbSet<Activity> Activities => Set<Activity>();
@@ -25,6 +26,8 @@ public class LMSDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(LMSDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(
+            typeof(LMSDbContext).Assembly
+        );
     }
 }

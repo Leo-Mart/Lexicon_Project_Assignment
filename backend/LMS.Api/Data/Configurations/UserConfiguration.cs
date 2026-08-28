@@ -11,26 +11,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     {
         builder.ToTable("Users");
 
-        builder.HasKey(user => user.UserId);
+        builder.HasKey(user => user.Id);
 
         builder.Property(user => user.Name)
             .IsRequired()
             .HasMaxLength(ModelConstants.UserNameMaxLength);
-
-        builder.Property(user => user.Email)
-            .IsRequired()
-            .HasMaxLength(ModelConstants.EmailMaxLength);
-
-        builder.HasIndex(user => user.Email)
-            .IsUnique();
-
-        builder.Property(user => user.PasswordHash)
-            .IsRequired()
-            .HasMaxLength(ModelConstants.PasswordHashMaxLength);
-
-        builder.Property(user => user.Role)
-            .IsRequired()
-            .HasConversion<int>();
 
         builder.Property(user => user.CreatedAt)
             .IsRequired();
