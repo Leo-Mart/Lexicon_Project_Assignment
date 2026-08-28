@@ -1,3 +1,3 @@
 export default function Courses() {
-    return <>Here be some courses</>;
+  return <>Here be some courses</>;
 }

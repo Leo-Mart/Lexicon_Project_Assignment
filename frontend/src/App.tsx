@@ -6,17 +6,17 @@ import { routes } from "./routes/config.ts";
 import Footer from "./components/Footer.tsx"; */
 
 export default function App() {
-    return (
-        <>
-            {/* <MainHeader /> */}
-            <Suspense fallback={<div>Loading...</div>}>
-                <Routes>
-                    {routes.map(({ path, component: Component }) => (
-                        <Route key={path} path={path} element={<Component />} />
-                    ))}
-                </Routes>
-            </Suspense>
-            {/* <Footer /> */}
-        </>
-    );
+  return (
+    <>
+      {/* <MainHeader /> */}
+      <Suspense fallback={<div>Loading...</div>}>
+        <Routes>
+          {routes.map(({ path, component: Component }) => (
+            <Route key={path} path={path} element={<Component />} />
+          ))}
+        </Routes>
+      </Suspense>
+      {/* <Footer /> */}
+    </>
+  );
 }
