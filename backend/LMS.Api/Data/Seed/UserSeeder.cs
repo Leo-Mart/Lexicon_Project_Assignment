@@ -19,76 +19,94 @@ public static class UserSeeder
     public static readonly Guid StudentThreeId =
         Guid.Parse("20000000-0000-0000-0000-000000000003");
 
-    public static async Task SeedAsync(LMSDbContext context)
+    public static async Task SeedAsync(UserManager<User> userManager)
     {
-        if (await context.Users.AnyAsync())
+        await CreateUserAsync(
+            userManager,
+            TeacherId,
+            "Anna Andersson",
+            "anna.teacher@example.com",
+            "Teacher123!",
+            RoleSeeder.TeacherRole
+        );
+
+        await CreateUserAsync(
+            userManager,
+            StudentOneId,
+            "Erik Svensson",
+            "erik.student@example.com",
+            "Student123!",
+            RoleSeeder.StudentRole
+        );
+
+        await CreateUserAsync(
+            userManager,
+            StudentTwoId,
+            "Maria Johansson",
+            "maria.student@example.com",
+            "Student123!",
+            RoleSeeder.StudentRole
+        );
+
+        await CreateUserAsync(
+            userManager,
+            StudentThreeId,
+            "Johan Karlsson",
+            "johan.student@example.com",
+            "Student123!",
+            RoleSeeder.StudentRole
+        );
+    }
+
+    private static async Task CreateUserAsync(
+        UserManager<User> userManager,
+        Guid id,
+        string name,
+        string email,
+        string password,
+        string role)
+    {
+        if (await userManager.FindByEmailAsync(email) is not null)
         {
             return;
         }
 
-        DateTime now = DateTime.UtcNow;
-
-        var teacher = new User
+        var user = new User
         {
-            UserId = TeacherId,
-            Name = "Anna Andersson",
-            Email = "anna.teacher@example.com",
-            Role = UserType.Teacher,
-            CreatedAt = now,
-            UpdatedAt = now
+            Id = id,
+            Name = name,
+            UserName = email,
+            Email = email,
+            EmailConfirmed = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
 
-        var studentOne = new User
+        IdentityResult createResult =
+            await userManager.CreateAsync(user, password);
+
+        if (!createResult.Succeeded)
         {
-            UserId = StudentOneId,
-            Name = "Erik Svensson",
-            Email = "erik.student@example.com",
-            Role = UserType.Student,
-            CreatedAt = now,
-            UpdatedAt = now
-        };
+            throw new InvalidOperationException(
+                string.Join(
+                    ", ",
+                    createResult.Errors.Select(error => error.Description)
+                )
+            );
+        }
 
-        var studentTwo = new User
+        IdentityResult roleResult =
+            await userManager.AddToRoleAsync(user, role);
+
+        if (!roleResult.Succeeded)
         {
-            UserId = StudentTwoId,
-            Name = "Maria Johansson",
-            Email = "maria.student@example.com",
-            Role = UserType.Student,
-            CreatedAt = now,
-            UpdatedAt = now
-        };
-
-        var studentThree = new User
-        {
-            UserId = StudentThreeId,
-            Name = "Johan Karlsson",
-            Email = "johan.student@example.com",
-            Role = UserType.Student,
-            CreatedAt = now,
-            UpdatedAt = now
-        };
-
-        var passwordHasher = new PasswordHasher<User>();
-
-        teacher.PasswordHash =
-            passwordHasher.HashPassword(teacher, "Teacher123!");
-
-        studentOne.PasswordHash =
-            passwordHasher.HashPassword(studentOne, "Student123!");
-
-        studentTwo.PasswordHash =
-            passwordHasher.HashPassword(studentTwo, "Student123!");
-
-        studentThree.PasswordHash =
-            passwordHasher.HashPassword(studentThree, "Student123!");
-
-        context.Users.AddRange(
-            teacher,
-            studentOne,
-            studentTwo,
-            studentThree
-        );
-
-        await context.SaveChangesAsync();
+            throw new InvalidOperationException(
+                string.Join(
+                    ", ",
+                    roleResult.Errors.Select(error => error.Description)
+                )
+            );
+        }
     }
+
 }

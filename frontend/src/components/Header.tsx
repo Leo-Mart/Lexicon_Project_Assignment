@@ -6,10 +6,7 @@ export default function MainHeader() {
     const headerRoutes = routes.filter((route) => route.createHeader);
 
     return (
-        <nav
-            className="bg-bg-header text-text-light h-15"
-            role="navigation"
-        >
+        <nav className="bg-bg-header text-text-light h-15" role="navigation">
             <ul className="flex justify-center gap-5 text-3xl">
                 {headerRoutes.map((route) => {
                     // Extract the path for display (e.g., "/login" → "Login")
