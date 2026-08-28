@@ -1,26 +1,38 @@
 import { NavLink } from "react-router-dom";
+import { routes } from "../routes/config"; // Adjust the import path
 
 export default function MainHeader() {
+    // Filter routes that should appear in the header
+    const headerRoutes = routes.filter((route) => route.createHeader);
+
     return (
-        <>
-            <nav
-                className="bg-nord10 text-nord-fg-text-primary h-15"
-                role="navigation"
-            >
-                <ul className="flex justify-center gap-5 text-3xl">
-                    <li>
-                        <NavLink to="/" end>
-                            <u>Dashboard</u>
-                        </NavLink>
-                    </li>
-                    <li>
-                        <NavLink to="/Modules">Modules</NavLink>
-                    </li>
-                    <li>
-                        <NavLink to="/Materials">Materials</NavLink>
-                    </li>
-                </ul>
-            </nav>
-        </>
+        <nav
+            className="bg-nord10 text-nord-fg-text-primary h-15"
+            role="navigation"
+        >
+            <ul className="flex justify-center gap-5 text-3xl">
+                {headerRoutes.map((route) => {
+                    // Extract the path for display (e.g., "/login" → "Login")
+                    const displayName = route.path
+                        .replace("/", "")
+                        .replace("-", " ")
+                        .replace(/\b\w/g, (char) => char.toUpperCase());
+
+                    return (
+                        <li key={route.path}>
+                            <NavLink
+                                to={route.path || "/"} // Handle empty path
+                                end={
+                                    route.path === "" || route.path === "/index"
+                                }
+                            >
+                                {displayName || "Dashboard"}{" "}
+                                {/* Fallback for empty path */}
+                            </NavLink>
+                        </li>
+                    );
+                })}
+            </ul>
+        </nav>
     );
 }
