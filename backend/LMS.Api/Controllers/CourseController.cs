@@ -1,5 +1,5 @@
 using LMS.Api.DTOs.Courses;
-using LMS.Api.Services.Interfaces;
+using LMS.Api.Services.Interfaces.Course;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LMS.Api.Controllers

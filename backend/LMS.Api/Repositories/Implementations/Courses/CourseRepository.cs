@@ -1,10 +1,10 @@
 using LMS.Api.Data;
 using LMS.Api.DTOs.Courses;
 using LMS.Api.Models;
-using LMS.Api.Repositories.Interfaces;
+using LMS.Api.Repositories.Interfaces.Courses;
 using Microsoft.EntityFrameworkCore;
 
-namespace LMS.Api.Repositories.Implementations
+namespace LMS.Api.Repositories.Implementations.Courses
 {
     public class CourseRepository(LMSDbContext context) : ICourserepository
     {

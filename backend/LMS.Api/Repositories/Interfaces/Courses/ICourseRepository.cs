@@ -1,7 +1,7 @@
 using LMS.Api.DTOs.Courses;
 using LMS.Api.Models;
 
-namespace LMS.Api.Repositories.Interfaces
+namespace LMS.Api.Repositories.Interfaces.Courses
 {
     public interface ICourserepository
     {

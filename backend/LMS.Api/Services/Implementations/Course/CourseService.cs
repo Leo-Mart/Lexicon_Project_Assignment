@@ -1,9 +1,9 @@
 using LMS.Api.DTOs.Courses;
 using LMS.Api.Mappings;
-using LMS.Api.Repositories.Interfaces;
-using LMS.Api.Services.Interfaces;
+using LMS.Api.Repositories.Interfaces.Courses;
+using LMS.Api.Services.Interfaces.Course;
 
-namespace LMS.Api.Services.Implementations
+namespace LMS.Api.Services.Implementations.Course
 {
     public class CourseService(ICourserepository courseRepo) : ICourseService
     {
