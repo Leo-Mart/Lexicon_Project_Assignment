@@ -1,3 +1,4 @@
+using LMS.Api.DTOs.Courses;
 using LMS.Api.Models;
 
 namespace LMS.Api.Repositories.Interfaces
@@ -7,5 +8,6 @@ namespace LMS.Api.Repositories.Interfaces
         Task<IEnumerable<Course>> GetCoursesAsync();
         Task<Course?> GetCourseByIdAsync(Guid courseId);
         Task<Course> CreateCourseAsync(Course course);
+        Task<Course?> UpdateCourseAsync(Guid courseId, UpdateCourseDto updateDto);
     }
 }

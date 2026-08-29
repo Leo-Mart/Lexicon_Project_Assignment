@@ -71,5 +71,23 @@ namespace LMS.Api.Controllers
                 savedCourse
             );
         }
+
+        /// <summary>
+        /// Update an existing course
+        /// </summary>
+        /// <param name="courseId">The Id of course to update</param>
+        /// <param name="updateCourseDto">Contains the required fields for updating a course. Name, Descrtiption, Start and End-date</param>
+        /// <returns>The updated course</returns>
+        /// <response code="200">Course was successfully updated and returned</response>
+        [HttpPut("{courseId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<CourseDto>> UpdateCourse(
+            [FromRoute] Guid courseId,
+            [FromBody] UpdateCourseDto updateCourseDto
+        )
+        {
+            var updatedCourse = await _courseService.UpdateCourse(courseId, updateCourseDto);
+            return Ok(updatedCourse);
+        }
     }
 }

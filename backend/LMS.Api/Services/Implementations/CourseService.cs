@@ -27,7 +27,7 @@ namespace LMS.Api.Services.Implementations
             var courses = await _courseRepo.GetCoursesAsync();
             if (courses == null)
             {
-                // log an error
+                // log / throw error?
                 return null;
             }
 
@@ -39,16 +39,26 @@ namespace LMS.Api.Services.Implementations
             var course = await _courseRepo.GetCourseByIdAsync(courseId);
             if (course == null)
             {
-                // log an error
+                // log / throw error?
                 return null;
             }
 
             return course.ToDtoFromCourse();
         }
 
-        public Task<CourseDto?> UpdateCourse(UpdateCourseDto updateCourse)
+        public async Task<CourseDto?> UpdateCourse(Guid courseId, UpdateCourseDto updateCourseDto)
         {
-            throw new NotImplementedException();
+            var updatedCourseFromDb = await _courseRepo.UpdateCourseAsync(
+                courseId,
+                updateCourseDto
+            );
+            if (updatedCourseFromDb == null)
+            {
+                // log / throw error?
+                return null;
+            }
+
+            return updatedCourseFromDb.ToDtoFromCourse();
         }
     }
 }

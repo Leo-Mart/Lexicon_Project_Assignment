@@ -1,4 +1,5 @@
 using LMS.Api.Data;
+using LMS.Api.DTOs.Courses;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,25 @@ namespace LMS.Api.Repositories.Implementations
         public async Task<IEnumerable<Course>> GetCoursesAsync()
         {
             return await _context.Courses.ToListAsync();
+        }
+
+        public async Task<Course?> UpdateCourseAsync(Guid courseId, UpdateCourseDto updateDto)
+        {
+            var courseFromDb = await _context.Courses.FirstOrDefaultAsync(c =>
+                c.CourseId == courseId
+            );
+            if (courseFromDb == null)
+            {
+                return null;
+            }
+
+            courseFromDb.Name = updateDto.Name;
+            courseFromDb.Description = updateDto.Description;
+            courseFromDb.StartDate = updateDto.StartDate;
+            courseFromDb.EndDate = updateDto.EndDate;
+
+            await _context.SaveChangesAsync();
+            return courseFromDb;
         }
     }
 }
