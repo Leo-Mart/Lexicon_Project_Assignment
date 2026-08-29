@@ -21,6 +21,22 @@ namespace LMS.Api.Repositories.Implementations
             return course;
         }
 
+        public async Task<Course?> DeleteCourseByIdAsync(Guid courseId)
+        {
+            var foundCourse = await _context.Courses.FirstOrDefaultAsync(c =>
+                c.CourseId == courseId
+            );
+
+            if (foundCourse == null)
+            {
+                return null;
+            }
+
+            _context.Courses.Remove(foundCourse);
+            await _context.SaveChangesAsync();
+            return foundCourse;
+        }
+
         public async Task<Course?> GetCourseByIdAsync(Guid courseId)
         {
             return await _context.Courses.FirstOrDefaultAsync(c => c.CourseId == courseId);

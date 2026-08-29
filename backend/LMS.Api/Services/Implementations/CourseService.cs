@@ -17,9 +17,16 @@ namespace LMS.Api.Services.Implementations
             return savedCourse.ToDtoFromCourse();
         }
 
-        public Task<CourseDto?> DeleteCourse(Guid courseId)
+        public async Task<CourseDto?> DeleteCourse(Guid courseId)
         {
-            throw new NotImplementedException();
+            var deletedCourse = await _courseRepo.DeleteCourseByIdAsync(courseId);
+            if (deletedCourse == null)
+            {
+                // log / throw error?
+                return null;
+            }
+
+            return deletedCourse.ToDtoFromCourse();
         }
 
         public async Task<IEnumerable<CourseDto>?> GetAllCourses()

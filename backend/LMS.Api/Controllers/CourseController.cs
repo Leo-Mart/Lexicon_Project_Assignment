@@ -11,11 +11,11 @@ namespace LMS.Api.Controllers
         private readonly ICourseService _courseService = courseService;
 
         /// <summary>
-        /// Retrieves a full list of all available courses
+        /// Retrieves a full list of all available courses.
         /// </summary>
-        /// <returns>The list of courses</returns>
-        /// <response code="200">Returns the list of courses</response>
-        /// <response code="404">If the list is not found</response>
+        /// <returns>The list of courses.</returns>
+        /// <response code="200">Returns the list of courses.</response>
+        /// <response code="404">If the list is not found.</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -31,12 +31,12 @@ namespace LMS.Api.Controllers
         }
 
         /// <summary>
-        /// Retrieves a course based on CourseId
+        /// Retrieves a course based on CourseId.
         /// </summary>
-        /// <param name="courseId">The ID of the course to retrieve</param>
-        /// <returns>The requested course</returns>
-        /// <response code="200">Returns the requested course</response>
-        /// <response code="404">If the course is not found</response>
+        /// <param name="courseId">The ID of the course to retrieve,</param>
+        /// <returns>The requested course,</returns>
+        /// <response code="200">Returns the requested course.</response>
+        /// <response code="404">If the course is not found.</response>
         [HttpGet("{courseId}", Name = "GetCourseById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -52,11 +52,11 @@ namespace LMS.Api.Controllers
         }
 
         /// <summary>
-        /// Create a new course
+        /// Create a new course.
         /// </summary>
-        /// <param name="newCourseDto">Contains the required fields for creating a new course. Name, Descrtiption, Start and End-date</param>
-        /// <returns>The saved course</returns>
-        /// <response code="201">Successfully created course, and returns the newly created course</response>
+        /// <param name="newCourseDto">Contains the required fields for creating a new course. Name, Descrtiption, Start and End-date.</param>
+        /// <returns>The saved course.</returns>
+        /// <response code="201">Successfully created course, and returns the newly created course.</response>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<ActionResult<CourseDto>> CreateNewCourse(
@@ -73,12 +73,12 @@ namespace LMS.Api.Controllers
         }
 
         /// <summary>
-        /// Update an existing course
+        /// Update an existing course.
         /// </summary>
-        /// <param name="courseId">The Id of course to update</param>
-        /// <param name="updateCourseDto">Contains the required fields for updating a course. Name, Descrtiption, Start and End-date</param>
-        /// <returns>The updated course</returns>
-        /// <response code="200">Course was successfully updated and returned</response>
+        /// <param name="courseId">The Id of course to update.</param>
+        /// <param name="updateCourseDto">Contains the required fields for updating a course. Name, Descrtiption, Start and End-date.</param>
+        /// <returns>The updated course.</returns>
+        /// <response code="200">Course was successfully updated and returned.</response>
         [HttpPut("{courseId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<CourseDto>> UpdateCourse(
@@ -88,6 +88,26 @@ namespace LMS.Api.Controllers
         {
             var updatedCourse = await _courseService.UpdateCourse(courseId, updateCourseDto);
             return Ok(updatedCourse);
+        }
+
+        /// <summary>
+        /// Delete an existing course.
+        /// </summary>
+        /// <param name="courseId">The Id of the course to delete.</param>
+        /// <response code="204">Course was successfully deleted.</response>
+        /// <response code="404">Course was not found.</response>
+        [HttpDelete("{courseId}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteCourse([FromRoute] Guid courseId)
+        {
+            var deletedCourse = await _courseService.DeleteCourse(courseId);
+            if (deletedCourse == null)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
         }
     }
 }

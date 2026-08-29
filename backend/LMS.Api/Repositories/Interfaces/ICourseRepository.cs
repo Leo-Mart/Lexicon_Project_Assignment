@@ -9,5 +9,6 @@ namespace LMS.Api.Repositories.Interfaces
         Task<Course?> GetCourseByIdAsync(Guid courseId);
         Task<Course> CreateCourseAsync(Course course);
         Task<Course?> UpdateCourseAsync(Guid courseId, UpdateCourseDto updateDto);
+        Task<Course?> DeleteCourseByIdAsync(Guid courseId);
     }
 }
