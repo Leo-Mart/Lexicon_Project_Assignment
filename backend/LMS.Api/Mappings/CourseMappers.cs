@@ -16,5 +16,16 @@ namespace LMS.Api.Mappings
                 EndDate = courseModel.EndDate,
             };
         }
+
+        public static Course ToCourseFromCreateDto(this CreateNewCourseDto newCourse)
+        {
+            return new Course
+            {
+                Name = newCourse.Name,
+                Description = newCourse.Description,
+                StartDate = newCourse.StartDate,
+                EndDate = newCourse.EndDate,
+            };
+        }
     }
 }

@@ -9,9 +9,15 @@ namespace LMS.Api.Repositories.Implementations
     {
         private readonly LMSDbContext _context = context;
 
-        public Task<Course> CreateCourseAsync(Course course)
+        public async Task<Course> CreateCourseAsync(Course course)
         {
-            throw new NotImplementedException();
+            course.CreatedAt = DateTime.UtcNow;
+            course.UpdatedAt = DateTime.UtcNow;
+
+            await _context.Courses.AddAsync(course);
+            await _context.SaveChangesAsync();
+
+            return course;
         }
 
         public async Task<Course?> GetCourseByIdAsync(Guid courseId)

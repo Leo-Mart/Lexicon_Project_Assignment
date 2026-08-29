@@ -37,12 +37,11 @@ namespace LMS.Api.Controllers
         /// <returns>The requested course</returns>
         /// <response code="200">Returns the requested course</response>
         /// <response code="404">If the course is not found</response>
-        [HttpGet("{courseId}")]
+        [HttpGet("{courseId}", Name = "GetCourseById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<CourseDto>> GetCourseById([FromRoute] Guid courseId)
         {
-            Console.WriteLine(courseId);
             var course = await _courseService.GetCourseById(courseId);
             if (course == null)
             {
@@ -50,6 +49,27 @@ namespace LMS.Api.Controllers
             }
 
             return course;
+        }
+
+        /// <summary>
+        /// Create a new course
+        /// </summary>
+        /// <param name="newCourseDto">Contains the required fields for creating a new course. Name, Descrtiption, Start and End-date</param>
+        /// <returns>The saved course</returns>
+        /// <response code="201">Successfully created course, and returns the newly created course</response>
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<ActionResult<CourseDto>> CreateNewCourse(
+            [FromBody] CreateNewCourseDto newCourseDto
+        )
+        {
+            var savedCourse = await _courseService.CreateNewCourse(newCourseDto);
+
+            return CreatedAtAction(
+                "GetCourseById",
+                new { courseId = savedCourse.CourseId },
+                savedCourse
+            );
         }
     }
 }

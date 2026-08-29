@@ -6,7 +6,7 @@ namespace LMS.Api.Services.Interfaces
     {
         Task<IEnumerable<CourseDto>?> GetAllCourses();
         Task<CourseDto?> GetCourseById(Guid courseId);
-        Task<CourseDto?> CreateNewCourse(CreateNewCourseDto newCourse);
+        Task<CourseDto> CreateNewCourse(CreateNewCourseDto newCourse);
         Task<CourseDto?> UpdateCourse(UpdateCourseDto updateCourse);
         Task<CourseDto?> DeleteCourse(Guid courseId);
     }

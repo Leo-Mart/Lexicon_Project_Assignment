@@ -9,9 +9,12 @@ namespace LMS.Api.Services.Implementations
     {
         private readonly ICourserepository _courseRepo = courseRepo;
 
-        public Task<CourseDto?> CreateNewCourse(CreateNewCourseDto newCourse)
+        public async Task<CourseDto> CreateNewCourse(CreateNewCourseDto newCourse)
         {
-            throw new NotImplementedException();
+            var courseToSave = newCourse.ToCourseFromCreateDto();
+
+            var savedCourse = await _courseRepo.CreateCourseAsync(courseToSave);
+            return savedCourse.ToDtoFromCourse();
         }
 
         public Task<CourseDto?> DeleteCourse(Guid courseId)
