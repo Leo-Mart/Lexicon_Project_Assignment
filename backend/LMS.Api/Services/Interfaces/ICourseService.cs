@@ -1,9 +1,13 @@
-using LMS.Api.Models;
+using LMS.Api.DTOs.Courses;
 
 namespace LMS.Api.Services.Interfaces
 {
     public interface ICourseService
     {
-        Task<IEnumerable<Course>?> GetAllCourses();
+        Task<IEnumerable<CourseDto>?> GetAllCourses();
+        Task<CourseDto?> GetCourseById(Guid courseId);
+        Task<CourseDto?> CreateNewCourse(CreateNewCourseDto newCourse);
+        Task<CourseDto?> UpdateCourse(UpdateCourseDto updateCourse);
+        Task<CourseDto?> DeleteCourse(Guid courseId);
     }
 }

@@ -14,9 +14,9 @@ namespace LMS.Api.Repositories.Implementations
             throw new NotImplementedException();
         }
 
-        public Task<Course> GetCourseByIdAsync(Guid courseId)
+        public async Task<Course?> GetCourseByIdAsync(Guid courseId)
         {
-            throw new NotImplementedException();
+            return await _context.Courses.FirstOrDefaultAsync(c => c.CourseId == courseId);
         }
 
         public async Task<IEnumerable<Course>> GetCoursesAsync()
