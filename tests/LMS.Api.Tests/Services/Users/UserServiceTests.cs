@@ -76,7 +76,8 @@ public class UserServiceTests
             .Setup(manager => manager.AddToRoleAsync(user, role))
             .ReturnsAsync(IdentityResult.Success);
 
-        IdentityResult result = await _userService.CreateAsync(user, password, role);
+        IdentityResult result =
+            await _userService.CreateAsync(user, password, role);
 
         Assert.True(result.Succeeded);
 
@@ -197,7 +198,8 @@ public class UserServiceTests
             userId,
             "New Name",
             "new@example.com",
-            UserStatus.Inactive
+            UserStatus.Inactive,
+            null
         );
 
         Assert.True(result.Succeeded);
@@ -237,7 +239,8 @@ public class UserServiceTests
             userId,
             null,
             null,
-            UserStatus.Active
+            UserStatus.Active,
+            null
         );
 
         Assert.True(result.Succeeded);
@@ -259,10 +262,12 @@ public class UserServiceTests
             userId,
             "New Name",
             "new@example.com",
-            UserStatus.Active
+            UserStatus.Active,
+            null
         );
 
         Assert.False(result.Succeeded);
+
         Assert.Contains(
             result.Errors,
             error => error.Code == "UserNotFound"
@@ -270,6 +275,152 @@ public class UserServiceTests
 
         _userManagerMock.Verify(
             manager => manager.UpdateAsync(It.IsAny<User>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WhenRoleIsValid_UpdatesRole()
+    {
+        Guid userId = Guid.NewGuid();
+
+        var user = new User
+        {
+            Id = userId,
+            Name = "Test User",
+            Email = "test@example.com",
+            UserName = "test@example.com",
+            Status = UserStatus.Active
+        };
+
+        IList<string> currentRoles = ["Student"];
+
+        _userManagerMock
+            .Setup(manager => manager.FindByIdAsync(userId.ToString()))
+            .ReturnsAsync(user);
+
+        _userManagerMock
+            .Setup(manager => manager.GetRolesAsync(user))
+            .ReturnsAsync(currentRoles);
+
+        _userManagerMock
+            .Setup(manager => manager.RemoveFromRolesAsync(user, currentRoles))
+            .ReturnsAsync(IdentityResult.Success);
+
+        _userManagerMock
+            .Setup(manager => manager.AddToRoleAsync(user, "Teacher"))
+            .ReturnsAsync(IdentityResult.Success);
+
+        _userManagerMock
+            .Setup(manager => manager.UpdateAsync(user))
+            .ReturnsAsync(IdentityResult.Success);
+
+        IdentityResult result = await _userService.UpdateAsync(
+            userId,
+            null,
+            null,
+            UserStatus.Active,
+            "Teacher"
+        );
+
+        Assert.True(result.Succeeded);
+
+        _userManagerMock.Verify(
+            manager => manager.RemoveFromRolesAsync(user, currentRoles),
+            Times.Once);
+
+        _userManagerMock.Verify(
+            manager => manager.AddToRoleAsync(user, "Teacher"),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WhenRoleIsInvalid_ReturnsFailedResult()
+    {
+        Guid userId = Guid.NewGuid();
+
+        var user = new User
+        {
+            Id = userId,
+            Name = "Test User",
+            Email = "test@example.com",
+            Status = UserStatus.Active
+        };
+
+        _userManagerMock
+            .Setup(manager => manager.FindByIdAsync(userId.ToString()))
+            .ReturnsAsync(user);
+
+        IdentityResult result = await _userService.UpdateAsync(
+            userId,
+            null,
+            null,
+            UserStatus.Active,
+            "Administrator"
+        );
+
+        Assert.False(result.Succeeded);
+
+        Assert.Contains(
+            result.Errors,
+            error => error.Code == "InvalidRole"
+        );
+
+        _userManagerMock.Verify(
+            manager => manager.AddToRoleAsync(
+                It.IsAny<User>(),
+                It.IsAny<string>()),
+            Times.Never);
+
+        _userManagerMock.Verify(
+            manager => manager.UpdateAsync(It.IsAny<User>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WhenUserAlreadyHasRole_DoesNotChangeRole()
+    {
+        Guid userId = Guid.NewGuid();
+
+        var user = new User
+        {
+            Id = userId,
+            Status = UserStatus.Active
+        };
+
+        IList<string> currentRoles = ["Student"];
+
+        _userManagerMock
+            .Setup(manager => manager.FindByIdAsync(userId.ToString()))
+            .ReturnsAsync(user);
+
+        _userManagerMock
+            .Setup(manager => manager.GetRolesAsync(user))
+            .ReturnsAsync(currentRoles);
+
+        _userManagerMock
+            .Setup(manager => manager.UpdateAsync(user))
+            .ReturnsAsync(IdentityResult.Success);
+
+        IdentityResult result = await _userService.UpdateAsync(
+            userId,
+            null,
+            null,
+            UserStatus.Active,
+            "Student"
+        );
+
+        Assert.True(result.Succeeded);
+
+        _userManagerMock.Verify(
+            manager => manager.RemoveFromRolesAsync(
+                It.IsAny<User>(),
+                It.IsAny<IEnumerable<string>>()),
+            Times.Never);
+
+        _userManagerMock.Verify(
+            manager => manager.AddToRoleAsync(
+                It.IsAny<User>(),
+                It.IsAny<string>()),
             Times.Never);
     }
 
@@ -322,6 +473,7 @@ public class UserServiceTests
             );
 
         Assert.False(result.Succeeded);
+
         Assert.Contains(
             result.Errors,
             error => error.Code == "UserNotFound"

@@ -109,17 +109,26 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserUpdateDto request)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateUser(
+        [FromRoute] Guid id,
+        [FromBody] UserUpdateDto request)
     {
         IdentityResult result = await _userService.UpdateAsync(
             id,
             request.Name,
             request.Email,
-            request.Status
+            request.Status,
+            request.Role
         );
 
         if (!result.Succeeded)
         {
+            if (result.Errors.Any(error => error.Code == "UserNotFound"))
+            {
+                return NotFound();
+            }
+
             return BadRequest(result.Errors);
         }
 
