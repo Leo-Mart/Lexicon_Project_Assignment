@@ -11,4 +11,7 @@ public class UserUpdateDto
     public string? Email { get; set; }
 
     public UserStatus Status { get; set; }
+
+    [RegularExpression("^(Student|Teacher)$", ErrorMessage = "Role must be Student or Teacher.")]
+    public string? Role { get; set; }
 }
