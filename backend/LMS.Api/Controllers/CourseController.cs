@@ -63,19 +63,25 @@ namespace LMS.Api.Controllers
             [FromBody] CreateNewCourseDto newCourseDto
         )
         {
-            var savedCourse = await _courseService.CreateNewCourse(newCourseDto);
-
-            return CreatedAtAction(
-                "GetCourseById",
-                new { courseId = savedCourse.CourseId },
-                savedCourse
-            );
+            try
+            {
+                var savedCourse = await _courseService.CreateNewCourse(newCourseDto);
+                return CreatedAtAction(
+                    "GetCourseById",
+                    new { courseId = savedCourse.CourseId },
+                    savedCourse
+                );
+            }
+            catch (ArgumentException exc)
+            {
+                return BadRequest(exc.Message);
+            }
         }
 
         /// <summary>
         /// Update an existing course.
         /// </summary>
-        /// <param name="courseId">The Id of course to update.</param>
+        /// <param name="courseId">The Id of the course to update.</param>
         /// <param name="updateCourseDto">Contains the required fields for updating a course. Name, Descrtiption, Start and End-date.</param>
         /// <returns>The updated course.</returns>
         /// <response code="200">Course was successfully updated and returned.</response>

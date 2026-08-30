@@ -3,7 +3,7 @@ using LMS.Api.Models;
 
 namespace LMS.Api.Repositories.Interfaces.Courses
 {
-    public interface ICourserepository
+    public interface ICourseRepository
     {
         Task<IEnumerable<Course>> GetCoursesAsync();
         Task<Course?> GetCourseByIdAsync(Guid courseId);

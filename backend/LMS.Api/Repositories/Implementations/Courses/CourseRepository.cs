@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LMS.Api.Repositories.Implementations.Courses
 {
-    public class CourseRepository(LMSDbContext context) : ICourserepository
+    public class CourseRepository(LMSDbContext context) : ICourseRepository
     {
         private readonly LMSDbContext _context = context;
 

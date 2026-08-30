@@ -116,7 +116,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddScoped<ICourseService, CourseService>();
 
-builder.Services.AddScoped<ICourserepository, CourseRepository>();
+builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 
 var app = builder.Build();
 

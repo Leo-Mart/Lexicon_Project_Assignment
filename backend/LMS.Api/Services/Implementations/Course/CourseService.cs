@@ -5,12 +5,21 @@ using LMS.Api.Services.Interfaces.Course;
 
 namespace LMS.Api.Services.Implementations.Course
 {
-    public class CourseService(ICourserepository courseRepo) : ICourseService
+    public class CourseService(ICourseRepository courseRepo) : ICourseService
     {
-        private readonly ICourserepository _courseRepo = courseRepo;
+        private readonly ICourseRepository _courseRepo = courseRepo;
 
         public async Task<CourseDto> CreateNewCourse(CreateNewCourseDto newCourse)
         {
+            if (newCourse.StartDate < DateOnly.FromDateTime(DateTime.UtcNow.Date))
+            {
+                throw new ArgumentException("Start date cannot be in the past.");
+            }
+            int result = newCourse.EndDate.CompareTo(newCourse.StartDate);
+            if (result < 0 || result == 0)
+            {
+                throw new ArgumentException("End date has to be in the future.");
+            }
             var courseToSave = newCourse.ToCourseFromCreateDto();
 
             var savedCourse = await _courseRepo.CreateCourseAsync(courseToSave);

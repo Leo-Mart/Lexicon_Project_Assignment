@@ -14,6 +14,7 @@ namespace LMS.Api.Mappings
                 Description = courseModel.Description,
                 StartDate = courseModel.StartDate,
                 EndDate = courseModel.EndDate,
+                Modules = courseModel.Modules,
             };
         }
 
