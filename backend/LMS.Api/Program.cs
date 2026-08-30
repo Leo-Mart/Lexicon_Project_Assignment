@@ -1,5 +1,6 @@
 using System.Text;
 using System.Threading.RateLimiting;
+using LMS.Api.Constants;
 using LMS.Api.Data;
 using LMS.Api.Data.Seed;
 using LMS.Api.Models;
@@ -70,15 +71,15 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddPolicy("LoginLimit", context =>
+    options.AddPolicy(RateLimitConstants.LoginPolicy, context =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey:
                 context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             factory: _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 5,
-                Window = TimeSpan.FromMinutes(1),
-                QueueLimit = 0,
+                PermitLimit = RateLimitConstants.LoginPermitLimit,
+                Window = TimeSpan.FromMinutes(RateLimitConstants.LoginWindowMinutes),
+                QueueLimit = RateLimitConstants.LoginQueueLimit,
                 AutoReplenishment = true
             }
         )
