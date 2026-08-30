@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using LMS.Api.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,15 +71,15 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddPolicy("LoginLimit", context =>
+    options.AddPolicy(RateLimitConstants.LoginPolicy, context =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey:
                 context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             factory: _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 5,
-                Window = TimeSpan.FromMinutes(1),
-                QueueLimit = 0,
+                PermitLimit = RateLimitConstants.LoginPermitLimit,
+                Window = TimeSpan.FromMinutes(RateLimitConstants.LoginWindowMinutes),
+                QueueLimit = RateLimitConstants.LoginQueueLimit,
                 AutoReplenishment = true
             }
         )
