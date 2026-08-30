@@ -1,5 +1,6 @@
 using System.Text;
 using System.Threading.RateLimiting;
+using LMS.Api.Constants;
 using LMS.Api.Data;
 using LMS.Api.Data.Seed;
 using LMS.Api.Models;
@@ -9,7 +10,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using LMS.Api.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
