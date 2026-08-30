@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-
+using LMS.Api.DTOs.Users;
+using LMS.Api.Enums.Model;
 
 namespace LMS.Api.Tests.DTOs.Users;
 
@@ -12,7 +13,8 @@ public class UserUpdateDtoTests
         {
             Name = "Updated User",
             Email = "updated@example.com",
-            Status = UserStatus.Active
+            Status = UserStatus.Active,
+            Role = "Student"
         };
 
         List<ValidationResult> results = Validate(dto);
@@ -21,13 +23,14 @@ public class UserUpdateDtoTests
     }
 
     [Fact]
-    public void UserUpdateDto_WithNullNameAndEmail_IsValid()
+    public void UserUpdateDto_WithNullOptionalValues_IsValid()
     {
         var dto = new UserUpdateDto
         {
             Name = null,
             Email = null,
-            Status = UserStatus.Active
+            Status = UserStatus.Active,
+            Role = null
         };
 
         List<ValidationResult> results = Validate(dto);
@@ -42,7 +45,8 @@ public class UserUpdateDtoTests
         {
             Name = "Updated User",
             Email = "invalid-email",
-            Status = UserStatus.Active
+            Status = UserStatus.Active,
+            Role = "Student"
         };
 
         List<ValidationResult> results = Validate(dto);
@@ -50,6 +54,43 @@ public class UserUpdateDtoTests
         Assert.Contains(
             results,
             result => result.MemberNames.Contains(nameof(UserUpdateDto.Email))
+        );
+    }
+
+    [Theory]
+    [InlineData("Student")]
+    [InlineData("Teacher")]
+    public void UserUpdateDto_WithValidRole_IsValid(string role)
+    {
+        var dto = new UserUpdateDto
+        {
+            Status = UserStatus.Active,
+            Role = role
+        };
+
+        List<ValidationResult> results = Validate(dto);
+
+        Assert.Empty(results);
+    }
+
+    [Theory]
+    [InlineData("Admin")]
+    [InlineData("TeacherAdmin")]
+    [InlineData("student")]
+    [InlineData("Invalid")]
+    public void UserUpdateDto_WithInvalidRole_IsInvalid(string role)
+    {
+        var dto = new UserUpdateDto
+        {
+            Status = UserStatus.Active,
+            Role = role
+        };
+
+        List<ValidationResult> results = Validate(dto);
+
+        Assert.Contains(
+            results,
+            result => result.MemberNames.Contains(nameof(UserUpdateDto.Role))
         );
     }
 
