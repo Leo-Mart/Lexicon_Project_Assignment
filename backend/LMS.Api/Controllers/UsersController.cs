@@ -39,7 +39,7 @@ public class UsersController : ControllerBase
         return Ok(result);
     }
 
-     /// <summary>
+    /// <summary>
     /// Gets a user by ID.
     /// </summary>
     /// <param name="id">The user ID.</param>
@@ -109,7 +109,7 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> UpdateUser(Guid id,[FromBody] UserUpdateDto request)
+    public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserUpdateDto request)
     {
         IdentityResult result = await _userService.UpdateAsync(
             id,
