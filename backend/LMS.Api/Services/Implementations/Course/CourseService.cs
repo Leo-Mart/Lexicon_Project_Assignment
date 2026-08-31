@@ -1,13 +1,19 @@
+using AutoMapper;
 using LMS.Api.DTOs.Courses;
-using LMS.Api.Mappings;
 using LMS.Api.Repositories.Interfaces.Courses;
 using LMS.Api.Services.Interfaces.Course;
+using CourseEntity = LMS.Api.Models.Course;
 
 namespace LMS.Api.Services.Implementations.Course
 {
-    public class CourseService(ICourseRepository courseRepo) : ICourseService
+    // The enclosing namespace is itself called Course, so the bare name Course
+    // binds to the namespace rather than to LMS.Api.Models.Course. The
+    // CourseEntity alias above is what lets the entity be named in _mapper.Map
+    // calls; without it those lines are CS0118, "namespace used like a type".
+    public class CourseService(ICourseRepository courseRepo, IMapper mapper) : ICourseService
     {
         private readonly ICourseRepository _courseRepo = courseRepo;
+        private readonly IMapper _mapper = mapper;
 
         public async Task<CourseDto> CreateNewCourse(CreateNewCourseDto newCourse)
         {
@@ -20,10 +26,10 @@ namespace LMS.Api.Services.Implementations.Course
             {
                 throw new ArgumentException("End date has to be in the future.");
             }
-            var courseToSave = newCourse.ToCourseFromCreateDto();
+            var courseToSave = _mapper.Map<CourseEntity>(newCourse);
 
             var savedCourse = await _courseRepo.CreateCourseAsync(courseToSave);
-            return savedCourse.ToDtoFromCourse();
+            return _mapper.Map<CourseDto>(savedCourse);
         }
 
         public async Task<CourseDto?> DeleteCourse(Guid courseId)
@@ -35,7 +41,7 @@ namespace LMS.Api.Services.Implementations.Course
                 return null;
             }
 
-            return deletedCourse.ToDtoFromCourse();
+            return _mapper.Map<CourseDto>(deletedCourse);
         }
 
         public async Task<IEnumerable<CourseDto>?> GetAllCourses()
@@ -47,7 +53,7 @@ namespace LMS.Api.Services.Implementations.Course
                 return null;
             }
 
-            return courses.Select(c => c.ToDtoFromCourse());
+            return _mapper.Map<IEnumerable<CourseDto>>(courses);
         }
 
         public async Task<CourseDto?> GetCourseById(Guid courseId)
@@ -59,7 +65,7 @@ namespace LMS.Api.Services.Implementations.Course
                 return null;
             }
 
-            return course.ToDtoFromCourse();
+            return _mapper.Map<CourseDto>(course);
         }
 
         public async Task<CourseDto?> UpdateCourse(Guid courseId, UpdateCourseDto updateCourseDto)
@@ -74,7 +80,7 @@ namespace LMS.Api.Services.Implementations.Course
                 return null;
             }
 
-            return updatedCourseFromDb.ToDtoFromCourse();
+            return _mapper.Map<CourseDto>(updatedCourseFromDb);
         }
     }
 }
