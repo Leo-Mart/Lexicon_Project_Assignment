@@ -1,13 +1,16 @@
 using LMS.Api.DTOs.Module;
 using LMS.Api.Mappings;
+using LMS.Api.Repositories.Interfaces.Course;
 using LMS.Api.Repositories.Interfaces.Module;
 using LMS.Api.Services.Interfaces.Module;
 
 namespace LMS.Api.Services.Implementations
 {
-    public class ModuleService(IModuleRepository moduleRepo) : IModuleService
+    public class ModuleService(IModuleRepository moduleRepo, ICourseRepository courseRepo)
+        : IModuleService
     {
         private readonly IModuleRepository _moduleRepo = moduleRepo;
+        private readonly ICourseRepository _courseRepo = courseRepo;
 
         public async Task<ModuleDto> CreateNewModule(CreateNewModuleDto newModule)
         {
@@ -20,6 +23,40 @@ namespace LMS.Api.Services.Implementations
             {
                 throw new ArgumentException("End date has to be in the future.");
             }
+
+            var course = await _courseRepo.GetCourseByIdAsync(newModule.CourseId);
+            if (course == null)
+            {
+                throw new ArgumentException("Could not find course.");
+            }
+
+            //TODO: Break out into date-check helpers?
+            // bool isWithinCourseTimeframe =
+            //     course.StartDate < newModule.StartDate && course.EndDate > newModule.EndDate;
+            //
+            // if (isWithinCourseTimeframe)
+            // {
+            //     throw new ArgumentException(
+            //         $"Could not create module. Module start or end-date sits outside the timeframe of the course."
+            //     );
+            // }
+            //
+
+            foreach (var module in course.Modules)
+            {
+                bool overlaps =
+                    module.StartDate < newModule.EndDate && newModule.StartDate < module.EndDate;
+
+                Console.WriteLine(overlaps);
+
+                if (overlaps)
+                {
+                    throw new ArgumentException(
+                        $"Could not create module. Dates overlap with existing module: {module.Name}"
+                    );
+                }
+            }
+
             var courseToSave = newModule.ToModuleFromCreate();
 
             var savedModule = await _moduleRepo.CreateModuleAsync(courseToSave);
