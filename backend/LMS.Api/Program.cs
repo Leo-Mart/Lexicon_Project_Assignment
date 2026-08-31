@@ -4,6 +4,7 @@ using System.Threading.RateLimiting;
 using LMS.Api.Constants;
 using LMS.Api.Data;
 using LMS.Api.Data.Seed;
+using LMS.Api.Data.UnitOfWork;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Implementations.Courses;
 using LMS.Api.Repositories.Interfaces.Courses;
@@ -51,6 +52,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
