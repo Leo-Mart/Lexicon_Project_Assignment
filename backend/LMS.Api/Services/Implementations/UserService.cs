@@ -76,7 +76,7 @@ public class UserService : IUserService
         Guid userId,
         string? name,
         string? email,
-        UserStatus status,
+        UserStatus? status,
         string? role)
     {
         User? user = await FindUserByIdAsync(userId);
@@ -97,7 +97,10 @@ public class UserService : IUserService
             user.UserName = email;
         }
 
-        user.Status = status;
+        if (status.HasValue)
+        {
+            user.Status = status.Value;
+        }
 
         if (role is not null)
         {

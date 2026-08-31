@@ -484,6 +484,44 @@ public class UserServiceTests
             Times.Never);
     }
 
+    [Fact]
+    public async Task UpdateUserAsync_WithNullOptionalValues_ShouldKeepExistingValues()
+    {
+        Guid userId = Guid.NewGuid();
+
+        User user = new()
+        {
+            Id = userId,
+            Name = "Existing Name",
+            Email = "existing@example.com",
+            UserName = "existing@example.com",
+            Status = UserStatus.Active
+        };
+
+        _userManagerMock
+            .Setup(manager => manager.FindByIdAsync(userId.ToString()))
+            .ReturnsAsync(user);
+
+        _userManagerMock
+            .Setup(manager => manager.UpdateAsync(user))
+            .ReturnsAsync(IdentityResult.Success);
+
+        IdentityResult result = await _userService.UpdateUserAsync(
+            userId,
+            null,
+            null,
+            null,
+            null
+        );
+
+        Assert.True(result.Succeeded);
+        Assert.Equal("Existing Name", user.Name);
+        Assert.Equal("existing@example.com", user.Email);
+        Assert.Equal(UserStatus.Active, user.Status);
+
+        _userManagerMock.Verify(manager => manager.UpdateAsync(user), Times.Once);
+    }
+
     private static Mock<UserManager<User>> CreateUserManagerMock()
     {
         var userStoreMock = new Mock<IUserStore<User>>();
