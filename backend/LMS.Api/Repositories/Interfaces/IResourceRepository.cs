@@ -19,4 +19,10 @@ public interface IResourceRepository
     void Update(Resource resource);
 
     void Delete(Resource resource);
+
+    Task AddToCourseAsync(Guid resourceId, Guid courseId, CancellationToken cancellationToken = default);
+
+    Task AddToModuleAsync(Guid resourceId, Guid moduleId, CancellationToken cancellationToken = default);
+
+    Task AddToActivityAsync(Guid resourceId, Guid activityId, CancellationToken cancellationToken = default);
 }
