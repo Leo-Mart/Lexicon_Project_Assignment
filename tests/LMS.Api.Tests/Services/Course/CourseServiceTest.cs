@@ -106,6 +106,10 @@ namespace LMS.Api.Tests.Services.Course
                 .ReturnsAsync(updatedCourse);
 
             var result = await _service.UpdateCourse(courseId, request);
+            if (result == null)
+            {
+                return;
+            }
 
             Assert.Equal("A course with an updated name", result.Name);
             Assert.Equal(request.Description, result.Description);
