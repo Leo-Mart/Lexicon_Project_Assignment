@@ -1,4 +1,4 @@
-using ModuleEntity = LMS.Api.Models.Module;
+using LMS.Api.DTOs.Module;
 
 namespace LMS.Api.DTOs.Course
 {
@@ -10,6 +10,6 @@ namespace LMS.Api.DTOs.Course
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
 
-        public ICollection<ModuleEntity> Modules { get; set; } = new List<ModuleEntity>();
+        public ICollection<ModuleDto> Modules { get; set; } = new List<ModuleDto>();
     }
 }

@@ -39,12 +39,14 @@ namespace LMS.Api.Repositories.Implementations.Course
 
         public async Task<CourseEntity?> GetCourseByIdAsync(Guid courseId)
         {
-            return await _context.Courses.FirstOrDefaultAsync(c => c.CourseId == courseId);
+            return await _context
+                .Courses.Include(c => c.Modules)
+                .FirstOrDefaultAsync(c => c.CourseId == courseId);
         }
 
         public async Task<IEnumerable<CourseEntity>> GetCoursesAsync()
         {
-            return await _context.Courses.ToListAsync();
+            return await _context.Courses.Include(c => c.Modules).ToListAsync();
         }
 
         public async Task<CourseEntity?> UpdateCourseAsync(Guid courseId, UpdateCourseDto updateDto)
