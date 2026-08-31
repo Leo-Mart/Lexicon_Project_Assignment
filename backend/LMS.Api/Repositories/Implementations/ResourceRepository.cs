@@ -81,4 +81,37 @@ public class ResourceRepository : IResourceRepository
     {
         _context.Resources.Remove(resource);
     }
+
+    public async Task AddToCourseAsync(Guid resourceId, Guid courseId, CancellationToken cancellationToken = default)
+    {
+        CourseResource courseResource = new()
+        {
+            ResourceId = resourceId,
+            CourseId = courseId
+        };
+
+        await _context.CourseResources.AddAsync(courseResource, cancellationToken);
+    }
+
+    public async Task AddToModuleAsync(Guid resourceId, Guid moduleId, CancellationToken cancellationToken = default)
+    {
+        ModuleResource moduleResource = new()
+        {
+            ResourceId = resourceId,
+            ModuleId = moduleId
+        };
+
+        await _context.ModuleResources.AddAsync(moduleResource, cancellationToken);
+    }
+
+    public async Task AddToActivityAsync(Guid resourceId, Guid activityId, CancellationToken cancellationToken = default)
+    {
+        ActivityResource activityResource = new()
+        {
+            ResourceId = resourceId,
+            ActivityId = activityId
+        };
+
+        await _context.ActivityResources.AddAsync(activityResource, cancellationToken);
+    }
 }
