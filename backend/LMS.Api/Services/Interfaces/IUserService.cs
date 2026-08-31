@@ -7,15 +7,15 @@ namespace LMS.Api.Services.Interfaces;
 public interface IUserService
 {
     Task<List<User>> GetAllAsync();
-    Task<User?> GetByIdAsync(Guid userId);
+    Task<User?> GetUserByIdAsync(Guid userId);
 
-    Task<IdentityResult> CreateAsync(
+    Task<IdentityResult> CreateUserAsync(
         User user,
         string password,
         string role
     );
 
-    Task<IdentityResult> UpdateAsync(
+    Task<IdentityResult> UpdateUserAsync(
         Guid userId,
         string? name,
         string? email,
@@ -23,5 +23,5 @@ public interface IUserService
         string? role
     );
 
-    Task<IdentityResult> UpdateStatusAsync(Guid userId, UserStatus status);
+    Task<IdentityResult> UpdateUserStatusAsync(Guid userId, UserStatus status);
 }

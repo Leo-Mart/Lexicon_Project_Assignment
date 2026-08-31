@@ -23,12 +23,12 @@ public class UserService : IUserService
             .ToListAsync();
     }
 
-    public async Task<User?> GetByIdAsync(Guid userId)
+    public async Task<User?> GetUserByIdAsync(Guid userId)
     {
         return await _userManager.FindByIdAsync(userId.ToString());
     }
 
-    public async Task<IdentityResult> CreateAsync(
+    public async Task<IdentityResult> CreateUserAsync(
         User user,
         string password,
         string role)
@@ -55,37 +55,7 @@ public class UserService : IUserService
         return IdentityResult.Success;
     }
 
-    public async Task<IdentityResult> UpdateAsync(
-        Guid userId,
-        string? name,
-        string? email,
-        UserStatus status)
-    {
-        User? user = await FindUserByIdAsync(userId);
-
-        if (user is null)
-        {
-            return UserNotFoundResult();
-        }
-
-        if (name is not null)
-        {
-            user.Name = name;
-        }
-
-        if (email is not null)
-        {
-            user.Email = email;
-            user.UserName = email;
-        }
-
-        user.Status = status;
-        user.UpdatedAt = DateTime.UtcNow;
-
-        return await _userManager.UpdateAsync(user);
-    }
-
-    public async Task<IdentityResult> UpdateStatusAsync(
+    public async Task<IdentityResult> UpdateUserStatusAsync(
         Guid userId,
         UserStatus status)
     {
@@ -102,7 +72,7 @@ public class UserService : IUserService
         return await _userManager.UpdateAsync(user);
     }
 
-    public async Task<IdentityResult> UpdateAsync(
+    public async Task<IdentityResult> UpdateUserAsync(
         Guid userId,
         string? name,
         string? email,

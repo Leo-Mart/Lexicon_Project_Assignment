@@ -34,7 +34,7 @@ public class UserServiceTests
             .Setup(manager => manager.FindByIdAsync(userId.ToString()))
             .ReturnsAsync(user);
 
-        User? result = await _userService.GetByIdAsync(userId);
+        User? result = await _userService.GetUserByIdAsync(userId);
 
         Assert.NotNull(result);
         Assert.Same(user, result);
@@ -49,7 +49,7 @@ public class UserServiceTests
             .Setup(manager => manager.FindByIdAsync(userId.ToString()))
             .ReturnsAsync((User?)null);
 
-        User? result = await _userService.GetByIdAsync(userId);
+        User? result = await _userService.GetUserByIdAsync(userId);
 
         Assert.Null(result);
     }
@@ -77,7 +77,7 @@ public class UserServiceTests
             .ReturnsAsync(IdentityResult.Success);
 
         IdentityResult result =
-            await _userService.CreateAsync(user, password, role);
+            await _userService.CreateUserAsync(user, password, role);
 
         Assert.True(result.Succeeded);
 
@@ -113,7 +113,7 @@ public class UserServiceTests
             .ReturnsAsync(failedResult);
 
         IdentityResult result =
-            await _userService.CreateAsync(
+            await _userService.CreateUserAsync(
                 user,
                 "Password123!",
                 "Student"
@@ -159,7 +159,7 @@ public class UserServiceTests
             .ReturnsAsync(IdentityResult.Success);
 
         IdentityResult result =
-            await _userService.CreateAsync(
+            await _userService.CreateUserAsync(
                 user,
                 "Password123!",
                 "Student"
@@ -194,7 +194,7 @@ public class UserServiceTests
             .Setup(manager => manager.UpdateAsync(user))
             .ReturnsAsync(IdentityResult.Success);
 
-        IdentityResult result = await _userService.UpdateAsync(
+        IdentityResult result = await _userService.UpdateUserAsync(
             userId,
             "New Name",
             "new@example.com",
@@ -235,7 +235,7 @@ public class UserServiceTests
             .Setup(manager => manager.UpdateAsync(user))
             .ReturnsAsync(IdentityResult.Success);
 
-        IdentityResult result = await _userService.UpdateAsync(
+        IdentityResult result = await _userService.UpdateUserAsync(
             userId,
             null,
             null,
@@ -258,7 +258,7 @@ public class UserServiceTests
             .Setup(manager => manager.FindByIdAsync(userId.ToString()))
             .ReturnsAsync((User?)null);
 
-        IdentityResult result = await _userService.UpdateAsync(
+        IdentityResult result = await _userService.UpdateUserAsync(
             userId,
             "New Name",
             "new@example.com",
@@ -314,7 +314,7 @@ public class UserServiceTests
             .Setup(manager => manager.UpdateAsync(user))
             .ReturnsAsync(IdentityResult.Success);
 
-        IdentityResult result = await _userService.UpdateAsync(
+        IdentityResult result = await _userService.UpdateUserAsync(
             userId,
             null,
             null,
@@ -350,7 +350,7 @@ public class UserServiceTests
             .Setup(manager => manager.FindByIdAsync(userId.ToString()))
             .ReturnsAsync(user);
 
-        IdentityResult result = await _userService.UpdateAsync(
+        IdentityResult result = await _userService.UpdateUserAsync(
             userId,
             null,
             null,
@@ -401,7 +401,7 @@ public class UserServiceTests
             .Setup(manager => manager.UpdateAsync(user))
             .ReturnsAsync(IdentityResult.Success);
 
-        IdentityResult result = await _userService.UpdateAsync(
+        IdentityResult result = await _userService.UpdateUserAsync(
             userId,
             null,
             null,
@@ -444,7 +444,7 @@ public class UserServiceTests
             .ReturnsAsync(IdentityResult.Success);
 
         IdentityResult result =
-            await _userService.UpdateStatusAsync(
+            await _userService.UpdateUserStatusAsync(
                 userId,
                 UserStatus.Suspended
             );
@@ -467,7 +467,7 @@ public class UserServiceTests
             .ReturnsAsync((User?)null);
 
         IdentityResult result =
-            await _userService.UpdateStatusAsync(
+            await _userService.UpdateUserStatusAsync(
                 userId,
                 UserStatus.Inactive
             );
