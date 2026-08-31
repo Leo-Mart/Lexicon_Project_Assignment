@@ -19,7 +19,7 @@ public interface IUserService
         Guid userId,
         string? name,
         string? email,
-        UserStatus status,
+        UserStatus? status,
         string? role
     );
 
