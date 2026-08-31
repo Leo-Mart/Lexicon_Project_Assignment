@@ -1,6 +1,9 @@
+﻿using AutoMapper;
 using LMS.Api.DTOs.Courses;
+using LMS.Api.Mappings;
 using LMS.Api.Repositories.Interfaces.Courses;
 using LMS.Api.Services.Implementations.Course;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace LMS.Api.Tests.Services.Course
@@ -13,7 +16,15 @@ namespace LMS.Api.Tests.Services.Course
         public CourseServiceTests()
         {
             _repoMock = new Mock<ICourseRepository>();
-            _service = new CourseService(_repoMock.Object);
+
+            // A real mapper, not a mock: the service's job is to map, so a
+            // stubbed IMapper would leave these assertions testing nothing.
+            IMapper mapper = new MapperConfiguration(
+                cfg => cfg.AddProfile<CourseProfile>(),
+                NullLoggerFactory.Instance
+            ).CreateMapper();
+
+            _service = new CourseService(_repoMock.Object, mapper);
         }
 
         [Fact]
