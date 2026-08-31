@@ -13,8 +13,6 @@ public class CourseProfile : Profile
     {
         CreateMap<Course, CourseDto>();
         CreateMap<CreateNewCourseDto, Course>();
-
-        // Applied as Map(dto, existingCourse); UpdatedAt is set by the repository.
         CreateMap<UpdateCourseDto, Course>();
     }
 }

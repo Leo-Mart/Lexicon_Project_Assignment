@@ -19,8 +19,8 @@ public class UserProfile : Profile
         CreateMap<UserCreateDto, User>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
 
-        // A null means the client did not send that field, so keep what is stored.
-        // Without this a name-only PUT nulls Email and sets Status 0, which is Deleted.
+        // UserUpdateDto fields default to null if the client did not send that field.
+        // For example, a name-only PUT, nulls Email and sets Status 0, which is Deleted.
         CreateMap<UserUpdateDto, User>()
             .ForMember(dest => dest.Name, opt => opt.PreCondition(src => src.Name is not null))
             .ForMember(dest => dest.Email, opt => opt.PreCondition(src => src.Email is not null))
