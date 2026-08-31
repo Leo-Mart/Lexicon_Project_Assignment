@@ -82,28 +82,16 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddPolicy(RateLimitConstants.LoginPolicy, context =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey:
-                context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            factory: _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = RateLimitConstants.LoginPermitLimit,
-                Window = TimeSpan.FromMinutes(RateLimitConstants.LoginWindowMinutes),
-                QueueLimit = RateLimitConstants.LoginQueueLimit,
-                AutoReplenishment = true
-            }
-        ),
     options.AddPolicy(
-        "LoginLimit",
+        RateLimitConstants.LoginPolicy,
         context =>
             RateLimitPartition.GetFixedWindowLimiter(
                 partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                 factory: _ => new FixedWindowRateLimiterOptions
                 {
-                    PermitLimit = 5,
-                    Window = TimeSpan.FromMinutes(1),
-                    QueueLimit = 0,
+                    PermitLimit = RateLimitConstants.LoginPermitLimit,
+                    Window = TimeSpan.FromMinutes(RateLimitConstants.LoginWindowMinutes),
+                    QueueLimit = RateLimitConstants.LoginQueueLimit,
                     AutoReplenishment = true,
                 }
             )

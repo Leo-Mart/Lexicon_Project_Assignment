@@ -1,11 +1,13 @@
 using LMS.Api.DTOs.Courses;
 using LMS.Api.Services.Interfaces.Course;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LMS.Api.Controllers
 {
     [Route("api/courses")]
     [ApiController]
+    [Authorize(Roles = "Teacher, Student")]
     public class CourseController(ICourseService courseService) : ControllerBase
     {
         private readonly ICourseService _courseService = courseService;
