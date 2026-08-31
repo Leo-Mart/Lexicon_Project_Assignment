@@ -114,13 +114,7 @@ public class UsersController : ControllerBase
         [FromRoute] Guid id,
         [FromBody] UserUpdateDto request)
     {
-        IdentityResult result = await _userService.UpdateUserAsync(
-            id,
-            request.Name,
-            request.Email,
-            request.Status,
-            request.Role
-        );
+        IdentityResult result = await _userService.UpdateUserAsync(id, request);
 
         if (!result.Succeeded)
         {
