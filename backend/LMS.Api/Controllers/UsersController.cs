@@ -51,7 +51,7 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<UserDto>> GetUser([FromRoute] Guid id)
     {
-        User? user = await _userService.GetByIdAsync(id);
+        User? user = await _userService.GetUserByIdAsync(id);
 
         if (user is null)
         {
@@ -81,7 +81,7 @@ public class UsersController : ControllerBase
             UserName = request.Email
         };
 
-        IdentityResult result = await _userService.CreateAsync(
+        IdentityResult result = await _userService.CreateUserAsync(
             user,
             request.Password,
             request.Role
@@ -114,7 +114,7 @@ public class UsersController : ControllerBase
         [FromRoute] Guid id,
         [FromBody] UserUpdateDto request)
     {
-        IdentityResult result = await _userService.UpdateAsync(
+        IdentityResult result = await _userService.UpdateUserAsync(
             id,
             request.Name,
             request.Email,
@@ -147,7 +147,7 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UserStatusUpdateDto request)
     {
-        IdentityResult result = await _userService.UpdateStatusAsync(
+        IdentityResult result = await _userService.UpdateUserStatusAsync(
             id,
             request.Status
         );
