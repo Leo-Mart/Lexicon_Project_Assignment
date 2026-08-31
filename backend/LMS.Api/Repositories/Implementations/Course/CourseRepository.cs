@@ -1,16 +1,16 @@
 using LMS.Api.Data;
-using LMS.Api.DTOs.Courses;
-using LMS.Api.Models;
-using LMS.Api.Repositories.Interfaces.Courses;
+using LMS.Api.DTOs.Course;
+using LMS.Api.Repositories.Interfaces.Course;
 using Microsoft.EntityFrameworkCore;
+using CourseEntity = LMS.Api.Models.Course;
 
-namespace LMS.Api.Repositories.Implementations.Courses
+namespace LMS.Api.Repositories.Implementations.Course
 {
     public class CourseRepository(LMSDbContext context) : ICourseRepository
     {
         private readonly LMSDbContext _context = context;
 
-        public async Task<Course> CreateCourseAsync(Course course)
+        public async Task<CourseEntity> CreateCourseAsync(CourseEntity course)
         {
             course.CreatedAt = DateTime.UtcNow;
             course.UpdatedAt = DateTime.UtcNow;
@@ -21,7 +21,7 @@ namespace LMS.Api.Repositories.Implementations.Courses
             return course;
         }
 
-        public async Task<Course?> DeleteCourseByIdAsync(Guid courseId)
+        public async Task<CourseEntity?> DeleteCourseByIdAsync(Guid courseId)
         {
             var foundCourse = await _context.Courses.FirstOrDefaultAsync(c =>
                 c.CourseId == courseId
@@ -37,17 +37,17 @@ namespace LMS.Api.Repositories.Implementations.Courses
             return foundCourse;
         }
 
-        public async Task<Course?> GetCourseByIdAsync(Guid courseId)
+        public async Task<CourseEntity?> GetCourseByIdAsync(Guid courseId)
         {
             return await _context.Courses.FirstOrDefaultAsync(c => c.CourseId == courseId);
         }
 
-        public async Task<IEnumerable<Course>> GetCoursesAsync()
+        public async Task<IEnumerable<CourseEntity>> GetCoursesAsync()
         {
             return await _context.Courses.ToListAsync();
         }
 
-        public async Task<Course?> UpdateCourseAsync(Guid courseId, UpdateCourseDto updateDto)
+        public async Task<CourseEntity?> UpdateCourseAsync(Guid courseId, UpdateCourseDto updateDto)
         {
             var courseFromDb = await _context.Courses.FirstOrDefaultAsync(c =>
                 c.CourseId == courseId

@@ -1,15 +1,10 @@
-using LMS.Api.Models;
-
-namespace LMS.Api.DTOs.Courses
+namespace LMS.Api.DTOs.Module
 {
-    public record CourseDto
+    public record UpdateModuleDto
     {
-        public Guid CourseId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
-
-        public ICollection<Module> Modules { get; set; } = new List<Module>();
     }
 }
