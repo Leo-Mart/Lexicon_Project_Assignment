@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LMS.Api.DTOs.Users;
 using LMS.Api.Models;
 

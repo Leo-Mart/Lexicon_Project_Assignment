@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LMS.Api.DTOs.Courses;
 using LMS.Api.Mappings;
 using LMS.Api.Repositories.Interfaces.Courses;
