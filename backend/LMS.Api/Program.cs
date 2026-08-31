@@ -1,3 +1,4 @@
+﻿using System.Reflection;
 using System.Text;
 using System.Threading.RateLimiting;
 using LMS.Api.Constants;
@@ -28,6 +29,8 @@ builder.Services
     .AddIdentityCore<User>()
     .AddRoles<IdentityRole<Guid>>()
     .AddEntityFrameworkStores<LMSDbContext>();
+
+builder.Services.AddAutoMapper(cfg => cfg.AddMaps(Assembly.GetExecutingAssembly()));
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
