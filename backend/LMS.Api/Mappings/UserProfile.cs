@@ -74,9 +74,9 @@ public class UserProfile : Profile
         //   to assign at all, while MapFrom decides the value.
         // - UserName follows Email so the two never drift apart. It is guarded
         //   on src.Email because UserUpdateDto has no UserName of its own.
-        // - Status is always assigned, because UserUpdateDto.Status is a
-        //   non-nullable enum and so cannot express "not sent". A PreCondition
-        //   belongs here once the DTO property is nullable.
+        // - Status is guarded the same way. UserUpdateDto.Status is
+        //   UserStatus?, so "not sent" is expressible and an omitted status
+        //   leaves the stored one alone instead of writing (UserStatus)0.
         // - Call it as Map(dto, existingUser). Map<User>(dto) builds a new User
         //   instead of merging onto the stored one, so every member the client
         //   omitted stays at its default rather than keeping the stored value,
@@ -106,6 +106,11 @@ public class UserProfile : Profile
             {
                 opt.PreCondition(src => src.Email is not null);
                 opt.MapFrom(src => src.Email);
+            })
+            .ForMember(dest => dest.Status, opt =>
+            {
+                opt.PreCondition(src => src.Status is not null);
+                opt.MapFrom(src => src.Status);
             })
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())

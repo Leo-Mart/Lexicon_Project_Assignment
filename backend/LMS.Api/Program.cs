@@ -7,8 +7,10 @@ using LMS.Api.Data.Seed;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Implementations.Courses;
 using LMS.Api.Repositories.Interfaces.Courses;
+using LMS.Api.Services.Implementations;
 using LMS.Api.Services.Implementations.Auth;
 using LMS.Api.Services.Implementations.Course;
+using LMS.Api.Services.Interfaces;
 using LMS.Api.Services.Interfaces.Auth;
 using LMS.Api.Services.Interfaces.Course;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -48,6 +50,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
