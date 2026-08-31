@@ -19,42 +19,16 @@ public class UserProfile : Profile
         CreateMap<UserCreateDto, User>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
 
-        // A null means the client did not send the field, so the stored value stands.
-        // PreCondition per member, not ForAllMembers: Condition receives the value
-        // already converted to the destination type, so a null UserStatus? arrives
-        // as (UserStatus)0 and passes the check.
+        // A null means the client did not send that field, so keep what is stored.
+        // Without this a name-only PUT nulls Email and sets Status 0, which is Deleted.
         CreateMap<UserUpdateDto, User>()
-            .ForMember(
-                dest => dest.Name,
-                opt =>
-                {
-                    opt.PreCondition(src => src.Name is not null);
-                    opt.MapFrom(src => src.Name);
-                }
-            )
-            .ForMember(
-                dest => dest.Email,
-                opt =>
-                {
-                    opt.PreCondition(src => src.Email is not null);
-                    opt.MapFrom(src => src.Email);
-                }
-            )
-            .ForMember(
-                dest => dest.UserName,
-                opt =>
-                {
-                    opt.PreCondition(src => src.Email is not null);
-                    opt.MapFrom(src => src.Email);
-                }
-            )
-            .ForMember(
-                dest => dest.Status,
-                opt =>
-                {
-                    opt.PreCondition(src => src.Status is not null);
-                    opt.MapFrom(src => src.Status);
-                }
-            );
+            .ForMember(dest => dest.Name, opt => opt.PreCondition(src => src.Name is not null))
+            .ForMember(dest => dest.Email, opt => opt.PreCondition(src => src.Email is not null))
+            .ForMember(dest => dest.Status, opt => opt.PreCondition(src => src.Status is not null))
+            .ForMember(dest => dest.UserName, opt =>
+            {
+                opt.PreCondition(src => src.Email is not null);
+                opt.MapFrom(src => src.Email);
+            });
     }
 }
