@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace LMS.Api.DTOs.Courses
+namespace LMS.Api.DTOs.Course
 {
-    public record UpdateCourseDto
+    public record CreateNewCourseDto
     {
         [Required(ErrorMessage = "A course name is required")]
         [MaxLength(50)]
