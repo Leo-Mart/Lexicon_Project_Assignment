@@ -6,6 +6,7 @@ using LMS.Api.Repositories.Interfaces.Module;
 using LMS.Api.Services.Implementations;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using CourseEntity = LMS.Api.Models.Course;
 using ModuleEntity = LMS.Api.Models.Module;
 
 namespace LMS.Api.Tests.Services.Module
@@ -43,6 +44,10 @@ namespace LMS.Api.Tests.Services.Module
                 StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(7)),
                 EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(14)),
             };
+
+            _mockCourseRepo
+                .Setup(r => r.GetCourseByIdAsync(courseId))
+                .ReturnsAsync(new CourseEntity { CourseId = courseId });
 
             _mockModuleRepo
                 .Setup(r => r.CreateModuleAsync(It.IsAny<ModuleEntity>()))
