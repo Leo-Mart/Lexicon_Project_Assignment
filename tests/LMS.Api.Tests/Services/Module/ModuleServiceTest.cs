@@ -1,7 +1,10 @@
+using AutoMapper;
 using LMS.Api.DTOs.Module;
+using LMS.Api.Mappings;
 using LMS.Api.Repositories.Interfaces.Course;
 using LMS.Api.Repositories.Interfaces.Module;
 using LMS.Api.Services.Implementations;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using ModuleEntity = LMS.Api.Models.Module;
 
@@ -17,7 +20,13 @@ namespace LMS.Api.Tests.Services.Module
         {
             _mockModuleRepo = new Mock<IModuleRepository>();
             _mockCourseRepo = new Mock<ICourseRepository>();
-            _service = new ModuleService(_mockModuleRepo.Object, _mockCourseRepo.Object);
+
+            IMapper mapper = new MapperConfiguration(
+                cfg => cfg.AddProfile<ModuleProfile>(),
+                NullLoggerFactory.Instance
+            ).CreateMapper();
+
+            _service = new ModuleService(_mockModuleRepo.Object, _mockCourseRepo.Object, mapper);
         }
 
         [Fact]

@@ -1,5 +1,6 @@
 using AutoMapper;
 using LMS.Api.DTOs.Course;
+using LMS.Api.Mappings;
 using LMS.Api.Repositories.Interfaces.Course;
 using LMS.Api.Services.Implementations.Course;
 using Microsoft.Extensions.Logging.Abstractions;
