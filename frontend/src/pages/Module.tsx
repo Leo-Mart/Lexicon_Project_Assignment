@@ -30,7 +30,14 @@ export default function Module() {
     }, []);
 
     if (loading) return <div>Loading...</div>;
-    if (!module) return <div>Module not found</div>;
+    if (!module)
+        return (
+            <div className="flex flex-col items-center">
+                <h1 className="align-middle text-4xl text-text-dark pt-5">
+                    Module not found
+                </h1>
+            </div>
+        );
 
     return (
         <>
