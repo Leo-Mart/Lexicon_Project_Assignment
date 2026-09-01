@@ -1,16 +1,22 @@
+using AutoMapper;
 using LMS.Api.DTOs.Module;
 using LMS.Api.Mappings;
 using LMS.Api.Repositories.Interfaces.Course;
 using LMS.Api.Repositories.Interfaces.Module;
 using LMS.Api.Services.Interfaces.Module;
+using ModuleEntity = LMS.Api.Models.Module;
 
 namespace LMS.Api.Services.Implementations
 {
-    public class ModuleService(IModuleRepository moduleRepo, ICourseRepository courseRepo)
-        : IModuleService
+    public class ModuleService(
+        IModuleRepository moduleRepo,
+        ICourseRepository courseRepo,
+        IMapper mapper
+    ) : IModuleService
     {
         private readonly IModuleRepository _moduleRepo = moduleRepo;
         private readonly ICourseRepository _courseRepo = courseRepo;
+        private readonly IMapper _mapper = mapper;
 
         public async Task<ModuleDto> CreateNewModule(CreateNewModuleDto newModule)
         {
@@ -55,20 +61,20 @@ namespace LMS.Api.Services.Implementations
                 }
             }
 
-            var courseToSave = newModule.ToModuleFromCreate();
+            var moduleToSave = _mapper.Map<ModuleEntity>(newModule);
 
-            var savedModule = await _moduleRepo.CreateModuleAsync(courseToSave);
-            return savedModule.ToDtoFromModule();
+            var savedModule = await _moduleRepo.CreateModuleAsync(moduleToSave);
+            return _mapper.Map<ModuleDto>(savedModule);
         }
 
         public async Task<ModuleDto?> DeleteModule(Guid moduleId)
         {
-            var deletedCourse = await _moduleRepo.DeleteModuleByIdAsync(moduleId);
-            if (deletedCourse == null)
+            var deletedModule = await _moduleRepo.DeleteModuleByIdAsync(moduleId);
+            if (deletedModule == null)
             {
                 return null;
             }
-            return deletedCourse.ToDtoFromModule();
+            return _mapper.Map<ModuleDto>(deletedModule);
         }
 
         public async Task<IEnumerable<ModuleDto>?> GetAllModules()
@@ -79,7 +85,7 @@ namespace LMS.Api.Services.Implementations
                 return null;
             }
 
-            return modules.Select(m => m.ToDtoFromModule());
+            return _mapper.Map<IEnumerable<ModuleDto>>(modules);
         }
 
         public async Task<ModuleDto?> GetModuleById(Guid moduleId)
@@ -90,7 +96,7 @@ namespace LMS.Api.Services.Implementations
                 return null;
             }
 
-            return foundModule.ToDtoFromModule();
+            return _mapper.Map<ModuleDto>(foundModule);
         }
 
         public async Task<ModuleDto?> UpdateModule(Guid moduleId, UpdateModuleDto updateModule)
@@ -110,7 +116,7 @@ namespace LMS.Api.Services.Implementations
                 return null;
             }
 
-            return updatedModule.ToDtoFromModule();
+            return _mapper.Map<ModuleDto>(updatedModule);
         }
     }
 }
