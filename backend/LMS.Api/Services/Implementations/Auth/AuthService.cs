@@ -21,21 +21,17 @@ public class AuthService : IAuthService
 
         if (user is null)
         {
+            // Hash anyway so a missing user costs the same as a wrong password.
+            _userManager.PasswordHasher.HashPassword(new User(), loginDto.Password);
             return null;
         }
 
-        if (user.Status != UserStatus.Active)
+        if (!await _userManager.CheckPasswordAsync(user, loginDto.Password))
         {
             return null;
         }
 
-        bool passwordIsValid =
-            await _userManager.CheckPasswordAsync(
-                user,
-                loginDto.Password
-            );
-
-        if (!passwordIsValid)
+        if (user.Status != UserStatus.Active)
         {
             return null;
         }
