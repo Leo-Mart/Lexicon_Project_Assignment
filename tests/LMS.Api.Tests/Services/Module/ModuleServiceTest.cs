@@ -1,5 +1,6 @@
 using AutoMapper;
 using LMS.Api.DTOs.Module;
+using LMS.Api.Exceptions;
 using LMS.Api.Mappings;
 using LMS.Api.Repositories.Interfaces.Course;
 using LMS.Api.Repositories.Interfaces.Module;
@@ -109,7 +110,7 @@ namespace LMS.Api.Tests.Services.Module
                     }
                 );
 
-            await Assert.ThrowsAsync<ArgumentException>(() => _service.CreateNewModule(request));
+            await Assert.ThrowsAsync<InvalidDateException>(() => _service.CreateNewModule(request));
         }
 
         [Fact]
@@ -159,7 +160,9 @@ namespace LMS.Api.Tests.Services.Module
                     }
                 );
 
-            await Assert.ThrowsAsync<ArgumentException>(() => _service.CreateNewModule(request));
+            await Assert.ThrowsAsync<OverlappingDateException>(() =>
+                _service.CreateNewModule(request)
+            );
         }
 
         //TODO: Add test for UpdateModule as well.
