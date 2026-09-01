@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text;
 using System.Threading.RateLimiting;
 using LMS.Api.Constants;
@@ -5,12 +6,17 @@ using LMS.Api.Data;
 using LMS.Api.Data.Seed;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.Models;
-using LMS.Api.Repositories.Implementations.Courses;
-using LMS.Api.Repositories.Interfaces.Courses;
+using LMS.Api.Repositories.Implementations.Course;
+using LMS.Api.Repositories.Implementations.Module;
+using LMS.Api.Repositories.Interfaces.Course;
+using LMS.Api.Repositories.Interfaces.Module;
+using LMS.Api.Services.Implementations;
 using LMS.Api.Services.Implementations.Auth;
 using LMS.Api.Services.Implementations.Course;
+using LMS.Api.Services.Interfaces;
 using LMS.Api.Services.Interfaces.Auth;
 using LMS.Api.Services.Interfaces.Course;
+using LMS.Api.Services.Interfaces.Module;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +44,8 @@ builder
     .AddRoles<IdentityRole<Guid>>()
     .AddEntityFrameworkStores<LMSDbContext>();
 
+builder.Services.AddAutoMapper(cfg => cfg.AddMaps(Assembly.GetExecutingAssembly()));
+
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.MaxDepth = 128;
@@ -46,7 +54,14 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<IModuleService, ModuleService>();
+
+builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+builder.Services.AddScoped<IModuleRepository, ModuleRepository>();
 
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -101,10 +116,6 @@ builder.Services.AddRateLimiter(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
-
-builder.Services.AddScoped<ICourseService, CourseService>();
-
-builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 
 var app = builder.Build();
 

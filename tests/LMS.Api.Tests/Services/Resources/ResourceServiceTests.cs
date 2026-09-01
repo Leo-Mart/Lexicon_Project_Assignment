@@ -1,9 +1,12 @@
+using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.DTOs.Resources;
+using LMS.Api.Mappings;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using LMS.Api.Services.Implementations;
 using LMS.Api.Services.Interfaces;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace LMS.Api.Tests.Services.Resources;
@@ -19,9 +22,17 @@ public class ResourceServiceTests
         _resourceRepositoryMock = new Mock<IResourceRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
 
+        // A real mapper, not a mock: the service's job is to map, so a
+        // stubbed IMapper would leave these assertions testing nothing.
+        IMapper mapper = new MapperConfiguration(
+            cfg => cfg.AddProfile<ResourceProfile>(),
+            NullLoggerFactory.Instance
+        ).CreateMapper();
+
         _resourceService = new ResourceService(
             _resourceRepositoryMock.Object,
-            _unitOfWorkMock.Object
+            _unitOfWorkMock.Object,
+            mapper
         );
     }
 

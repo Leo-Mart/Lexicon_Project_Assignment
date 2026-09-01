@@ -1,6 +1,6 @@
-using LMS.Api.Models;
+using LMS.Api.DTOs.Module;
 
-namespace LMS.Api.DTOs.Courses
+namespace LMS.Api.DTOs.Course
 {
     public record CourseDto
     {
@@ -10,6 +10,6 @@ namespace LMS.Api.DTOs.Courses
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
 
-        public ICollection<Module> Modules { get; set; } = new List<Module>();
+        public ICollection<ModuleDto> Modules { get; set; } = new List<ModuleDto>();
     }
 }

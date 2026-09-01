@@ -1,4 +1,6 @@
+using AutoMapper;
 using LMS.Api.Constants;
+using LMS.Api.DTOs.Users;
 using LMS.Api.Enums.Model;
 using LMS.Api.Models;
 using LMS.Api.Services.Interfaces;
@@ -10,10 +12,12 @@ namespace LMS.Api.Services.Implementations;
 public class UserService : IUserService
 {
     private readonly UserManager<User> _userManager;
+    private readonly IMapper _mapper;
 
-    public UserService(UserManager<User> userManager)
+    public UserService(UserManager<User> userManager, IMapper mapper)
     {
         _userManager = userManager;
+        _mapper = mapper;
     }
 
     public async Task<List<User>> GetAllAsync()
@@ -72,12 +76,7 @@ public class UserService : IUserService
         return await _userManager.UpdateAsync(user);
     }
 
-    public async Task<IdentityResult> UpdateUserAsync(
-        Guid userId,
-        string? name,
-        string? email,
-        UserStatus? status,
-        string? role)
+    public async Task<IdentityResult> UpdateUserAsync(Guid userId, UserUpdateDto request)
     {
         User? user = await FindUserByIdAsync(userId);
 
@@ -86,25 +85,15 @@ public class UserService : IUserService
             return UserNotFoundResult();
         }
 
-        if (name is not null)
-        {
-            user.Name = name;
-        }
+        // Merges onto the tracked entity. Which members a null skips is
+        // declared by the PreConditions in UserProfile, not repeated here.
+        // Role is not a User property, so the map cannot carry it - Identity
+        // keeps it in AspNetUserRoles and it stays a UserManager call below.
+        _mapper.Map(request, user);
 
-        if (email is not null)
+        if (request.Role is not null)
         {
-            user.Email = email;
-            user.UserName = email;
-        }
-
-        if (status.HasValue)
-        {
-            user.Status = status.Value;
-        }
-
-        if (role is not null)
-        {
-            IdentityResult roleResult = await UpdateRoleAsync(user, role);
+            IdentityResult roleResult = await UpdateRoleAsync(user, request.Role);
 
             if (!roleResult.Succeeded)
             {

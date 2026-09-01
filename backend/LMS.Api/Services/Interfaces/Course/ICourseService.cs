@@ -1,4 +1,4 @@
-using LMS.Api.DTOs.Courses;
+using LMS.Api.DTOs.Course;
 
 namespace LMS.Api.Services.Interfaces.Course
 {
