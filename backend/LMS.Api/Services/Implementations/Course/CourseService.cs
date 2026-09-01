@@ -1,5 +1,6 @@
 using AutoMapper;
 using LMS.Api.DTOs.Course;
+using LMS.Api.Exceptions;
 using LMS.Api.Repositories.Interfaces.Course;
 using LMS.Api.Services.Interfaces.Course;
 using CourseEntity = LMS.Api.Models.Course;
@@ -19,12 +20,12 @@ namespace LMS.Api.Services.Implementations.Course
         {
             if (newCourse.StartDate < DateOnly.FromDateTime(DateTime.UtcNow.Date))
             {
-                throw new ArgumentException("Start date cannot be in the past.");
+                throw new InvalidDateException("Start date cannot be in the past.", 400);
             }
             int result = newCourse.EndDate.CompareTo(newCourse.StartDate);
             if (result < 0 || result == 0)
             {
-                throw new ArgumentException("End date has to be in the future.");
+                throw new InvalidDateException("End date has to be in the future.", 400);
             }
             var courseToSave = _mapper.Map<CourseEntity>(newCourse);
 
