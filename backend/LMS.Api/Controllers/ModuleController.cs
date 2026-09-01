@@ -1,4 +1,5 @@
 using LMS.Api.DTOs.Module;
+using LMS.Api.Exceptions;
 using LMS.Api.Services.Interfaces.Module;
 using Microsoft.AspNetCore.Mvc;
 
@@ -72,9 +73,17 @@ namespace LMS.Api.Controllers
                     savedModule
                 );
             }
-            catch (ArgumentException exc)
+            catch (InvalidDateException exc)
             {
-                return BadRequest(exc.Message);
+                return BadRequest(
+                    new ErrorResponse { Message = exc.Message, StatusCode = exc.StatusCode }
+                );
+            }
+            catch (OverlappingDateException exc)
+            {
+                return BadRequest(
+                    new ErrorResponse { Message = exc.Message, StatusCode = exc.StatusCode }
+                );
             }
         }
 
