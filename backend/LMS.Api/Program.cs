@@ -6,8 +6,10 @@ using LMS.Api.Data;
 using LMS.Api.Data.Seed;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.Models;
+using LMS.Api.Repositories.Implementations;
 using LMS.Api.Repositories.Implementations.Course;
 using LMS.Api.Repositories.Implementations.Module;
+using LMS.Api.Repositories.Interfaces;
 using LMS.Api.Repositories.Interfaces.Course;
 using LMS.Api.Repositories.Interfaces.Module;
 using LMS.Api.Services.Implementations;
@@ -50,7 +52,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.MaxDepth = 128;
 });
-
+builder.Services.AddScoped<IResourceService, ResourceService>();
+builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
