@@ -1,21 +1,42 @@
+using AutoMapper;
+using LMS.Api.DTOs.Users;
 using LMS.Api.Enums.Model;
+using LMS.Api.Mappings;
 using LMS.Api.Models;
 using LMS.Api.Services.Implementations;
 using LMS.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace LMS.Api.Tests.Services.Users;
 
 public class UserServiceTests
 {
+    // No UserProfile test lives here yet. When one is added, be aware
+    // AssertConfigurationIsValid() will likely fail on the create map as it
+    // stands: User inherits PasswordHash, SecurityStamp, NormalizedEmail and
+    // the rest from IdentityUser<Guid>, and AutoMapper counts every one as an
+    // unmapped destination member. Making it pass means an explicit ignore
+    // list or ForAllOtherMembers. A narrower test that maps a UserCreateDto
+    // and asserts UserName == Email, Status == Active and Id == Guid.Empty
+    // covers the same ground without that.
     private readonly Mock<UserManager<User>> _userManagerMock;
     private readonly IUserService _userService;
 
     public UserServiceTests()
     {
         _userManagerMock = CreateUserManagerMock();
-        _userService = new UserService(_userManagerMock.Object);
+
+        // A real mapper, not a mock: UpdateUserAsync delegates its merge rules
+        // to UserProfile, so a stubbed IMapper would leave these assertions
+        // testing nothing.
+        IMapper mapper = new MapperConfiguration(
+            cfg => cfg.AddProfile<UserProfile>(),
+            NullLoggerFactory.Instance
+        ).CreateMapper();
+
+        _userService = new UserService(_userManagerMock.Object, mapper);
     }
 
     [Fact]
@@ -196,10 +217,13 @@ public class UserServiceTests
 
         IdentityResult result = await _userService.UpdateUserAsync(
             userId,
-            "New Name",
-            "new@example.com",
-            UserStatus.Inactive,
-            null
+            new UserUpdateDto
+            {
+                Name = "New Name",
+                Email = "new@example.com",
+                Status = UserStatus.Inactive,
+                Role = null
+            }
         );
 
         Assert.True(result.Succeeded);
@@ -237,16 +261,60 @@ public class UserServiceTests
 
         IdentityResult result = await _userService.UpdateUserAsync(
             userId,
-            null,
-            null,
-            UserStatus.Active,
-            null
+            new UserUpdateDto
+            {
+                Name = null,
+                Email = null,
+                Status = UserStatus.Active,
+                Role = null
+            }
         );
 
         Assert.True(result.Succeeded);
         Assert.Equal("Existing Name", user.Name);
         Assert.Equal("existing@example.com", user.Email);
         Assert.Equal("existing@example.com", user.UserName);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WhenStatusIsNull_KeepsExistingStatus()
+    {
+        Guid userId = Guid.NewGuid();
+
+        // Suspended rather than Active so the assertion still fails if the
+        // PreCondition is dropped: an unguarded map turns a null UserStatus?
+        // into (UserStatus)0, which is not a declared member.
+        var user = new User
+        {
+            Id = userId,
+            Name = "Existing Name",
+            Email = "existing@example.com",
+            UserName = "existing@example.com",
+            Status = UserStatus.Suspended
+        };
+
+        _userManagerMock
+            .Setup(manager => manager.FindByIdAsync(userId.ToString()))
+            .ReturnsAsync(user);
+
+        _userManagerMock
+            .Setup(manager => manager.UpdateAsync(user))
+            .ReturnsAsync(IdentityResult.Success);
+
+        IdentityResult result = await _userService.UpdateUserAsync(
+            userId,
+            new UserUpdateDto
+            {
+                Name = "New Name",
+                Email = null,
+                Status = null,
+                Role = null
+            }
+        );
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(UserStatus.Suspended, user.Status);
+        Assert.Equal("New Name", user.Name);
     }
 
     [Fact]
@@ -260,10 +328,13 @@ public class UserServiceTests
 
         IdentityResult result = await _userService.UpdateUserAsync(
             userId,
-            "New Name",
-            "new@example.com",
-            UserStatus.Active,
-            null
+            new UserUpdateDto
+            {
+                Name = "New Name",
+                Email = "new@example.com",
+                Status = UserStatus.Active,
+                Role = null
+            }
         );
 
         Assert.False(result.Succeeded);
@@ -316,10 +387,13 @@ public class UserServiceTests
 
         IdentityResult result = await _userService.UpdateUserAsync(
             userId,
-            null,
-            null,
-            UserStatus.Active,
-            "Teacher"
+            new UserUpdateDto
+            {
+                Name = null,
+                Email = null,
+                Status = UserStatus.Active,
+                Role = "Teacher"
+            }
         );
 
         Assert.True(result.Succeeded);
@@ -352,10 +426,13 @@ public class UserServiceTests
 
         IdentityResult result = await _userService.UpdateUserAsync(
             userId,
-            null,
-            null,
-            UserStatus.Active,
-            "Administrator"
+            new UserUpdateDto
+            {
+                Name = null,
+                Email = null,
+                Status = UserStatus.Active,
+                Role = "Administrator"
+            }
         );
 
         Assert.False(result.Succeeded);
@@ -403,10 +480,13 @@ public class UserServiceTests
 
         IdentityResult result = await _userService.UpdateUserAsync(
             userId,
-            null,
-            null,
-            UserStatus.Active,
-            "Student"
+            new UserUpdateDto
+            {
+                Name = null,
+                Email = null,
+                Status = UserStatus.Active,
+                Role = "Student"
+            }
         );
 
         Assert.True(result.Succeeded);
@@ -482,6 +562,47 @@ public class UserServiceTests
         _userManagerMock.Verify(
             manager => manager.UpdateAsync(It.IsAny<User>()),
             Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateUserAsync_WithNullOptionalValues_ShouldKeepExistingValues()
+    {
+        Guid userId = Guid.NewGuid();
+
+        User user = new()
+        {
+            Id = userId,
+            Name = "Existing Name",
+            Email = "existing@example.com",
+            UserName = "existing@example.com",
+            Status = UserStatus.Active
+        };
+
+        _userManagerMock
+            .Setup(manager => manager.FindByIdAsync(userId.ToString()))
+            .ReturnsAsync(user);
+
+        _userManagerMock
+            .Setup(manager => manager.UpdateAsync(user))
+            .ReturnsAsync(IdentityResult.Success);
+
+        IdentityResult result = await _userService.UpdateUserAsync(
+            userId,
+            new UserUpdateDto
+            {
+                Name = null,
+                Email = null,
+                Status = null,
+                Role = null
+            }
+        );
+
+        Assert.True(result.Succeeded);
+        Assert.Equal("Existing Name", user.Name);
+        Assert.Equal("existing@example.com", user.Email);
+        Assert.Equal(UserStatus.Active, user.Status);
+
+        _userManagerMock.Verify(manager => manager.UpdateAsync(user), Times.Once);
     }
 
     private static Mock<UserManager<User>> CreateUserManagerMock()
