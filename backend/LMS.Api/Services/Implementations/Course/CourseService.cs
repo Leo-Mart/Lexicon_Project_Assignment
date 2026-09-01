@@ -70,15 +70,18 @@ namespace LMS.Api.Services.Implementations.Course
 
         public async Task<CourseDto?> UpdateCourse(Guid courseId, UpdateCourseDto updateCourseDto)
         {
-            var updatedCourseFromDb = await _courseRepo.UpdateCourseAsync(
-                courseId,
-                updateCourseDto
-            );
-            if (updatedCourseFromDb == null)
+            var courseFromDb = await _courseRepo.GetCourseByIdAsync(courseId);
+            if (courseFromDb == null)
             {
                 // log / throw error?
                 return null;
             }
+
+            // The merge onto the entity belongs here, not in the repository,
+            // which no longer sees the DTO at all.
+            _mapper.Map(updateCourseDto, courseFromDb);
+
+            var updatedCourseFromDb = await _courseRepo.UpdateCourseAsync(courseFromDb);
 
             return _mapper.Map<CourseDto>(updatedCourseFromDb);
         }
