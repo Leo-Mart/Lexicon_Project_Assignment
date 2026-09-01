@@ -1,4 +1,4 @@
-using LMS.Api.DTOs.Courses;
+using LMS.Api.DTOs.Course;
 using LMS.Api.Services.Interfaces.Course;
 using Microsoft.AspNetCore.Mvc;
 
@@ -92,8 +92,15 @@ namespace LMS.Api.Controllers
             [FromBody] UpdateCourseDto updateCourseDto
         )
         {
-            var updatedCourse = await _courseService.UpdateCourse(courseId, updateCourseDto);
-            return Ok(updatedCourse);
+            try
+            {
+                var updatedCourse = await _courseService.UpdateCourse(courseId, updateCourseDto);
+                return Ok(updatedCourse);
+            }
+            catch (ArgumentException exc)
+            {
+                return BadRequest(exc.Message);
+            }
         }
 
         /// <summary>

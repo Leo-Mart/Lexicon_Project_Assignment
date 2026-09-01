@@ -1,6 +1,9 @@
-using LMS.Api.DTOs.Courses;
-using LMS.Api.Repositories.Interfaces.Courses;
+using AutoMapper;
+using LMS.Api.DTOs.Course;
+using LMS.Api.Mappings;
+using LMS.Api.Repositories.Interfaces.Course;
 using LMS.Api.Services.Implementations.Course;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace LMS.Api.Tests.Services.Course
@@ -13,7 +16,15 @@ namespace LMS.Api.Tests.Services.Course
         public CourseServiceTests()
         {
             _repoMock = new Mock<ICourseRepository>();
-            _service = new CourseService(_repoMock.Object);
+
+            // A real mapper, not a mock: the service's job is to map, so a
+            // stubbed IMapper would leave these assertions testing nothing.
+            IMapper mapper = new MapperConfiguration(
+                cfg => cfg.AddProfile<CourseProfile>(),
+                NullLoggerFactory.Instance
+            ).CreateMapper();
+
+            _service = new CourseService(_repoMock.Object, mapper);
         }
 
         [Fact]
@@ -92,18 +103,15 @@ namespace LMS.Api.Tests.Services.Course
                 StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(7)),
                 EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(14)),
             };
-            var updatedCourse = new LMS.Api.Models.Course
-            {
-                CourseId = courseId,
-                Name = "A course with an updated name",
-                Description = "A description",
-                StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(7)),
-                EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(14)),
-            };
-
             _repoMock
-                .Setup(r => r.UpdateCourseAsync(courseId, It.IsAny<UpdateCourseDto>()))
-                .ReturnsAsync(updatedCourse);
+                .Setup(r => r.GetCourseByIdAsync(courseId))
+                .ReturnsAsync(existingCourse);
+
+            // The service maps the DTO onto the entity before saving, so the
+            // repository just hands back whatever it was given.
+            _repoMock
+                .Setup(r => r.UpdateCourseAsync(It.IsAny<LMS.Api.Models.Course>()))
+                .ReturnsAsync((LMS.Api.Models.Course c) => c);
 
             var result = await _service.UpdateCourse(courseId, request);
             if (result == null)

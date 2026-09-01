@@ -1,3 +1,4 @@
+using AutoMapper;
 using LMS.Api.DTOs.Users;
 using LMS.Api.Models;
 using LMS.Api.Services.Interfaces;
@@ -16,10 +17,12 @@ namespace LMS.Api.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly IMapper _mapper;
 
-    public UsersController(IUserService userService)
+    public UsersController(IUserService userService, IMapper mapper)
     {
         _userService = userService;
+        _mapper = mapper;
     }
 
     /// <summary>
@@ -34,7 +37,7 @@ public class UsersController : ControllerBase
     {
         List<User> users = await _userService.GetAllAsync();
 
-        IEnumerable<UserDto> result = users.Select(MapToDto);
+        IEnumerable<UserDto> result = _mapper.Map<IEnumerable<UserDto>>(users);
 
         return Ok(result);
     }
@@ -58,7 +61,7 @@ public class UsersController : ControllerBase
             return NotFound();
         }
 
-        return Ok(MapToDto(user));
+        return Ok(_mapper.Map<UserDto>(user));
     }
 
     /// <summary>
@@ -73,13 +76,9 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<UserDto>> CreateUser([FromBody] UserCreateDto request)
     {
-        var user = new User
-        {
-            Id = Guid.NewGuid(),
-            Name = request.Name,
-            Email = request.Email,
-            UserName = request.Email
-        };
+        User user = _mapper.Map<User>(request);
+
+        user.Id = Guid.NewGuid();
 
         IdentityResult result = await _userService.CreateUserAsync(
             user,
@@ -95,7 +94,7 @@ public class UsersController : ControllerBase
         return CreatedAtAction(
             nameof(GetUser),
             new { id = user.Id },
-            MapToDto(user)
+            _mapper.Map<UserDto>(user)
         );
     }
 
@@ -114,13 +113,7 @@ public class UsersController : ControllerBase
         [FromRoute] Guid id,
         [FromBody] UserUpdateDto request)
     {
-        IdentityResult result = await _userService.UpdateUserAsync(
-            id,
-            request.Name,
-            request.Email,
-            request.Status,
-            request.Role
-        );
+        IdentityResult result = await _userService.UpdateUserAsync(id, request);
 
         if (!result.Succeeded)
         {
@@ -158,16 +151,5 @@ public class UsersController : ControllerBase
         }
 
         return NoContent();
-    }
-
-    private static UserDto MapToDto(User user)
-    {
-        return new UserDto
-        {
-            Id = user.Id,
-            Name = user.Name,
-            Email = user.Email ?? string.Empty,
-            Status = user.Status
-        };
     }
 }
