@@ -7,7 +7,14 @@ export default function ModuleSideView({ name, startDate, endDate }: Module) {
         <>
             <div className="flex flex-row absolute">
                 {isExpanded && (
-                    <div className="bg-bg-window h-[calc(100vh-1rem)] w-30 border-2 border-b-accent-student">
+                    <div className="bg-bg-window h-[calc(100vh-1rem)] w-40 border-2 border-bg-header flex flex-col gap-5">
+                        <div>
+                            <h1>{name}</h1>
+                            <p>
+                                {startDate} - {endDate}
+                            </p>
+                        </div>
+                        <p>---------------</p>
                         <div>
                             <h1>{name}</h1>
                             <p>
