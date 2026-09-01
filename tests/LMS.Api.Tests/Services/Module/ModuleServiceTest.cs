@@ -1,4 +1,5 @@
 using LMS.Api.DTOs.Module;
+using LMS.Api.Repositories.Interfaces.Course;
 using LMS.Api.Repositories.Interfaces.Module;
 using LMS.Api.Services.Implementations;
 using Moq;
@@ -8,13 +9,15 @@ namespace LMS.Api.Tests.Services.Module
 {
     public class ModuleServiceTests
     {
-        private readonly Mock<IModuleRepository> _repoMock;
+        private readonly Mock<IModuleRepository> _mockModuleRepo;
+        private readonly Mock<ICourseRepository> _mockCourseRepo;
         private readonly ModuleService _service;
 
         public ModuleServiceTests()
         {
-            _repoMock = new Mock<IModuleRepository>();
-            _service = new ModuleService(_repoMock.Object);
+            _mockModuleRepo = new Mock<IModuleRepository>();
+            _mockCourseRepo = new Mock<ICourseRepository>();
+            _service = new ModuleService(_mockModuleRepo.Object, _mockCourseRepo.Object);
         }
 
         [Fact]
@@ -32,7 +35,7 @@ namespace LMS.Api.Tests.Services.Module
                 EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(14)),
             };
 
-            _repoMock
+            _mockModuleRepo
                 .Setup(r => r.CreateModuleAsync(It.IsAny<ModuleEntity>()))
                 .ReturnsAsync(
                     (ModuleEntity m) =>
