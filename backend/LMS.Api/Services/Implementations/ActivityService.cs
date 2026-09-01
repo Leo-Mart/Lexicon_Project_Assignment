@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.DTOs.Activities;
+using LMS.Api.Exceptions;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using LMS.Api.Repositories.Interfaces.Module;
@@ -16,7 +17,7 @@ public class ActivityService : IActivityService
     private readonly IModuleRepository _moduleRepository;
 
     public ActivityService(
-        IActivityRepository activityRepository, 
+        IActivityRepository activityRepository,
         IUnitOfWork unitOfWork,
         IModuleRepository moduleRepository
         )
@@ -88,13 +89,13 @@ public class ActivityService : IActivityService
             return false;
         }
 
-      await ValidateActivityDatesAsync(
-        activity.ModuleId,
-        request.StartAt,
-        request.EndAt,
-        excludedActivityId: activityId,
-        cancellationToken: cancellationToken
-    );
+        await ValidateActivityDatesAsync(
+          activity.ModuleId,
+          request.StartAt,
+          request.EndAt,
+          excludedActivityId: activityId,
+          cancellationToken: cancellationToken
+      );
 
         activity.Type = request.Type;
         activity.Name = request.Name;
@@ -145,59 +146,62 @@ public class ActivityService : IActivityService
     }
 
     private async Task ValidateActivityDatesAsync(
-    Guid moduleId,
-    DateTime startAt,
-    DateTime endAt,
-    Guid? excludedActivityId = null,
-    bool validateNotBefore = false,
-    CancellationToken cancellationToken = default)
-{
-    DateRangeValidator.ValidateRange(startAt, endAt, "Activity");
-
-    if (validateNotBefore)
+     Guid moduleId,
+     DateTime startAt,
+     DateTime endAt,
+     Guid? excludedActivityId = null,
+     bool validateNotBefore = false,
+     CancellationToken cancellationToken = default)
     {
-        DateRangeValidator.ValidateNotBefore(startAt, DateTime.UtcNow, "Activity");
-    }
+        DateRangeValidator.ValidateRange(startAt, endAt, "Activity");
 
-    Module? module = await _moduleRepository.GetModuleByIdAsync(moduleId);
-
-    if (module is null)
-    {
-        throw new KeyNotFoundException("Module not found.");
-    }
-
-    DateTime moduleStart = module.StartDate.ToDateTime(TimeOnly.MinValue);
-    DateTime moduleEnd = module.EndDate.ToDateTime(TimeOnly.MaxValue);
-
-    DateRangeValidator.ValidateWithinParent(
-        startAt,
-        endAt,
-        moduleStart,
-        moduleEnd,
-        "Activity",
-        "Module"
-    );
-
-    List<Activity> existingActivities = await _activityRepository.GetByModuleIdAsync(moduleId, cancellationToken);
-
-    foreach (Activity existingActivity in existingActivities)
-    {
-        if (excludedActivityId.HasValue && existingActivity.ActivityId == excludedActivityId.Value)
+        if (validateNotBefore)
         {
-            continue;
+            DateRangeValidator.ValidateNotBefore(startAt, DateTime.UtcNow, "Activity");
         }
 
-        bool overlaps = DateRangeValidator.Overlaps(
+        Module? module = await _moduleRepository.GetModuleByIdAsync(moduleId);
+
+        if (module is null)
+        {
+            throw new KeyNotFoundException("Module not found.");
+        }
+
+        DateTime moduleStart = module.StartDate.ToDateTime(TimeOnly.MinValue);
+        DateTime moduleEnd = module.EndDate.ToDateTime(TimeOnly.MaxValue);
+
+        DateRangeValidator.ValidateWithinParent(
             startAt,
             endAt,
-            existingActivity.StartAt,
-            existingActivity.EndAt
+            moduleStart,
+            moduleEnd,
+            "Activity",
+            "Module"
         );
 
-        if (overlaps)
+        List<Activity> existingActivities = await _activityRepository.GetByModuleIdAsync(moduleId, cancellationToken);
+
+        foreach (Activity existingActivity in existingActivities)
         {
-            throw new ValidationException($"Activity overlaps with existing activity: {existingActivity.Name}.");
+            if (excludedActivityId.HasValue && existingActivity.ActivityId == excludedActivityId.Value)
+            {
+                continue;
+            }
+
+            bool overlaps = DateRangeValidator.Overlaps(
+                startAt,
+                endAt,
+                existingActivity.StartAt,
+                existingActivity.EndAt
+            );
+
+            if (overlaps)
+            {
+                throw new InvalidDateException(
+                    $"Activity overlaps with existing activity: {existingActivity.Name}.",
+                    400
+                );
+            }
         }
     }
-}
 }
