@@ -110,11 +110,14 @@ namespace LMS.Api.Services.Implementations
             {
                 throw new ArgumentException("End date has to be in the future.");
             }
-            var updatedModule = await _moduleRepo.UpdateModuleAsync(moduleId, updateModule);
-            if (updatedModule == null)
+            var moduleFromDb = await _moduleRepo.GetModuleByIdAsync(moduleId);
+            if (moduleFromDb == null)
             {
                 return null;
             }
+
+            _mapper.Map(updateModule, moduleFromDb);
+            var updatedModule = await _moduleRepo.UpdateModuleAsync(moduleFromDb);
 
             return _mapper.Map<ModuleDto>(updatedModule);
         }

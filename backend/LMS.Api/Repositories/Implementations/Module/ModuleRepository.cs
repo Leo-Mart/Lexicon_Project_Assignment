@@ -1,5 +1,4 @@
 using LMS.Api.Data;
-using LMS.Api.DTOs.Module;
 using LMS.Api.Repositories.Interfaces.Module;
 using Microsoft.EntityFrameworkCore;
 using ModuleEntity = LMS.Api.Models.Module;
@@ -47,27 +46,13 @@ namespace LMS.Api.Repositories.Implementations.Module
             return await _context.Modules.ToListAsync();
         }
 
-        public async Task<ModuleEntity?> UpdateModuleAsync(
-            Guid moduleId,
-            UpdateModuleDto updateModuleDto
-        )
+        // The module is already tracked by the service, so only the timestamp is set here.
+        public async Task<ModuleEntity> UpdateModuleAsync(ModuleEntity module)
         {
-            var moduleFromDb = await _context.Modules.FirstOrDefaultAsync(m =>
-                m.ModuleId == moduleId
-            );
-            if (moduleFromDb == null)
-            {
-                return null;
-            }
-
-            moduleFromDb.Name = updateModuleDto.Name;
-            moduleFromDb.Description = updateModuleDto.Description;
-            moduleFromDb.StartDate = updateModuleDto.StartDate;
-            moduleFromDb.EndDate = updateModuleDto.EndDate;
-            moduleFromDb.UpdatedAt = DateTime.UtcNow;
+            module.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
-            return moduleFromDb;
+            return module;
         }
     }
 }
