@@ -1,3 +1,4 @@
+using LMS.Api.DTOs.Users;
 using LMS.Api.Enums.Model;
 using LMS.Api.Models;
 using Microsoft.AspNetCore.Identity;
@@ -15,13 +16,7 @@ public interface IUserService
         string role
     );
 
-    Task<IdentityResult> UpdateUserAsync(
-        Guid userId,
-        string? name,
-        string? email,
-        UserStatus? status,
-        string? role
-    );
+    Task<IdentityResult> UpdateUserAsync(Guid userId, UserUpdateDto request);
 
     Task<IdentityResult> UpdateUserStatusAsync(Guid userId, UserStatus status);
 }
