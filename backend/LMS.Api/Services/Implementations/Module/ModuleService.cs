@@ -1,5 +1,6 @@
 using AutoMapper;
 using LMS.Api.DTOs.Module;
+using LMS.Api.Exceptions;
 using LMS.Api.Mappings;
 using LMS.Api.Repositories.Interfaces.Course;
 using LMS.Api.Repositories.Interfaces.Module;
@@ -22,12 +23,12 @@ namespace LMS.Api.Services.Implementations
         {
             if (newModule.StartDate < DateOnly.FromDateTime(DateTime.UtcNow.Date))
             {
-                throw new ArgumentException("Start date cannot be in the past.");
+                throw new InvalidDateException("Start date cannot be in the past.", 400);
             }
             int result = newModule.EndDate.CompareTo(newModule.StartDate);
             if (result < 0 || result == 0)
             {
-                throw new ArgumentException("End date has to be in the future.");
+                throw new InvalidDateException("End date has to be in the future.", 400);
             }
 
             var course = await _courseRepo.GetCourseByIdAsync(newModule.CourseId);
@@ -55,8 +56,9 @@ namespace LMS.Api.Services.Implementations
 
                 if (overlaps)
                 {
-                    throw new ArgumentException(
-                        $"Could not create module. Dates overlap with existing module: {module.Name}"
+                    throw new OverlappingDateException(
+                        $"Could not create module. Dates overlap with existing module: {module.Name}",
+                        400
                     );
                 }
             }
@@ -103,12 +105,12 @@ namespace LMS.Api.Services.Implementations
         {
             if (updateModule.StartDate < DateOnly.FromDateTime(DateTime.UtcNow.Date))
             {
-                throw new ArgumentException("Start date cannot be in the past.");
+                throw new InvalidDateException("Start date cannot be in the past.", 400);
             }
             int result = updateModule.EndDate.CompareTo(updateModule.StartDate);
             if (result < 0 || result == 0)
             {
-                throw new ArgumentException("End date has to be in the future.");
+                throw new InvalidDateException("End date has to be in the future.", 400);
             }
             var moduleFromDb = await _moduleRepo.GetModuleByIdAsync(moduleId);
             if (moduleFromDb == null)
