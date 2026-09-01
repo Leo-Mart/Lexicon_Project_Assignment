@@ -1,3 +1,4 @@
+using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.DTOs.Resources;
 using LMS.Api.Models;
@@ -10,20 +11,23 @@ public class ResourceService : IResourceService
 {
     private readonly IResourceRepository _resourceRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
     public ResourceService(
         IResourceRepository resourceRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IMapper mapper)
     {
         _resourceRepository = resourceRepository;
         _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
     public async Task<List<ResourceDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         List<Resource> resources = await _resourceRepository.GetAllAsync(cancellationToken);
 
-        return resources.Select(MapToDto).ToList();
+        return _mapper.Map<List<ResourceDto>>(resources);
     }
 
     public async Task<ResourceDto?> GetByIdAsync(Guid resourceId, CancellationToken cancellationToken = default)
@@ -36,7 +40,7 @@ public class ResourceService : IResourceService
 
         return resource is null
             ? null
-            : MapToDto(resource);
+            : _mapper.Map<ResourceDto>(resource);
     }
 
     public async Task<List<ResourceDto>> GetByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default)
@@ -47,7 +51,7 @@ public class ResourceService : IResourceService
                 cancellationToken
             );
 
-        return resources.Select(MapToDto).ToList();
+        return _mapper.Map<List<ResourceDto>>(resources);
     }
 
     public async Task<List<ResourceDto>> GetByModuleIdAsync(Guid moduleId, CancellationToken cancellationToken = default)
@@ -58,7 +62,7 @@ public class ResourceService : IResourceService
                 cancellationToken
             );
 
-        return resources.Select(MapToDto).ToList();
+        return _mapper.Map<List<ResourceDto>>(resources);
     }
 
     public async Task<List<ResourceDto>> GetByActivityIdAsync(Guid activityId, CancellationToken cancellationToken = default)
@@ -69,7 +73,7 @@ public class ResourceService : IResourceService
                 cancellationToken
             );
 
-        return resources.Select(MapToDto).ToList();
+        return _mapper.Map<List<ResourceDto>>(resources);
     }
 
     public async Task<ResourceDto> CreateAsync(
@@ -79,17 +83,12 @@ public class ResourceService : IResourceService
     {
         DateTime now = DateTime.UtcNow;
 
-        var resource = new Resource
-        {
-            ResourceId = Guid.NewGuid(),
-            CreatedByTeacherId = createdByTeacherId,
-            Name = request.Name,
-            Description = request.Description,
-            Content = request.Content,
-            Uri = request.Uri,
-            CreatedAt = now,
-            UpdatedAt = now
-        };
+        Resource resource = _mapper.Map<Resource>(request);
+
+        resource.ResourceId = Guid.NewGuid();
+        resource.CreatedByTeacherId = createdByTeacherId;
+        resource.CreatedAt = now;
+        resource.UpdatedAt = now;
 
         await _resourceRepository.AddAsync(
             resource,
@@ -98,7 +97,7 @@ public class ResourceService : IResourceService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return MapToDto(resource);
+        return _mapper.Map<ResourceDto>(resource);
     }
 
     public async Task<bool> UpdateAsync(
@@ -117,10 +116,8 @@ public class ResourceService : IResourceService
             return false;
         }
 
-        resource.Name = request.Name;
-        resource.Description = request.Description;
-        resource.Content = request.Content;
-        resource.Uri = request.Uri;
+        _mapper.Map(request, resource);
+
         resource.UpdatedAt = DateTime.UtcNow;
 
         _resourceRepository.Update(resource);
@@ -195,20 +192,5 @@ public class ResourceService : IResourceService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;
-    }
-
-    private static ResourceDto MapToDto(Resource resource)
-    {
-        return new ResourceDto
-        {
-            ResourceId = resource.ResourceId,
-            CreatedByTeacherId = resource.CreatedByTeacherId,
-            Name = resource.Name,
-            Description = resource.Description,
-            Content = resource.Content,
-            Uri = resource.Uri,
-            CreatedAt = resource.CreatedAt,
-            UpdatedAt = resource.UpdatedAt
-        };
     }
 }
