@@ -16,7 +16,7 @@ export default function ModuleSideView({ name, startDate, endDate }: Module) {
                         />
                         <p>---------------</p>
                         <div>
-                            {/* Fetch all courses, and create a ModuleSideViewPart for each */}
+                            {/* TODO Fetch all modules, and create a ModuleSideViewPart for each */}
                             <h1>{name}</h1>
                             <p>
                                 {startDate} - {endDate}

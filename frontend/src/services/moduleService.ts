@@ -11,3 +11,13 @@ export const fetchModuleById = async (moduleId: string): Promise<Module> => {
 
     return await response.json();
 };
+
+export const fetchModules = async (): Promise<Module> => {
+    const response = await fetch(`${API_URL}`);
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+};
