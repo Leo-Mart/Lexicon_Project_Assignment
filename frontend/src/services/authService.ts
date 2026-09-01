@@ -1,6 +1,6 @@
 import { API_BASE_URL, HttpMethod, JSON_HEADERS } from "../constants/Constants";
-import type { LoginDto } from "../dtos/auth/LoginDto";
-import type { AccessTokenResponse } from "../dtos/auth/AccessTokenDto";
+import type { LoginDto } from "../interfaces/auth/LoginDto";
+import type { AccessTokenResponse } from "../interfaces/auth/AccessTokenDto";
 
 const API_URL = API_BASE_URL + "/auth";
 

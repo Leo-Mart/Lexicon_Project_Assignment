@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Button from "../components/Button";
 import Lecture from "../components/Lecture";
-import type { Module } from "../dtos/Module";
+import type { Module } from "../interfaces/Module";
 
 const API_URL = "https://localhost:7250/api/modules/";
 const TEST_MODULE_ID = "40000000-0000-0000-0000-000000000003";
