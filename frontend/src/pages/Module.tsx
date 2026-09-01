@@ -1,15 +1,15 @@
+// src/pages/ModulePage.tsx
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom"; // For when we switch to URL params
+import { useParams } from "react-router-dom";
 import Button from "../components/Button";
 import Lecture from "../components/Lecture";
 import type { Module } from "../interfaces/Module";
 import ModuleSideView from "../components/ModuleSideView";
-
-const API_URL = "https://localhost:7250/api/modules";
+import { fetchModuleById } from "../services/moduleService";
 
 export default function ModulePage() {
-    const { id } = useParams<{ id: string }>(); // Future: get ID from URL
-    const moduleId = id || "40000000-0000-0000-0000-000000000002"; // Fallback for testing
+    const { id } = useParams<{ id: string }>();
+    const moduleId = id || "40000000-0000-0000-0000-000000000004";
     const [module, setModule] = useState<Module | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -19,13 +19,7 @@ export default function ModulePage() {
             setLoading(true);
             setError(null);
             try {
-                const response = await fetch(`${API_URL}/${moduleId}`);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const moduleData: Module = await response.json();
+                const moduleData = await fetchModuleById(moduleId);
                 setModule(moduleData);
             } catch (err) {
                 setError(
@@ -40,7 +34,7 @@ export default function ModulePage() {
         };
 
         fetchModule();
-    }, [moduleId]); // Re-fetch when ID changes
+    }, [moduleId]);
 
     if (loading) return <div>Loading...</div>;
     if (error)
