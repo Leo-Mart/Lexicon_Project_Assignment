@@ -47,8 +47,6 @@ namespace LMS.Api.Services.Implementations
                 bool overlaps =
                     module.StartDate < newModule.EndDate && newModule.StartDate < module.EndDate;
 
-                Console.WriteLine(overlaps);
-
                 if (overlaps)
                 {
                     throw new ArgumentException(
