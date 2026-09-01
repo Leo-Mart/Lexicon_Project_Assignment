@@ -50,7 +50,7 @@ public class ActivityServiceTests
     public async Task GetByIdAsync_WithExistingActivity_ShouldReturnActivity()
     {
         Activity activity = CreateActivity("Activity");
-        
+
         _activityRepositoryMock
             .Setup(repository => repository.GetByIdAsync(activity.ActivityId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(activity);
