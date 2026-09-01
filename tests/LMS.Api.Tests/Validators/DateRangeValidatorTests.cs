@@ -1,3 +1,4 @@
+using LMS.Api.Exceptions;
 using LMS.Api.Validators;
 
 namespace LMS.Api.Tests.Validators;
@@ -10,28 +11,34 @@ public class DateRangeValidatorTests
         DateOnly start = new(2026, 9, 1);
         DateOnly end = new(2026, 9, 10);
 
-        Exception? exception = Record.Exception(() => DateRangeValidator.ValidateRange(start, end, "Module"));
+        Exception? exception = Record.Exception(() =>
+            DateRangeValidator.ValidateRange(start, end, "Module")
+        );
 
         Assert.Null(exception);
     }
 
     [Fact]
-    public void ValidateRange_EndBeforeStart_ShouldThrowArgumentException()
+    public void ValidateRange_EndBeforeStart_ShouldThrowInvalidDateException()
     {
         DateOnly start = new(2026, 9, 10);
         DateOnly end = new(2026, 9, 1);
 
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => DateRangeValidator.ValidateRange(start, end, "Module"));
+        InvalidDateException exception = Assert.Throws<InvalidDateException>(() =>
+            DateRangeValidator.ValidateRange(start, end, "Module")
+        );
 
         Assert.Contains("Module", exception.Message);
     }
 
     [Fact]
-    public void ValidateRange_StartEqualsEnd_ShouldThrowArgumentException()
+    public void ValidateRange_StartEqualsEnd_ShouldThrowInvalidDateException()
     {
         DateOnly date = new(2026, 9, 1);
 
-        Assert.Throws<ArgumentException>(() => DateRangeValidator.ValidateRange(date, date, "Module"));
+        Assert.Throws<InvalidDateException>(() =>
+            DateRangeValidator.ValidateRange(date, date, "Module")
+        );
     }
 
     [Fact]
@@ -42,8 +49,8 @@ public class DateRangeValidatorTests
         DateOnly start = new(2026, 10, 1);
         DateOnly end = new(2026, 10, 31);
 
-        Exception? exception = Record.Exception(
-            () => DateRangeValidator.ValidateWithinParent(
+        Exception? exception = Record.Exception(() =>
+            DateRangeValidator.ValidateWithinParent(
                 start,
                 end,
                 parentStart,
@@ -62,8 +69,8 @@ public class DateRangeValidatorTests
         DateOnly parentStart = new(2026, 9, 1);
         DateOnly parentEnd = new(2026, 12, 31);
 
-        Exception? exception = Record.Exception(
-            () => DateRangeValidator.ValidateWithinParent(
+        Exception? exception = Record.Exception(() =>
+            DateRangeValidator.ValidateWithinParent(
                 parentStart,
                 parentEnd,
                 parentStart,
@@ -77,15 +84,15 @@ public class DateRangeValidatorTests
     }
 
     [Fact]
-    public void ValidateWithinParent_StartBeforeParent_ShouldThrowArgumentException()
+    public void ValidateWithinParent_StartBeforeParent_ShouldThrowInvalidDateException()
     {
         DateOnly parentStart = new(2026, 9, 1);
         DateOnly parentEnd = new(2026, 12, 31);
         DateOnly start = new(2026, 8, 31);
         DateOnly end = new(2026, 10, 1);
 
-        Assert.Throws<ArgumentException>(
-            () => DateRangeValidator.ValidateWithinParent(
+        Assert.Throws<InvalidDateException>(() =>
+            DateRangeValidator.ValidateWithinParent(
                 start,
                 end,
                 parentStart,
@@ -97,15 +104,15 @@ public class DateRangeValidatorTests
     }
 
     [Fact]
-    public void ValidateWithinParent_EndAfterParent_ShouldThrowArgumentException()
+    public void ValidateWithinParent_EndAfterParent_ShouldThrowInvalidDateException()
     {
         DateOnly parentStart = new(2026, 9, 1);
         DateOnly parentEnd = new(2026, 12, 31);
         DateOnly start = new(2026, 12, 1);
         DateOnly end = new(2027, 1, 1);
 
-        Assert.Throws<ArgumentException>(
-            () => DateRangeValidator.ValidateWithinParent(
+        Assert.Throws<InvalidDateException>(() =>
+            DateRangeValidator.ValidateWithinParent(
                 start,
                 end,
                 parentStart,
@@ -125,12 +132,7 @@ public class DateRangeValidatorTests
         DateTime start = new(2026, 9, 1, 11, 0, 0);
         DateTime end = new(2026, 9, 1, 13, 0, 0);
 
-        bool result = DateRangeValidator.Overlaps(
-            start,
-            end,
-            existingStart,
-            existingEnd
-        );
+        bool result = DateRangeValidator.Overlaps(start, end, existingStart, existingEnd);
 
         Assert.True(result);
     }
@@ -144,12 +146,7 @@ public class DateRangeValidatorTests
         DateTime start = new(2026, 9, 1, 13, 0, 0);
         DateTime end = new(2026, 9, 1, 14, 0, 0);
 
-        bool result = DateRangeValidator.Overlaps(
-            start,
-            end,
-            existingStart,
-            existingEnd
-        );
+        bool result = DateRangeValidator.Overlaps(start, end, existingStart, existingEnd);
 
         Assert.False(result);
     }
@@ -163,12 +160,7 @@ public class DateRangeValidatorTests
         DateTime start = existingEnd;
         DateTime end = new(2026, 9, 1, 12, 0, 0);
 
-        bool result = DateRangeValidator.Overlaps(
-            start,
-            end,
-            existingStart,
-            existingEnd
-        );
+        bool result = DateRangeValidator.Overlaps(start, end, existingStart, existingEnd);
 
         Assert.False(result);
     }
@@ -179,7 +171,9 @@ public class DateRangeValidatorTests
         DateOnly minimum = new(2026, 9, 1);
         DateOnly start = new(2026, 9, 2);
 
-        Exception? exception = Record.Exception(() => DateRangeValidator.ValidateNotBefore(start, minimum, "Module"));
+        Exception? exception = Record.Exception(() =>
+            DateRangeValidator.ValidateNotBefore(start, minimum, "Module")
+        );
 
         Assert.Null(exception);
     }
@@ -189,18 +183,22 @@ public class DateRangeValidatorTests
     {
         DateOnly minimum = new(2026, 9, 1);
 
-        Exception? exception = Record.Exception(() => DateRangeValidator.ValidateNotBefore(minimum, minimum, "Module"));
+        Exception? exception = Record.Exception(() =>
+            DateRangeValidator.ValidateNotBefore(minimum, minimum, "Module")
+        );
 
         Assert.Null(exception);
     }
 
     [Fact]
-    public void ValidateNotBefore_StartBeforeMinimum_ShouldThrowArgumentException()
+    public void ValidateNotBefore_StartBeforeMinimum_ShouldThrowInvalidDateException()
     {
         DateOnly minimum = new(2026, 9, 1);
         DateOnly start = new(2026, 8, 31);
 
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => DateRangeValidator.ValidateNotBefore(start, minimum, "Module"));
+        InvalidDateException exception = Assert.Throws<InvalidDateException>(() =>
+            DateRangeValidator.ValidateNotBefore(start, minimum, "Module")
+        );
 
         Assert.Contains("Module", exception.Message);
     }
