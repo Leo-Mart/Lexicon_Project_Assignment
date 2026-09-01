@@ -1,13 +1,6 @@
 import { useState, useEffect } from "react";
 import "../index.css";
-
-interface CourseDto {
-    courseId: string;
-    name: string;
-    description: string;
-    startDate: string;
-    endDate: string;
-}
+import type { CourseDto } from "../interfaces/CourseDto";
 
 const API_URL = "http://localhost:5068/api/courses";
 
