@@ -1,15 +1,10 @@
 import { useEffect, useState } from "react";
 import Button from "../components/Button";
 import Lecture from "../components/Lecture";
+import type { Module } from "../dtos/Module";
 
 const API_URL = "https://localhost:7250/api/modules/";
 const TEST_MODULE_ID = "40000000-0000-0000-0000-000000000003";
-
-interface Module {
-    name: string;
-    startDate: string;
-    endDate: string;
-}
 
 export default function Module() {
     const [module, setModule] = useState<Module | null>(null);
