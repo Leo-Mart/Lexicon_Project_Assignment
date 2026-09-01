@@ -120,7 +120,6 @@ public class ActivityController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateActivityAsync([FromBody] ActivityCreateDto request, CancellationToken cancellationToken = default)
     {
-
         ActivityDto activity = await _activityService.CreateAsync(request, cancellationToken);
 
         return CreatedAtAction(

@@ -3,6 +3,7 @@ using LMS.Api.DTOs.Activities;
 using LMS.Api.Enums.Model;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
+using LMS.Api.Repositories.Interfaces.Module;
 using LMS.Api.Services.Implementations;
 using LMS.Api.Services.Interfaces;
 using Moq;
@@ -14,15 +15,18 @@ public class ActivityServiceTests
     private readonly Mock<IActivityRepository> _activityRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly IActivityService _activityService;
+     private readonly Mock<IModuleRepository> _moduleRepository;
 
     public ActivityServiceTests()
     {
         _activityRepositoryMock = new Mock<IActivityRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _moduleRepository = new Mock<IModuleRepository>();
 
         _activityService = new ActivityService(
             _activityRepositoryMock.Object,
-            _unitOfWorkMock.Object
+            _unitOfWorkMock.Object,
+            _moduleRepository.Object
         );
     }
 
