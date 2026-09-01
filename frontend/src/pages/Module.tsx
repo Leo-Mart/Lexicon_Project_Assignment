@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom"; // For when we switch to URL param
 import Button from "../components/Button";
 import Lecture from "../components/Lecture";
 import type { Module } from "../interfaces/Module";
+import ModuleSideView from "../components/ModuleSideView";
 
 const API_URL = "https://localhost:7250/api/modules";
 
@@ -55,6 +56,7 @@ export default function ModulePage() {
 
     return (
         <>
+            <ModuleSideView />
             <div className="flex flex-col items-center">
                 <h1 className="text-4xl text-text-dark pt-5">
                     Current Module: {module.name}
@@ -68,7 +70,7 @@ export default function ModulePage() {
                     </p>
                 </div>
             </div>
-            <div className="bg-bg-light h-[calc(100vh-12rem)] p-10 grid grid-flow-col grid-rows-3 grid-cols-2 gap-8">
+            <div className="bg-bg-light h-[calc(100vh-12rem)] p-10 grid grid-flow-col grid-rows-3 grid-cols-2 gap-8 m-8">
                 <Lecture
                     lectureName="Dependency Injection"
                     lectureTime="13:30"
