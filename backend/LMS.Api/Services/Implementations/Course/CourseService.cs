@@ -1,6 +1,6 @@
 using AutoMapper;
-using LMS.Api.DTOs.Courses;
-using LMS.Api.Repositories.Interfaces.Courses;
+using LMS.Api.DTOs.Course;
+using LMS.Api.Repositories.Interfaces.Course;
 using LMS.Api.Services.Interfaces.Course;
 using CourseEntity = LMS.Api.Models.Course;
 
