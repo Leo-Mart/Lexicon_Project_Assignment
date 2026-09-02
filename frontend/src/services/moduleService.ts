@@ -66,4 +66,3 @@ export const updateModule = async (
         throw new Error(`Could not update the module: ${response.status}`);
     }
 };
-
