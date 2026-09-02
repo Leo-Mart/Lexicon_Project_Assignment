@@ -54,13 +54,20 @@ export default function ModuleSideView({ name, startDate, endDate }: Module) {
                             endDate={endDate}
                         />
                         <p>---------------</p>
-                        {modules.map((module) => (
-                            <ModuleSideViewPart
-                                name={module.name}
-                                startDate={module.startDate}
-                                endDate={module.endDate}
-                            />
-                        ))}
+                        {[...modules]
+                            .sort(
+                                (a, b) =>
+                                    new Date(a.endDate).getTime() -
+                                    new Date(b.endDate).getTime(),
+                            )
+                            .map((module) => (
+                                <ModuleSideViewPart
+                                    name={module.name}
+                                    startDate={module.startDate}
+                                    endDate={module.endDate}
+                                    key={module.name}
+                                />
+                            ))}
                     </div>
                 )}
                 <button
