@@ -1,5 +1,6 @@
 using AutoMapper;
 using LMS.Api.DTOs.Course;
+using LMS.Api.Exceptions;
 using LMS.Api.Mappings;
 using LMS.Api.Repositories.Interfaces.Course;
 using LMS.Api.Services.Implementations.Course;
@@ -57,7 +58,7 @@ namespace LMS.Api.Tests.Services.Course
         }
 
         [Fact]
-        public async Task CreateCourse_WithPastStartDate_ShouldThrowArgumentException()
+        public async Task CreateCourse_WithPastStartDate_ShouldThrowInvalidDateException()
         {
             var request = new CreateNewCourseDto
             {
@@ -67,11 +68,11 @@ namespace LMS.Api.Tests.Services.Course
                 EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(14)),
             };
 
-            await Assert.ThrowsAsync<ArgumentException>(() => _service.CreateNewCourse(request));
+            await Assert.ThrowsAsync<InvalidDateException>(() => _service.CreateNewCourse(request));
         }
 
         [Fact]
-        public async Task CreateCourse_WithEndDateEarlierThenStartDate_ShouldThrowArgumentException()
+        public async Task CreateCourse_WithEndDateEarlierThenStartDate_ShouldThrowInvalidDateException()
         {
             var request = new CreateNewCourseDto
             {
@@ -81,7 +82,7 @@ namespace LMS.Api.Tests.Services.Course
                 EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(5)),
             };
 
-            await Assert.ThrowsAsync<ArgumentException>(() => _service.CreateNewCourse(request));
+            await Assert.ThrowsAsync<InvalidDateException>(() => _service.CreateNewCourse(request));
         }
 
         [Fact]
@@ -103,9 +104,7 @@ namespace LMS.Api.Tests.Services.Course
                 StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(7)),
                 EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(14)),
             };
-            _repoMock
-                .Setup(r => r.GetCourseByIdAsync(courseId))
-                .ReturnsAsync(existingCourse);
+            _repoMock.Setup(r => r.GetCourseByIdAsync(courseId)).ReturnsAsync(existingCourse);
 
             // The service maps the DTO onto the entity before saving, so the
             // repository just hands back whatever it was given.

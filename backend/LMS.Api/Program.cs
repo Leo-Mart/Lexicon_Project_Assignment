@@ -5,6 +5,7 @@ using LMS.Api.Constants;
 using LMS.Api.Data;
 using LMS.Api.Data.Seed;
 using LMS.Api.Data.UnitOfWork;
+using LMS.Api.Exceptions;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Implementations;
 using LMS.Api.Repositories.Implementations.Course;
@@ -40,6 +41,9 @@ string frontendUrl = builder.Configuration["Frontend:Url"] ?? "http://localhost:
 builder.Services.AddDbContext<LMSDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder
     .Services.AddIdentityCore<User>()
@@ -143,7 +147,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseExceptionHandler();
 app.UseRouting();
 
 app.UseCors("Frontend");
