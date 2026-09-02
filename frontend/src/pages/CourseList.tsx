@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import "../index.css";
+import Button from "../components/Button";
 import type { CourseDto } from "../interfaces/CourseDto";
+import CourseModal from "./CourseModal";
 
 const API_URL = "http://localhost:5068/api/courses";
 
@@ -17,6 +19,16 @@ export default function Courses() {
     ]);
 
     const [loading, setLoading] = useState<boolean>(true);
+
+    const [isCourseModalVisible, setIsCourseModalVisible] = useState(false);
+
+    const handleShowCourseModal = () => {
+        setIsCourseModalVisible(true);
+    };
+
+    const handleCloseCourseModal = () => {
+        setIsCourseModalVisible(false);
+    };
 
     // READ ALL
 
@@ -75,6 +87,14 @@ export default function Courses() {
                         ))}
                     </tbody>
                 </table>
+            </div>
+            <div className="m-3">
+                <Button onClick={handleShowCourseModal} className="col-span-2">
+                    Create course
+                </Button>
+                {isCourseModalVisible && (
+                    <CourseModal onClose={handleCloseCourseModal} />
+                )}
             </div>
         </>
     );
