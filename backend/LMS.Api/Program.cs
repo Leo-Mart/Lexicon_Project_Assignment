@@ -8,18 +8,11 @@ using LMS.Api.Data.UnitOfWork;
 using LMS.Api.Exceptions;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Implementations;
-using LMS.Api.Repositories.Implementations.Course;
-using LMS.Api.Repositories.Implementations.Module;
 using LMS.Api.Repositories.Interfaces;
-using LMS.Api.Repositories.Interfaces.Course;
-using LMS.Api.Repositories.Interfaces.Module;
 using LMS.Api.Services.Implementations;
 using LMS.Api.Services.Implementations.Auth;
-using LMS.Api.Services.Implementations.Course;
 using LMS.Api.Services.Interfaces;
 using LMS.Api.Services.Interfaces.Auth;
-using LMS.Api.Services.Interfaces.Course;
-using LMS.Api.Services.Interfaces.Module;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -56,7 +49,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.MaxDepth = 128;
 });
-
+builder.Services.AddScoped<IResourceService, ResourceService>();
+builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
