@@ -3,7 +3,7 @@ import type { Module } from "../interfaces/Module";
 import ModuleSideViewPart from "./ModuleSideViewPart";
 import { fetchModules } from "../services/moduleService";
 
-export default function ModuleSideView({ name, startDate, endDate }: Module) {
+export default function ModuleSideView({ module }: { module: Module }) {
     const [modules, setModules] = useState<Module[]>();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -48,11 +48,7 @@ export default function ModuleSideView({ name, startDate, endDate }: Module) {
             <div className="flex flex-row absolute">
                 {isExpanded && (
                     <div className="bg-bg-window h-[calc(100vh-1rem)] w-50 border-2 border-bg-header flex flex-col gap-3">
-                        <ModuleSideViewPart
-                            name={name}
-                            startDate={startDate}
-                            endDate={endDate}
-                        />
+                        <ModuleSideViewPart module={module} />
                         <p>---------------</p>
                         {[...modules]
                             .sort(
@@ -60,13 +56,8 @@ export default function ModuleSideView({ name, startDate, endDate }: Module) {
                                     new Date(a.endDate).getTime() -
                                     new Date(b.endDate).getTime(),
                             )
-                            .map((module) => (
-                                <ModuleSideViewPart
-                                    name={module.name}
-                                    startDate={module.startDate}
-                                    endDate={module.endDate}
-                                    key={module.name}
-                                />
+                            .map((m) => (
+                                <ModuleSideViewPart module={m} key={m.name} />
                             ))}
                     </div>
                 )}
