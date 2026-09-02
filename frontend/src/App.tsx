@@ -7,10 +7,10 @@ import Footer from "./components/Footer.tsx";
 
 export default function App() {
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen bg-bg dark:bg-bg-dark">
             <Header />
             <Suspense fallback={<div>Loading...</div>}>
-                <main className="flex-1 overflow-auto">
+                <main className="flex flex-col min-h-screen overflow-auto">
                     <Routes>
                         {routes.map(({ path, component: Component }) => (
                             <Route
