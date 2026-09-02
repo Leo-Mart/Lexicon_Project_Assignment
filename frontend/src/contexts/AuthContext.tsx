@@ -2,33 +2,50 @@
 // seems to be an issue with eslint or something see: https://github.com/ArnaudBarre/eslint-plugin-react-refresh/issues/25#issuecomment-1729071347
 //https://www.gatsbyjs.com/docs/reference/local-development/fast-refresh/#how-it-works
 // second solution is probably better though.
-import { createContext, useContext, useState } from "react";
+import {
+    createContext,
+    useContext,
+    useEffect,
+    useState,
+    useSyncExternalStore,
+} from "react";
 import type { LoginDto } from "../interfaces/auth/LoginDto";
-import { loginService, logoutService } from "../services/authService";
+import {
+    getAccessToken,
+    login,
+    logout,
+    refreshSession,
+    subscribeToken,
+} from "../services/authService";
+import Spinner from "../components/Spinner";
 
-interface ProviderProps {
-    token: string;
-    login: (loginPayload: LoginDto) => void;
+type ProviderProps = {
+    isAuthenticated: boolean;
+    isLoading: boolean;
+    loginUser: (loginPayload: LoginDto) => void;
     loginError: string | undefined;
-    logout: () => void;
-}
+    logoutUser: () => void;
+};
 
-const AuthContext = createContext<ProviderProps>({
-    token: "",
-    login: () => {},
-    loginError: "",
-    logout: () => {},
-});
+const AuthContext = createContext<ProviderProps | undefined>(undefined);
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const [token, setToken] = useState<string>("");
+    const token = useSyncExternalStore(
+        subscribeToken,
+        getAccessToken,
+        getAccessToken,
+    );
+    const [isLoading, setIsLoading] = useState(true);
     const [loginError, setLoginError] = useState<string>();
 
-    const login = async (loginPayload: LoginDto) => {
+    useEffect(() => {
+        refreshSession().finally(() => setIsLoading(false));
+    }, []);
+
+    const loginUser = async (loginPayload: LoginDto) => {
         setLoginError("");
         try {
-            await loginService(loginPayload);
-            setToken("bladiba");
+            await login(loginPayload);
         } catch (error) {
             if (error instanceof Error) {
                 setLoginError(error.message);
@@ -36,14 +53,21 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-    const logout = () => {
-        logoutService();
-        // call the authService, and clear state
+    const logoutUser = () => {
+        logout();
     };
 
     return (
-        <AuthContext.Provider value={{ token, login, loginError, logout }}>
-            {children}
+        <AuthContext.Provider
+            value={{
+                isAuthenticated: !!token,
+                isLoading,
+                loginUser,
+                loginError,
+                logoutUser,
+            }}
+        >
+            {isLoading ? <Spinner /> : children}
         </AuthContext.Provider>
     );
 };

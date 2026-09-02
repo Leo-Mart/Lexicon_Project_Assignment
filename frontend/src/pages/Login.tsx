@@ -3,7 +3,7 @@ import type { LoginDto } from "../interfaces/auth/LoginDto";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
-    const { login, loginError } = useAuth();
+    const { isAuthenticated, loginUser, loginError } = useAuth();
     const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -14,7 +14,7 @@ export default function Login() {
             password: formData.get("password")!.toString(),
         };
 
-        login(loginPayload);
+        loginUser(loginPayload);
         // clear form
         // navigate to userpage/dashboard
     };
@@ -24,6 +24,7 @@ export default function Login() {
                 <h1 className="text-3xl mb-3 font-bold text-text-dark dark:text-text-light">
                     Login
                 </h1>
+                {isAuthenticated && <span>Logged in!</span>}
                 <form
                     onSubmit={handleSubmit}
                     className="w-1/3 h-full flex flex-col gap-5"
