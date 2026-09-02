@@ -7,13 +7,17 @@ const API_URL = API_BASE_URL + "/auth";
 let accessToken: string | null = null;
 let refreshPromise: Promise<boolean> | null = null;
 
-export const login = async (loginDto: LoginDto): Promise<void> => {
+export const loginService = async (loginDto: LoginDto): Promise<void> => {
     const response = await fetch(`${API_URL}/login`, {
         method: HttpMethod.POST,
         headers: JSON_HEADERS,
         credentials: "include",
         body: JSON.stringify(loginDto),
     });
+
+    if (response.status === 401) {
+        throw new Error("Invalid email and/or password");
+    }
 
     if (!response.ok) {
         throw new Error(`Login failed: ${response.status}`);
@@ -74,7 +78,7 @@ export const checkAuth = async (): Promise<boolean> => {
     return response.ok;
 };
 
-export const logout = async (): Promise<void> => {
+export const logoutService = async (): Promise<void> => {
     try {
         const response = await fetch(`${API_URL}/logout`, {
             method: HttpMethod.POST,

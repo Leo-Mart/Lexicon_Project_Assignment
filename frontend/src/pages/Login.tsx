@@ -1,8 +1,9 @@
 import Button from "../components/Button";
 import type { LoginDto } from "../interfaces/auth/LoginDto";
-import { login } from "../services/authService";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
+    const { login, loginError } = useAuth();
     const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -13,13 +14,9 @@ export default function Login() {
             password: formData.get("password")!.toString(),
         };
 
-        console.log(loginPayload);
-
-        try {
-            login(loginPayload);
-        } catch (error) {
-            console.error(error);
-        }
+        login(loginPayload);
+        // clear form
+        // navigate to userpage/dashboard
     };
     return (
         <>
@@ -59,6 +56,9 @@ export default function Login() {
                             required
                         />
                     </label>
+                    {loginError && (
+                        <span className="text-red-700">{loginError}</span>
+                    )}
                     <Button
                         variant="confirm"
                         className="hover:cursor-pointer"
