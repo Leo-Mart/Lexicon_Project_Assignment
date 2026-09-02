@@ -6,6 +6,7 @@ import Lecture from "../components/Lecture";
 import type { Module } from "../interfaces/Module";
 import ModuleSideView from "../components/ModuleSideView";
 import { fetchModuleById } from "../services/moduleService";
+import type { Activity } from "../interfaces/Activity";
 
 export default function ModulePage() {
     const { id } = useParams<{ id: string }>();
@@ -71,7 +72,24 @@ export default function ModulePage() {
                     teacher="Michael"
                 />
                 <Button className="row-span-2">Course Material</Button>
-                <Button className="row-span-2">Activities</Button>
+                <Button className="row-span-2">
+                    {module.activities?.length ? (
+                        <div>
+                            {module.activities.map((activity: Activity) => (
+                                <div
+                                    key={activity.activityId}
+                                    className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-3"
+                                >
+                                    <h2 className="font-bold text-xl mb-2 bg-bg-window w-full p-4">
+                                        {activity.name}
+                                    </h2>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        "Activities"
+                    )}
+                </Button>
             </div>
         </>
     );
