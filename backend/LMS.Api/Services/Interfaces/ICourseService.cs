@@ -1,6 +1,6 @@
 using LMS.Api.DTOs.Course;
 
-namespace LMS.Api.Services.Interfaces.Course;
+namespace LMS.Api.Services.Interfaces;
 
 public interface ICourseService
 {
