@@ -4,6 +4,7 @@ import type { ResourceDto } from "../interfaces/resource/ResourceDto";
 import type { ResourceCreateDto } from "../interfaces/resource/ResourceCreateDto";
 import type { ResourceUpdateDto } from "../interfaces/resource/ResourceUpdateDto";
 
+
 const API_URL = API_BASE_URL + "/resources";
 
 export const fetchResources = async (): Promise<ResourceDto[]> => {
@@ -66,3 +67,5 @@ export const updateResource = async (
         throw new Error(`Could not update the Resource: ${response.status}`);
     }
 };
+
+
