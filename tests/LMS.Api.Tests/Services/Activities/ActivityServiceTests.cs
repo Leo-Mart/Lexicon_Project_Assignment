@@ -1,11 +1,14 @@
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.DTOs.Activities;
 using LMS.Api.Enums.Model;
+using LMS.Api.Exceptions;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
+using LMS.Api.Repositories.Interfaces.Module;
 using LMS.Api.Services.Implementations;
 using LMS.Api.Services.Interfaces;
 using Moq;
+using ModuleEntity = LMS.Api.Models.Module;
 
 namespace LMS.Api.Tests.Services;
 
@@ -13,16 +16,19 @@ public class ActivityServiceTests
 {
     private readonly Mock<IActivityRepository> _activityRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IModuleRepository> _moduleRepositoryMock;
     private readonly IActivityService _activityService;
 
     public ActivityServiceTests()
     {
         _activityRepositoryMock = new Mock<IActivityRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _moduleRepositoryMock = new Mock<IModuleRepository>();
 
         _activityService = new ActivityService(
             _activityRepositoryMock.Object,
-            _unitOfWorkMock.Object
+            _unitOfWorkMock.Object,
+            _moduleRepositoryMock.Object
         );
     }
 
@@ -101,8 +107,10 @@ public class ActivityServiceTests
     public async Task CreateAsync_WithValidActivity_ShouldCreateActivity()
     {
         Guid moduleId = Guid.NewGuid();
-        DateTime startAt = DateTime.UtcNow;
+        DateTime startAt = DateTime.UtcNow.AddDays(1);
         DateTime endAt = startAt.AddHours(2);
+
+        ModuleEntity module = CreateModule(moduleId, startAt, endAt);
 
         ActivityCreateDto dto = new()
         {
@@ -115,6 +123,14 @@ public class ActivityServiceTests
         };
 
         Activity? savedActivity = null;
+
+        _moduleRepositoryMock
+            .Setup(repository => repository.GetModuleByIdAsync(moduleId))
+            .ReturnsAsync(module);
+
+        _activityRepositoryMock
+            .Setup(repository => repository.GetByModuleIdAsync(moduleId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
 
         _activityRepositoryMock
             .Setup(repository => repository.AddAsync(It.IsAny<Activity>(), It.IsAny<CancellationToken>()))
@@ -152,12 +168,138 @@ public class ActivityServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_WithNonExistingModule_ShouldThrowKeyNotFoundException()
+    {
+        Guid moduleId = Guid.NewGuid();
+        DateTime startAt = DateTime.UtcNow.AddDays(1);
+
+        ActivityCreateDto dto = new()
+        {
+            ModuleId = moduleId,
+            Type = ActivityType.Lecture,
+            Name = "Activity",
+            Description = "Description",
+            StartAt = startAt,
+            EndAt = startAt.AddHours(2)
+        };
+
+        _moduleRepositoryMock
+            .Setup(repository => repository.GetModuleByIdAsync(moduleId))
+            .ReturnsAsync((ModuleEntity?)null);
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(
+            () => _activityService.CreateAsync(dto)
+        );
+
+        _activityRepositoryMock.Verify(
+            repository => repository.AddAsync(It.IsAny<Activity>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+
+        _unitOfWorkMock.Verify(
+            unitOfWork => unitOfWork.SaveChangesAsync(It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task CreateAsync_WithActivityOutsideModule_ShouldThrowInvalidDateException()
+    {
+        Guid moduleId = Guid.NewGuid();
+
+        DateTime moduleStart = DateTime.UtcNow.AddDays(2);
+        DateTime moduleEnd = moduleStart.AddDays(2);
+
+        ModuleEntity module = CreateModule(moduleId, moduleStart, moduleEnd);
+
+        ActivityCreateDto dto = new()
+        {
+            ModuleId = moduleId,
+            Type = ActivityType.Lecture,
+            Name = "Activity",
+            Description = "Description",
+            StartAt = moduleStart.AddDays(-2),
+            EndAt = moduleStart.AddHours(1)
+        };
+
+        _moduleRepositoryMock
+            .Setup(repository => repository.GetModuleByIdAsync(moduleId))
+            .ReturnsAsync(module);
+
+        await Assert.ThrowsAsync<InvalidDateException>(
+            () => _activityService.CreateAsync(dto)
+        );
+
+        _activityRepositoryMock.Verify(
+            repository => repository.AddAsync(It.IsAny<Activity>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task CreateAsync_WithOverlappingActivity_ShouldThrowInvalidDateException()
+    {
+        Guid moduleId = Guid.NewGuid();
+        DateTime startAt = DateTime.UtcNow.AddDays(1);
+        DateTime endAt = startAt.AddHours(2);
+
+        ModuleEntity module = CreateModule(moduleId, startAt, endAt);
+
+        Activity existingActivity = new()
+        {
+            ActivityId = Guid.NewGuid(),
+            ModuleId = moduleId,
+            Type = ActivityType.Lecture,
+            Name = "Existing activity",
+            Description = "Description",
+            StartAt = startAt.AddMinutes(30),
+            EndAt = endAt.AddHours(1)
+        };
+
+        ActivityCreateDto dto = new()
+        {
+            ModuleId = moduleId,
+            Type = ActivityType.Lecture,
+            Name = "New activity",
+            Description = "Description",
+            StartAt = startAt,
+            EndAt = endAt
+        };
+
+        _moduleRepositoryMock
+            .Setup(repository => repository.GetModuleByIdAsync(moduleId))
+            .ReturnsAsync(module);
+
+        _activityRepositoryMock
+            .Setup(repository => repository.GetByModuleIdAsync(moduleId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([existingActivity]);
+
+        await Assert.ThrowsAsync<InvalidDateException>(
+            () => _activityService.CreateAsync(dto)
+        );
+
+        _activityRepositoryMock.Verify(
+            repository => repository.AddAsync(It.IsAny<Activity>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+
+        _unitOfWorkMock.Verify(
+            unitOfWork => unitOfWork.SaveChangesAsync(It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
     public async Task UpdateAsync_WithExistingActivity_ShouldUpdateActivity()
     {
-        Activity activity = CreateActivity("Old name");
+        Guid moduleId = Guid.NewGuid();
+
+        Activity activity = CreateActivity("Old name", moduleId);
 
         DateTime newStartAt = DateTime.UtcNow.AddDays(1);
         DateTime newEndAt = newStartAt.AddHours(3);
+
+        ModuleEntity module = CreateModule(moduleId, newStartAt, newEndAt);
 
         ActivityUpdateDto dto = new()
         {
@@ -172,6 +314,14 @@ public class ActivityServiceTests
         _activityRepositoryMock
             .Setup(repository => repository.GetByIdAsync(activity.ActivityId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(activity);
+
+        _moduleRepositoryMock
+            .Setup(repository => repository.GetModuleByIdAsync(moduleId))
+            .ReturnsAsync(module);
+
+        _activityRepositoryMock
+            .Setup(repository => repository.GetByModuleIdAsync(moduleId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([activity]);
 
         _unitOfWorkMock
             .Setup(unitOfWork => unitOfWork.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -196,17 +346,77 @@ public class ActivityServiceTests
     }
 
     [Fact]
+    public async Task UpdateAsync_WithOverlappingActivity_ShouldThrowInvalidDateException()
+    {
+        Guid moduleId = Guid.NewGuid();
+
+        Activity activity = CreateActivity("Activity", moduleId);
+
+        DateTime newStartAt = DateTime.UtcNow.AddDays(1);
+        DateTime newEndAt = newStartAt.AddHours(2);
+
+        ModuleEntity module = CreateModule(moduleId, newStartAt, newEndAt);
+
+        Activity existingActivity = new()
+        {
+            ActivityId = Guid.NewGuid(),
+            ModuleId = moduleId,
+            Type = ActivityType.Lecture,
+            Name = "Other activity",
+            Description = "Description",
+            StartAt = newStartAt.AddMinutes(30),
+            EndAt = newEndAt.AddHours(1)
+        };
+
+        ActivityUpdateDto dto = new()
+        {
+            Type = ActivityType.Lecture,
+            Name = "Updated activity",
+            Description = "Updated description",
+            StartAt = newStartAt,
+            EndAt = newEndAt
+        };
+
+        _activityRepositoryMock
+            .Setup(repository => repository.GetByIdAsync(activity.ActivityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(activity);
+
+        _moduleRepositoryMock
+            .Setup(repository => repository.GetModuleByIdAsync(moduleId))
+            .ReturnsAsync(module);
+
+        _activityRepositoryMock
+            .Setup(repository => repository.GetByModuleIdAsync(moduleId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([activity, existingActivity]);
+
+        await Assert.ThrowsAsync<InvalidDateException>(
+            () => _activityService.UpdateAsync(activity.ActivityId, dto)
+        );
+
+        _activityRepositoryMock.Verify(
+            repository => repository.Update(It.IsAny<Activity>()),
+            Times.Never
+        );
+
+        _unitOfWorkMock.Verify(
+            unitOfWork => unitOfWork.SaveChangesAsync(It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
     public async Task UpdateAsync_WithNonExistingActivity_ShouldReturnFalse()
     {
         Guid activityId = Guid.NewGuid();
+        DateTime startAt = DateTime.UtcNow.AddDays(1);
 
         ActivityUpdateDto dto = new()
         {
             Type = ActivityType.Lecture,
             Name = "Activity",
             Description = "Description",
-            StartAt = DateTime.UtcNow,
-            EndAt = DateTime.UtcNow.AddHours(2)
+            StartAt = startAt,
+            EndAt = startAt.AddHours(2)
         };
 
         _activityRepositoryMock
@@ -217,7 +427,10 @@ public class ActivityServiceTests
 
         Assert.False(result);
 
-        _activityRepositoryMock.Verify(repository => repository.Update(It.IsAny<Activity>()), Times.Never);
+        _activityRepositoryMock.Verify(
+            repository => repository.Update(It.IsAny<Activity>()),
+            Times.Never
+        );
 
         _unitOfWorkMock.Verify(
             unitOfWork => unitOfWork.SaveChangesAsync(It.IsAny<CancellationToken>()),
@@ -263,7 +476,10 @@ public class ActivityServiceTests
 
         Assert.False(result);
 
-        _activityRepositoryMock.Verify(repository => repository.Delete(It.IsAny<Activity>()), Times.Never);
+        _activityRepositoryMock.Verify(
+            repository => repository.Delete(It.IsAny<Activity>()),
+            Times.Never
+        );
 
         _unitOfWorkMock.Verify(
             unitOfWork => unitOfWork.SaveChangesAsync(It.IsAny<CancellationToken>()),
@@ -286,6 +502,24 @@ public class ActivityServiceTests
             EndAt = now.AddHours(2),
             CreatedAt = now,
             UpdatedAt = now
+        };
+    }
+
+    private static ModuleEntity CreateModule(
+        Guid moduleId,
+        DateTime activityStart,
+        DateTime activityEnd)
+    {
+        return new ModuleEntity
+        {
+            ModuleId = moduleId,
+            CourseId = Guid.NewGuid(),
+            Name = "Module",
+            Description = "Module description",
+            StartDate = DateOnly.FromDateTime(activityStart.AddDays(-1)),
+            EndDate = DateOnly.FromDateTime(activityEnd.AddDays(1)),
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
     }
 }
