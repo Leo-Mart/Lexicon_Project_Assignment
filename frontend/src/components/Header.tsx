@@ -17,8 +17,7 @@ export default function MainHeader() {
                                     route.path === "" || route.path === "/index"
                                 }
                             >
-                                {route.displayName || "Dashboard"}{" "}
-                                {/* Fallback for empty path */}
+                                {route.displayName || "Dashboard"}
                             </NavLink>
                         </li>
                     );
