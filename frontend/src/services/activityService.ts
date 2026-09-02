@@ -4,7 +4,7 @@ import type { ActivityDto } from "../interfaces/activity/ActivityDto";
 import type { ActivityCreateDto } from "../interfaces/activity/ActivityCreateDto";
 import type { ActivityUpdateDto } from "../interfaces/activity/ActivityUpdateDto";
 
-const API_URL = API_BASE_URL + "/course";
+const API_URL = API_BASE_URL + "/activity";
 
 export const fetchActivitys = async (): Promise<ActivityDto[]> => {
     const response = await authFetch(API_URL);
