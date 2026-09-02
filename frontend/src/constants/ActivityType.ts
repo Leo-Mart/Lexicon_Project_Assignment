@@ -6,4 +6,4 @@ export const ActivityType = {
     Other: 5,
 } as const;
 
-export type ActivityType = typeof ActivityType[keyof typeof ActivityType];
+export type ActivityType = (typeof ActivityType)[keyof typeof ActivityType];
