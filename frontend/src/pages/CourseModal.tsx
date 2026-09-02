@@ -5,6 +5,8 @@ interface ModalProps {
     onClose: () => void;
 }
 
+const today = new Date();
+
 export default function CourseModal({ onClose }: ModalProps) {
     return (
         <>
@@ -22,40 +24,40 @@ export default function CourseModal({ onClose }: ModalProps) {
                     <div className="bg-bg py-3 px-3">
                         <form className="px-8 pt-6 pb-8 mb-4" action="">
                             <div className="mb-4">
-                                <label htmlFor="courseName">Course Name</label>
+                                <label htmlFor="name">Name</label>
                                 <input
                                     className="shadow appearance-none border rounded w-full bg-white"
                                     type="text"
-                                    id="courseName"
-                                    name="courseName"
+                                    id="name"
+                                    name="name"
                                     placeholder="Course name"
                                 />
                             </div>
                             <div className="mb-4">
-                                <label htmlFor="courseDescription">
-                                    Course Description
-                                </label>
-                                <input
+                                <label htmlFor="description">Description</label>
+                                <textarea
                                     className="shadow appearance-none border rounded w-full bg-white"
-                                    type="text"
-                                    id="courseDescription"
-                                    name="courseDescription"
+                                    id="description"
+                                    name="description"
                                     placeholder="Course description"
+                                    rows={5}
                                 />
                             </div>
                             <div className="mb-4">
                                 <label htmlFor="startDate">Start date</label>
                                 <input
                                     className="shadow appearance-none border rounded w-full bg-white"
+                                    min={today.toLocaleDateString()}
                                     type="date"
                                     id="startDate"
                                     name="startDate"
                                 />
                             </div>
                             <div className="mb-4">
-                                <label htmlFor="endDate">Start date</label>
+                                <label htmlFor="endDate">End date</label>
                                 <input
                                     className="shadow appearance-none border rounded w-full bg-white"
+                                    min={today.toLocaleDateString()}
                                     type="date"
                                     id="endDate"
                                     name="endDate"
