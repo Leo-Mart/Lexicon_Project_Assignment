@@ -1,27 +1,64 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Module } from "../interfaces/Module";
 import ModuleSideViewPart from "./ModuleSideViewPart";
+import { fetchModules } from "../services/moduleService";
 
-export default function ModuleSideView({ name, startDate, endDate }: Module) {
+export default function ModuleSideView({ module }: { module: Module }) {
+    const [modules, setModules] = useState<Module[]>();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchModule = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const moduleData = await fetchModules();
+                setModules(moduleData);
+            } catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to fetch module",
+                );
+                console.error("Fetch error:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchModule();
+    }, []);
+
     const [isExpanded, setIsExpanded] = useState(false);
+    if (loading) return <div>Loading...</div>;
+    if (error)
+        return <div className="text-red-500 text-4xl">Error: {error}</div>;
+    if (!modules)
+        return (
+            <div className="flex flex-col items-center">
+                <h1 className="text-4xl text-text-dark pt-5">
+                    Module not found
+                </h1>
+            </div>
+        );
+
     return (
         <>
             <div className="flex flex-row absolute">
                 {isExpanded && (
-                    <div className="bg-bg-window h-[calc(100vh-1rem)] w-40 border-2 border-bg-header flex flex-col gap-5">
-                        <ModuleSideViewPart
-                            name={name}
-                            startDate={startDate}
-                            endDate={endDate}
-                        />
+                    <div className="bg-bg-window h-[calc(100vh-1rem)] w-50 border-2 border-bg-header flex flex-col gap-3">
+                        <ModuleSideViewPart module={module} />
                         <p>---------------</p>
-                        <div>
-                            {/* TODO Fetch all modules, and create a ModuleSideViewPart for each */}
-                            <h1>{name}</h1>
-                            <p>
-                                {startDate} - {endDate}
-                            </p>
-                        </div>
+                        {[...modules]
+                            .sort(
+                                (a, b) =>
+                                    new Date(a.endDate).getTime() -
+                                    new Date(b.endDate).getTime(),
+                            )
+                            .map((m) => (
+                                <ModuleSideViewPart module={m} key={m.name} />
+                            ))}
                     </div>
                 )}
                 <button

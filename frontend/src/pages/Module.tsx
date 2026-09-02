@@ -50,11 +50,7 @@ export default function ModulePage() {
 
     return (
         <>
-            <ModuleSideView
-                name={module.name}
-                startDate={module.startDate}
-                endDate={module.endDate}
-            />
+            <ModuleSideView module={module} />
             <div className="flex flex-col items-center">
                 <h1 className="text-4xl text-text-dark pt-5">
                     Current Module: {module.name}
