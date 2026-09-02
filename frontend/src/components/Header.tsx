@@ -9,12 +9,6 @@ export default function MainHeader() {
         <nav className="bg-bg-header text-text-light h-15" role="navigation">
             <ul className="flex justify-center gap-5 text-3xl">
                 {headerRoutes.map((route) => {
-                    // Extract the path for display (e.g., "/login" → "Login")
-                    const displayName = route.path
-                        .replace("/", "")
-                        .replace("-", " ")
-                        .replace(/\b\w/g, (char) => char.toUpperCase());
-
                     return (
                         <li key={route.path}>
                             <NavLink
@@ -23,7 +17,7 @@ export default function MainHeader() {
                                     route.path === "" || route.path === "/index"
                                 }
                             >
-                                {displayName || "Dashboard"}{" "}
+                                {route.displayName || "Dashboard"}{" "}
                                 {/* Fallback for empty path */}
                             </NavLink>
                         </li>
