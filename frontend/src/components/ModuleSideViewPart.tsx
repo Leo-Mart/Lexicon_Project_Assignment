@@ -8,8 +8,8 @@ export default function ModuleSideViewPart({
 }: Module) {
     return (
         <>
-            <div>
-                <h1>{name}</h1>
+            <div className="border-2 border-buttons text-l">
+                <h1 className="text-center">{name}</h1>
                 <p>
                     {startDate} - {endDate}
                 </p>
