@@ -26,4 +26,9 @@ export const routes = [
         component: lazy(() => import("../pages/Module")),
         createHeader: true,
     },
+    {
+        path: "/courselist",
+        component: lazy(() => import("../pages/CourseList")),
+        createHeader: true,
+    },
 ];
