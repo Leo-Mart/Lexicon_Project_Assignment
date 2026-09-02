@@ -1,9 +1,48 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Module } from "../interfaces/Module";
 import ModuleSideViewPart from "./ModuleSideViewPart";
+import { fetchModules } from "../services/moduleService";
 
 export default function ModuleSideView({ name, startDate, endDate }: Module) {
+    const [modules, setModules] = useState<Module[]>();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchModule = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const moduleData = await fetchModules();
+                setModules(moduleData);
+            } catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to fetch module",
+                );
+                console.error("Fetch error:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchModule();
+    }, []);
+
     const [isExpanded, setIsExpanded] = useState(false);
+    if (loading) return <div>Loading...</div>;
+    if (error)
+        return <div className="text-red-500 text-4xl">Error: {error}</div>;
+    if (!modules)
+        return (
+            <div className="flex flex-col items-center">
+                <h1 className="text-4xl text-text-dark pt-5">
+                    Module not found
+                </h1>
+            </div>
+        );
+
     return (
         <>
             <div className="flex flex-row absolute">
@@ -15,13 +54,13 @@ export default function ModuleSideView({ name, startDate, endDate }: Module) {
                             endDate={endDate}
                         />
                         <p>---------------</p>
-                        <div>
-                            {/* TODO Fetch all modules, and create a ModuleSideViewPart for each */}
-                            <h1>{name}</h1>
-                            <p>
-                                {startDate} - {endDate}
-                            </p>
-                        </div>
+                        {modules.map((module) => (
+                            <ModuleSideViewPart
+                                name={module.name}
+                                startDate={module.startDate}
+                                endDate={module.endDate}
+                            />
+                        ))}
                     </div>
                 )}
                 <button
