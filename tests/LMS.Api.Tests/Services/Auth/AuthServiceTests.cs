@@ -59,15 +59,21 @@ public class AuthServiceTests
             .Setup(manager => manager.FindByEmailAsync(loginDto.Email))
             .ReturnsAsync(user);
 
+        _userManagerMock
+            .Setup(manager =>
+                manager.CheckPasswordAsync(user, loginDto.Password))
+            .ReturnsAsync(true);
+
         User? result = await _authService.AuthenticateAsync(loginDto);
 
         Assert.Null(result);
 
+        // The status check runs after the password check so every failure costs the same.
         _userManagerMock.Verify(
             manager => manager.CheckPasswordAsync(
                 It.IsAny<User>(),
                 It.IsAny<string>()),
-            Times.Never);
+            Times.Once);
     }
 
     [Fact]
@@ -226,7 +232,7 @@ public class AuthServiceTests
         return new Mock<UserManager<User>>(
             userStoreMock.Object,
             null!,
-            null!,
+            new PasswordHasher<User>(),
             null!,
             null!,
             null!,

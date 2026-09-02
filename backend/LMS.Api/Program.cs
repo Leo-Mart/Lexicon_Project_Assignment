@@ -56,7 +56,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.MaxDepth = 128;
 });
-
+builder.Services.AddScoped<IResourceService, ResourceService>();
+builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
