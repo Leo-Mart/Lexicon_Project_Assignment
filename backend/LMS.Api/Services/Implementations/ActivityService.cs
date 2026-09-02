@@ -4,7 +4,6 @@ using LMS.Api.DTOs.Activities;
 using LMS.Api.Exceptions;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
-using LMS.Api.Repositories.Interfaces.Module;
 using LMS.Api.Services.Interfaces;
 using LMS.Api.Validators;
 
@@ -20,7 +19,7 @@ public class ActivityService : IActivityService
         IActivityRepository activityRepository,
         IUnitOfWork unitOfWork,
         IModuleRepository moduleRepository
-        )
+    )
     {
         _activityRepository = activityRepository;
         _unitOfWork = unitOfWork;
@@ -34,21 +33,33 @@ public class ActivityService : IActivityService
         return activities.Select(MapToDto).ToList();
     }
 
-    public async Task<ActivityDto?> GetByIdAsync(Guid activityId, CancellationToken cancellationToken = default)
+    public async Task<ActivityDto?> GetByIdAsync(
+        Guid activityId,
+        CancellationToken cancellationToken = default
+    )
     {
         Activity? activity = await _activityRepository.GetByIdAsync(activityId, cancellationToken);
 
         return activity is null ? null : MapToDto(activity);
     }
 
-    public async Task<List<ActivityDto>> GetByModuleIdAsync(Guid moduleId, CancellationToken cancellationToken = default)
+    public async Task<List<ActivityDto>> GetByModuleIdAsync(
+        Guid moduleId,
+        CancellationToken cancellationToken = default
+    )
     {
-        List<Activity> activities = await _activityRepository.GetByModuleIdAsync(moduleId, cancellationToken);
+        List<Activity> activities = await _activityRepository.GetByModuleIdAsync(
+            moduleId,
+            cancellationToken
+        );
 
         return activities.Select(MapToDto).ToList();
     }
 
-    public async Task<ActivityDto> CreateAsync(ActivityCreateDto request, CancellationToken cancellationToken = default)
+    public async Task<ActivityDto> CreateAsync(
+        ActivityCreateDto request,
+        CancellationToken cancellationToken = default
+    )
     {
         await ValidateActivityDatesAsync(
             request.ModuleId,
@@ -71,7 +82,7 @@ public class ActivityService : IActivityService
             EndAt = request.EndAt,
             Deadline = request.Deadline,
             CreatedAt = now,
-            UpdatedAt = now
+            UpdatedAt = now,
         };
 
         await _activityRepository.AddAsync(activity, cancellationToken);
@@ -80,7 +91,11 @@ public class ActivityService : IActivityService
         return MapToDto(activity);
     }
 
-    public async Task<bool> UpdateAsync(Guid activityId, ActivityUpdateDto request, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateAsync(
+        Guid activityId,
+        ActivityUpdateDto request,
+        CancellationToken cancellationToken = default
+    )
     {
         Activity? activity = await _activityRepository.GetByIdAsync(activityId, cancellationToken);
 
@@ -90,12 +105,12 @@ public class ActivityService : IActivityService
         }
 
         await ValidateActivityDatesAsync(
-          activity.ModuleId,
-          request.StartAt,
-          request.EndAt,
-          excludedActivityId: activityId,
-          cancellationToken: cancellationToken
-      );
+            activity.ModuleId,
+            request.StartAt,
+            request.EndAt,
+            excludedActivityId: activityId,
+            cancellationToken: cancellationToken
+        );
 
         activity.Type = request.Type;
         activity.Name = request.Name;
@@ -112,7 +127,10 @@ public class ActivityService : IActivityService
         return true;
     }
 
-    public async Task<bool> DeleteAsync(Guid activityId, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(
+        Guid activityId,
+        CancellationToken cancellationToken = default
+    )
     {
         Activity? activity = await _activityRepository.GetByIdAsync(activityId, cancellationToken);
 
@@ -141,17 +159,18 @@ public class ActivityService : IActivityService
             EndAt = activity.EndAt,
             CreatedAt = activity.CreatedAt,
             UpdatedAt = activity.UpdatedAt,
-            Deadline = activity.Deadline
+            Deadline = activity.Deadline,
         };
     }
 
     private async Task ValidateActivityDatesAsync(
-     Guid moduleId,
-     DateTime startAt,
-     DateTime endAt,
-     Guid? excludedActivityId = null,
-     bool validateNotBefore = false,
-     CancellationToken cancellationToken = default)
+        Guid moduleId,
+        DateTime startAt,
+        DateTime endAt,
+        Guid? excludedActivityId = null,
+        bool validateNotBefore = false,
+        CancellationToken cancellationToken = default
+    )
     {
         DateRangeValidator.ValidateRange(startAt, endAt, "Activity");
 
@@ -179,11 +198,17 @@ public class ActivityService : IActivityService
             "Module"
         );
 
-        List<Activity> existingActivities = await _activityRepository.GetByModuleIdAsync(moduleId, cancellationToken);
+        List<Activity> existingActivities = await _activityRepository.GetByModuleIdAsync(
+            moduleId,
+            cancellationToken
+        );
 
         foreach (Activity existingActivity in existingActivities)
         {
-            if (excludedActivityId.HasValue && existingActivity.ActivityId == excludedActivityId.Value)
+            if (
+                excludedActivityId.HasValue
+                && existingActivity.ActivityId == excludedActivityId.Value
+            )
             {
                 continue;
             }
