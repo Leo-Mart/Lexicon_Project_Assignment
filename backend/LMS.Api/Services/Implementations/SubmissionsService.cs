@@ -22,7 +22,7 @@ public class SubmissionsService(
 
     public async Task<bool> SetFeedbackAsync(SetFeedbackCommand setFeedbackCommand, CancellationToken cancellationToken = default)
     {
-        Submission? submission = await _submissionsRepository.GetByIdAsync(setFeedbackCommand.SubmissionId);
+        Submission? submission = await _submissionsRepository.GetByIdAsync(setFeedbackCommand.SubmissionId, cancellationToken);
         if (submission == null)
         {
             return false;
@@ -32,7 +32,7 @@ public class SubmissionsService(
         submission.FeedbackAt = DateTime.UtcNow;
         submission.UpdatedAt = DateTime.UtcNow;
         _submissionsRepository.Update(submission);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;
 
@@ -79,7 +79,7 @@ public class SubmissionsService(
         };
 
         await _submissionsRepository.CreateAsync(submission, cancellationToken);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         return true;
     }
 }
