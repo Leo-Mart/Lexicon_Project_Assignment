@@ -7,6 +7,7 @@ import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 import ModuleSideView from "../components/ModuleSideView";
 import { fetchModuleById } from "../services/moduleService";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
+import ActivityCard from "../components/ActivityCard";
 
 export default function ModulePage() {
     const { id } = useParams<{ id: string }>();
@@ -78,23 +79,7 @@ export default function ModulePage() {
                         <div>
                             {module.activities.map(
                                 (activity: ActivityRequest) => (
-                                    <div
-                                        key={activity.activityId}
-                                        className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-3"
-                                    >
-                                        <div className="bg-bg-header w-full p-4 flex flex-row gap-20">
-                                            <h2 className="font-bold text-xl mb-2 ">
-                                                {activity.name}
-                                            </h2>
-                                            <p className="border-2 border-bg-dark p-1">
-                                                Show More
-                                            </p>
-                                        </div>
-
-                                        <p className="font-bold text-m mb-2 bg-bg-window text-text-dark w-full p-4">
-                                            {activity.description}
-                                        </p>
-                                    </div>
+                                    <ActivityCard activity={activity} />
                                 ),
                             )}
                         </div>
