@@ -138,12 +138,20 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
     {
         string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        if (!Guid.TryParse(userIdClaim, out _))
+        if (!Guid.TryParse(userIdClaim, out Guid userId))
         {
             return Unauthorized();
         }
 
         SubmissionDto? submission = await _submissionsService.GetByIdAsync(submissionId, cancellationToken);
+
+        if (submission != null)
+        {
+            if (User.IsInRole(RoleConstants.Student) && userId != submission.StudentId)
+            {
+                return Forbid();
+            }
+        }
 
         if (submission is null)
         {
