@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import "../index.css";
 import Button from "../components/Button";
 import CourseModal from "./CourseModal";
-import type { CourseDto } from "../interfaces/course/CourseDto";
+import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import { fetchCourses } from "../services/courseService";
 
 export default function Courses() {
     // STATE
 
-    const [courses, setCourses] = useState<CourseDto[] | null>(null);
+    const [courses, setCourses] = useState<CourseResponse[] | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
