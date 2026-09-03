@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.DTOs.Activities;
 using LMS.Api.Exceptions;
@@ -14,16 +14,19 @@ public class ActivityService : IActivityService
     private readonly IActivityRepository _activityRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IModuleRepository _moduleRepository;
+    private readonly IMapper _mapper;
 
     public ActivityService(
         IActivityRepository activityRepository,
         IUnitOfWork unitOfWork,
-        IModuleRepository moduleRepository
+        IModuleRepository moduleRepository,
+        IMapper mapper
     )
     {
         _activityRepository = activityRepository;
         _unitOfWork = unitOfWork;
         _moduleRepository = moduleRepository;
+        _mapper = mapper;
     }
 
     public async Task<List<ActivityDto>> GetAllAsync(CancellationToken cancellationToken = default)
