@@ -128,7 +128,7 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
     /// <param name="submissionId">The resource ID.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{submissionId:guid}")]
     [ProducesResponseType(typeof(SubmissionDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -136,10 +136,9 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
     [Authorize]
     public async Task<ActionResult<SubmissionDto>> GetById([FromRoute] Guid submissionId, CancellationToken cancellationToken)
     {
-        //We need: Student ID, we need Activity ID. 
         string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        if (!Guid.TryParse(userIdClaim, out Guid teacherId))
+        if (!Guid.TryParse(userIdClaim, out _))
         {
             return Unauthorized();
         }
