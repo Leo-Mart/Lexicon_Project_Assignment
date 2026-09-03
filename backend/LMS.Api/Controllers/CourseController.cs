@@ -2,6 +2,7 @@ using LMS.Api.DTOs.Course;
 using LMS.Api.DTOs.Errors;
 using LMS.Api.Exceptions;
 using LMS.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LMS.Api.Controllers;
@@ -59,6 +60,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
     /// <param name="newCourseDto">Contains the required fields for creating a new course. Name, Descrtiption, Start and End-date.</param>
     /// <returns>The saved course.</returns>
     /// <response code="201">Successfully created course, and returns the newly created course.</response>
+    [Authorize(Roles = "Teacher")]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<ActionResult<CourseDto>> CreateNewCourse(
@@ -95,6 +97,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
     /// <param name="updateCourseDto">Contains the required fields for updating a course. Name, Descrtiption, Start and End-date.</param>
     /// <returns>The updated course.</returns>
     /// <response code="200">Course was successfully updated and returned.</response>
+    [Authorize(Roles = "Teacher")]
     [HttpPut("{courseId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<CourseDto>> UpdateCourse(
@@ -119,6 +122,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
     /// <param name="courseId">The Id of the course to delete.</param>
     /// <response code="204">Course was successfully deleted.</response>
     /// <response code="404">Course was not found.</response>
+    [Authorize(Roles = "Teacher")]
     [HttpDelete("{courseId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

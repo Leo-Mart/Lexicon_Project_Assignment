@@ -2,6 +2,7 @@ using LMS.Api.DTOs.Errors;
 using LMS.Api.DTOs.Module;
 using LMS.Api.Exceptions;
 using LMS.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LMS.Api.Controllers;
@@ -18,6 +19,7 @@ public class ModuleController(IModuleService moduleService) : ControllerBase
     /// <returns>The list of modules.</returns>
     /// <response code="200">Returns the list of modules.</response>
     /// <response code="404">If the list is not found.</response>
+    [Authorize(Roles = "Student,Teacher")]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -39,6 +41,7 @@ public class ModuleController(IModuleService moduleService) : ControllerBase
     /// <returns>The requested module,</returns>
     /// <response code="200">Returns the requested module.</response>
     /// <response code="404">If the module is not found.</response>
+    [Authorize(Roles = "Student,Teacher")]
     [HttpGet("{moduleId}", Name = "GetModuleById")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -59,6 +62,7 @@ public class ModuleController(IModuleService moduleService) : ControllerBase
     /// <param name="newModuleDto">Contains the required fields for creating a new module. Name, Descrtiption, Start and End-date.</param>
     /// <returns>The saved module.</returns>
     /// <response code="201">Successfully created module, and returns the newly created module.</response>
+    [Authorize(Roles = "Teacher")]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<ActionResult<ModuleDto>> CreateNewModule(
@@ -95,6 +99,7 @@ public class ModuleController(IModuleService moduleService) : ControllerBase
     /// <param name="updateModuleDto">Contains the required fields for updating a module. Name, Descrtiption, Start and End-date.</param>
     /// <returns>The updated module.</returns>
     /// <response code="200">module was successfully updated and returned.</response>
+    [Authorize(Roles = "Teacher")]
     [HttpPut("{moduleId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<ModuleDto>> UpdateModule(
@@ -112,6 +117,7 @@ public class ModuleController(IModuleService moduleService) : ControllerBase
     /// <param name="moduleId">The Id of the module to delete.</param>
     /// <response code="204">module was successfully deleted.</response>
     /// <response code="404">module was not found.</response>
+    [Authorize(Roles = "Teacher")]
     [HttpDelete("{moduleId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
