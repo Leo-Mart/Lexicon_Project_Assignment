@@ -8,11 +8,16 @@ import { updateCourse } from "../services/courseService";
 interface ModalProps {
     selectedCourse: CourseResponse;
     onClose: () => void;
+    onSubmit: (returnData: CourseResponse) => void;
 }
 
 const today = new Date();
 
-export default function CourseModal({ selectedCourse, onClose }: ModalProps) {
+export default function CourseModal({
+    selectedCourse,
+    onClose,
+    onSubmit,
+}: ModalProps) {
     const [formData, setFormData] = useState<CourseResponse>({
         courseId: selectedCourse.courseId,
         name: selectedCourse.name,
@@ -22,23 +27,25 @@ export default function CourseModal({ selectedCourse, onClose }: ModalProps) {
         modules: [],
     });
 
-    async function handleSubmit(e: React.SubmitEvent) {
+    const handleOnSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
 
         try {
             if (formData.courseId != "") {
-                updateCourse(selectedCourse.courseId, formData);
-                onClose();
+                await updateCourse(formData.courseId, formData).then(() => {
+                    onSubmit(formData);
+                });
             } else {
-                createCourse(formData);
-                onClose();
+                await createCourse(formData).then((response) => {
+                    onSubmit(response);
+                });
             }
             //onClose();
         } catch (error) {
             alert(error);
             console.error("Fel vid sparning:", error);
         }
-    }
+    };
 
     function resetForm() {
         setFormData({
@@ -71,7 +78,7 @@ export default function CourseModal({ selectedCourse, onClose }: ModalProps) {
                     <div className="bg-bg py-3 px-3">
                         <form
                             className="px-8 pt-6 pb-8 mb-4"
-                            onSubmit={handleSubmit}
+                            onSubmit={handleOnSubmit}
                         >
                             <div>
                                 <input

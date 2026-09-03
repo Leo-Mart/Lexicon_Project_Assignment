@@ -9,10 +9,6 @@ import { deleteCourse } from "../services/courseService";
 export default function Courses() {
     // STATE
 
-    const [courses, setCourses] = useState<CourseResponse[] | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-
     const newCourse = {
         courseId: "",
         name: "",
@@ -22,15 +18,33 @@ export default function Courses() {
         modules: [],
     };
 
+    const [courses, setCourses] = useState<CourseResponse[]>([newCourse]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+
     const [isCourseModalVisible, setIsCourseModalVisible] = useState(false);
     const [selectedRow, setSelectedRow] = useState<CourseResponse>(newCourse);
 
-    const handleCloseCourseModal = () => {
+    const handleSubmitCourseModal = (returnData: CourseResponse) => {
         setIsCourseModalVisible(false);
 
-        if (selectedRow.courseId != "") {
-            // Update the course
+        if (selectedRow.courseId != "")
+        // Update the course in the list
+        {
+            setCourses(
+                courses.map((c) =>
+                    c.courseId === returnData.courseId ? returnData : c,
+                ),
+            );
+        } else
+        //show added course in the list
+        {
+            setCourses([...courses, returnData]);
         }
+    };
+
+    const handleCloseCourseModal = () => {
+        setIsCourseModalVisible(false);
     };
 
     const handleShowCourseModal = (course: CourseResponse) => {
@@ -39,7 +53,6 @@ export default function Courses() {
     };
 
     // READ ALL
-
     useEffect(() => {
         const fetchAllCourses = async () => {
             setLoading(true);
@@ -158,6 +171,7 @@ export default function Courses() {
                     <CourseModal
                         selectedCourse={selectedRow}
                         onClose={handleCloseCourseModal}
+                        onSubmit={handleSubmitCourseModal}
                     />
                 )}
             </div>
