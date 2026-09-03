@@ -1,3 +1,4 @@
+import type { Activity } from "../Activity";
 export interface ModuleDto {
     moduleId: string;
     courseId: string;
@@ -5,4 +6,5 @@ export interface ModuleDto {
     description: string;
     startDate: string;
     endDate: string;
+    activities: Activity[];
 }
