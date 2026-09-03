@@ -36,12 +36,18 @@ public class ModuleRepository(LMSDbContext context) : IModuleRepository
 
     public async Task<Module?> GetModuleByIdAsync(Guid moduleId)
     {
-        return await _context.Modules.FirstOrDefaultAsync((m) => m.ModuleId == moduleId);
+        return await _context
+            .Modules.Include(m => m.Course)
+            .Include(m => m.Activities)
+            .FirstOrDefaultAsync((m) => m.ModuleId == moduleId);
     }
 
     public async Task<IEnumerable<Module>> GetModulesAsync()
     {
-        return await _context.Modules.ToListAsync();
+        return await _context
+            .Modules.Include(m => m.Course)
+            .Include(m => m.Activities)
+            .ToListAsync();
     }
 
     // The module is already tracked by the service, so only the timestamp is set here.
