@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "../index.css";
 import Button from "../components/Button";
-import type { CreateNewCourseDto } from "../interfaces/course/CreateNewCourseDto";
+import type { CourseRequest } from "../interfaces/course/CourseRequest";
 import { createCourse } from "../services/courseService";
 
 //import { API_BASE_URL } from "../constants/Constants";
@@ -15,7 +15,7 @@ const today = new Date();
 //const API_URL = API_BASE_URL + "/courses";
 
 export default function CourseModal({ onClose }: ModalProps) {
-    const [formData, setFormData] = useState<CreateNewCourseDto>({
+    const [formData, setFormData] = useState<CourseRequest>({
         name: "",
         description: "",
         startDate: "",
