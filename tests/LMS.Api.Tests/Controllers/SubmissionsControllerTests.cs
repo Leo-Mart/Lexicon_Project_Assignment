@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using LMS.Api.Controllers;
 using LMS.Api.DTOs.Submissions;
 using LMS.Api.Enums.Model;
 using LMS.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
@@ -16,6 +18,16 @@ public class SubmissionsControllerTests
     {
         _submissionsServiceMock = new Mock<ISubmissionsService>();
         _controller = new SubmissionsController(_submissionsServiceMock.Object);
+    }
+
+    // Puts a NameIdentifier claim on the controller's User, like the auth middleware would.
+    private void SetUser(Guid userId)
+    {
+        ClaimsIdentity identity = new([new Claim(ClaimTypes.NameIdentifier, userId.ToString())], "TestAuth");
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(identity) }
+        };
     }
 
     private static SubmissionDto CreateDto(Guid submissionId)
@@ -75,6 +87,8 @@ public class SubmissionsControllerTests
     [Fact]
     public async Task GetById_WithExistingSubmission_ShouldReturnOkWithSubmission()
     {
+        SetUser(Guid.NewGuid());
+
         Guid submissionId = Guid.NewGuid();
         SubmissionDto submission = CreateDto(submissionId);
 
@@ -94,6 +108,8 @@ public class SubmissionsControllerTests
     [Fact]
     public async Task GetById_WithMissingSubmission_ShouldReturnNotFound()
     {
+        SetUser(Guid.NewGuid());
+
         Guid submissionId = Guid.NewGuid();
 
         _submissionsServiceMock
@@ -109,5 +125,110 @@ public class SubmissionsControllerTests
             service => service.GetByIdAsync(submissionId, It.IsAny<CancellationToken>()),
             Times.Once
         );
+    }
+
+    [Fact]
+    public async Task GetMe_WithAuthenticatedStudent_ShouldReturnOkWithSubmissions()
+    {
+        Guid studentId = Guid.NewGuid();
+        SetUser(studentId);
+
+        List<SubmissionDto> submissions = [CreateDto(Guid.NewGuid())];
+
+        _submissionsServiceMock
+            .Setup(service => service.GetByStudentIdAsync(studentId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(submissions);
+
+        ActionResult<List<SubmissionDto>> response = await _controller.GetMe(CancellationToken.None);
+
+        OkObjectResult result = Assert.IsType<OkObjectResult>(response.Result);
+        Assert.Same(submissions, result.Value);
+    }
+
+    [Fact]
+    public async Task GetMe_WithoutUserIdClaim_ShouldReturnUnauthorized()
+    {
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity()) }
+        };
+
+        ActionResult<List<SubmissionDto>> response = await _controller.GetMe(CancellationToken.None);
+
+        Assert.IsType<UnauthorizedResult>(response.Result);
+    }
+
+    [Fact]
+    public async Task CreateSubmission_WithValidData_ShouldReturnNoContent()
+    {
+        Guid studentId = Guid.NewGuid();
+        SetUser(studentId);
+
+        SubmissionCreateDto dto = new() { ActivityId = Guid.NewGuid(), Text = "Assignment handed in." };
+
+        _submissionsServiceMock
+            .Setup(service => service.CreateSubmission(
+                It.Is<SubmissionsCreateCommand>(c => c.StudentId == studentId && c.ActivityId == dto.ActivityId && c.Text == dto.Text),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        ActionResult<List<SubmissionDto>> response = await _controller.CreateSubmission(dto, CancellationToken.None);
+
+        Assert.IsType<NoContentResult>(response.Result);
+    }
+
+    [Fact]
+    public async Task CreateSubmission_WhenServiceFails_ShouldReturnNotFound()
+    {
+        Guid studentId = Guid.NewGuid();
+        SetUser(studentId);
+
+        SubmissionCreateDto dto = new() { ActivityId = Guid.NewGuid(), Text = "Assignment handed in." };
+
+        _submissionsServiceMock
+            .Setup(service => service.CreateSubmission(It.IsAny<SubmissionsCreateCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        ActionResult<List<SubmissionDto>> response = await _controller.CreateSubmission(dto, CancellationToken.None);
+
+        Assert.IsType<NotFoundResult>(response.Result);
+    }
+
+    [Fact]
+    public async Task SetFeedback_WithValidData_ShouldReturnNoContent()
+    {
+        Guid teacherId = Guid.NewGuid();
+        SetUser(teacherId);
+
+        Guid submissionId = Guid.NewGuid();
+        SubmissionFeedbackDto feedbackDto = new() { Feedback = "Good work." };
+
+        _submissionsServiceMock
+            .Setup(service => service.SetFeedbackAsync(
+                It.Is<SetFeedbackCommand>(c => c.SubmissionId == submissionId && c.TeacherId == teacherId && c.Details == feedbackDto),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        ActionResult response = await _controller.SetFeedback(submissionId, feedbackDto, CancellationToken.None);
+
+        Assert.IsType<NoContentResult>(response);
+    }
+
+    [Fact]
+    public async Task SetFeedback_WhenServiceFails_ShouldReturnNotFound()
+    {
+        Guid teacherId = Guid.NewGuid();
+        SetUser(teacherId);
+
+        Guid submissionId = Guid.NewGuid();
+        SubmissionFeedbackDto feedbackDto = new() { Feedback = "Good work." };
+
+        _submissionsServiceMock
+            .Setup(service => service.SetFeedbackAsync(It.IsAny<SetFeedbackCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        ActionResult response = await _controller.SetFeedback(submissionId, feedbackDto, CancellationToken.None);
+
+        Assert.IsType<NotFoundResult>(response);
     }
 }
