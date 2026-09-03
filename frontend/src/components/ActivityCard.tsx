@@ -20,12 +20,17 @@ export default function ActivityCard({
                 <h3 className="font-bold text-l bg-bg-window text-text-dark p-1.5 rounded">
                     {ActivityTypeNames[activity.type]}
                 </h3>
-                <button
-                    className="border-2 border-bg-header-dark p-1"
-                    onClick={() => setIsExpanded(!isExpanded)}
-                >
-                    {isExpanded ? "Show Less" : "Show More"}
-                </button>
+                <div className="flex flex-row justify-between items-center w-35">
+                    {activity.deadline != null && (
+                        <div className="rotate-45 w-5 h-5 bg-red-400 flex items-center"></div>
+                    )}
+                    <button
+                        className="border-2 border-bg-header-dark p-1"
+                        onClick={() => setIsExpanded(!isExpanded)}
+                    >
+                        {isExpanded ? "Show Less" : "Show More"}
+                    </button>
+                </div>
             </div>
             {isExpanded && (
                 <div className="bg-bg-window w-full">
