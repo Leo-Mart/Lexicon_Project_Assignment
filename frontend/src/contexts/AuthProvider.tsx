@@ -1,15 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
-// seems to be an issue with eslint or something see: https://github.com/ArnaudBarre/eslint-plugin-react-refresh/issues/25#issuecomment-1729071347
-//https://www.gatsbyjs.com/docs/reference/local-development/fast-refresh/#how-it-works
-// second solution is probably better though.
-import {
-    createContext,
-    useContext,
-    useEffect,
-    useState,
-    useSyncExternalStore,
-} from "react";
-import type { LoginDto } from "../interfaces/auth/LoginDto";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import {
     getAccessToken,
     login,
@@ -17,17 +6,10 @@ import {
     refreshSession,
     subscribeToken,
 } from "../services/authService";
+import type { LoginDto } from "../interfaces/auth/LoginDto";
+import { AuthContext } from "./AuthContext";
 import Spinner from "../components/Spinner";
-
-type ProviderProps = {
-    isAuthenticated: boolean;
-    isLoading: boolean;
-    loginUser: (loginPayload: LoginDto) => void;
-    loginError: string | undefined;
-    logoutUser: () => void;
-};
-
-const AuthContext = createContext<ProviderProps | undefined>(undefined);
+import { useNavigate } from "react-router-dom";
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const token = useSyncExternalStore(
@@ -35,6 +17,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         getAccessToken,
         getAccessToken,
     );
+    const nav = useNavigate();
     const [isLoading, setIsLoading] = useState(true);
     const [loginError, setLoginError] = useState<string>();
 
@@ -46,6 +29,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setLoginError("");
         try {
             await login(loginPayload);
+            nav("/index");
         } catch (error) {
             if (error instanceof Error) {
                 setLoginError(error.message);
@@ -72,12 +56,4 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
 };
 
-const useAuth = () => {
-    const ctx = useContext(AuthContext);
-    if (!ctx) {
-        throw new Error("useAuth has to be used within a Provider");
-    }
-    return ctx;
-};
-
-export { AuthProvider, useAuth };
+export default AuthProvider;

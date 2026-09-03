@@ -1,10 +1,10 @@
 import Button from "../components/Button";
+import { useAuth } from "../hooks/useAuth";
 import type { LoginDto } from "../interfaces/auth/LoginDto";
-import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
-    const { isAuthenticated, loginUser, loginError } = useAuth();
-    const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+    const { loginUser, loginError } = useAuth();
+    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         const formData = new FormData(e.currentTarget);
@@ -15,59 +15,58 @@ export default function Login() {
         };
 
         loginUser(loginPayload);
-        // clear form
-        // navigate to userpage/dashboard
     };
     return (
         <>
             <div className="flex flex-1 flex-col items-center justify-center">
-                <h1 className="text-3xl mb-3 font-bold text-text-dark dark:text-text-light">
-                    Login
-                </h1>
-                {isAuthenticated && <span>Logged in!</span>}
-                <form
-                    onSubmit={handleSubmit}
-                    className="w-1/3 h-full flex flex-col gap-5"
-                >
-                    <label
-                        htmlFor="email"
-                        className="block overflow-hidden shadow-sm text-text-dark dark:text-text-light bg-bg-window dark:bg-bg-window-dark rounded-lg p-2"
+                <div className="flex flex-col items-center p-5 rounded-lg  bg-bg-window dark:bg-bg-window-dark w-1/3">
+                    <h1 className="text-3xl mb-3 font-bold text-text-light">
+                        Login
+                    </h1>
+                    <form
+                        onSubmit={handleSubmit}
+                        className="h-full flex flex-col gap-2 p-2 w-full"
                     >
-                        <span className="text-xs font-medium">Email</span>
+                        <label
+                            className="text-text-dark dark:text-text-light mx-auto"
+                            htmlFor="email"
+                        >
+                            Email
+                        </label>
                         <input
+                            className="shadow appearance-none border p-2 rounded w-full bg-bg mx-auto"
                             type="email"
+                            id="email"
                             name="email"
                             placeholder="Enter your email"
-                            id="email"
-                            className="mt-1 text-text-dark dark:text-text-light w-full border-none bg-transparent p-0 focus:border-transparent focus:outline-none focus:ring-0 "
                             required
                         />
-                    </label>
-                    <label
-                        htmlFor="password"
-                        className="block overflow-hidden shadow-sm text-text-dark dark:text-text-light bg-bg-window dark:bg-bg-window-dark rounded-lg p-2"
-                    >
-                        <span className="text-xs font-medium">Password</span>
+                        <label
+                            className="text-text-dark dark:text-text-light mx-auto"
+                            htmlFor="password"
+                        >
+                            Password
+                        </label>
                         <input
+                            className="shadow appearance-none border p-2 rounded w-full bg-bg mx-auto"
                             type="password"
+                            id="password"
                             name="password"
                             placeholder="Enter your password"
-                            id="password"
-                            className="mt-1 text-text-dark dark:text-text-light w-full border-none bg-transparent p-0 focus:border-transparent focus:outline-none focus:ring-0 "
                             required
                         />
-                    </label>
-                    {loginError && (
-                        <span className="text-red-700">{loginError}</span>
-                    )}
-                    <Button
-                        variant="confirm"
-                        className="hover:cursor-pointer"
-                        type="submit"
-                    >
-                        Login
-                    </Button>
-                </form>
+                        {loginError && (
+                            <span className="text-red-700">{loginError}</span>
+                        )}
+                        <Button
+                            variant="confirm"
+                            className="hover:cursor-pointer mx-auto w-full"
+                            type="submit"
+                        >
+                            Login
+                        </Button>
+                    </form>
+                </div>
             </div>
         </>
     );
