@@ -65,6 +65,9 @@ builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<IModuleRepository, ModuleRepository>();
 builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
 
+builder.Services.AddScoped<ISubmissionsService, SubmissionsService>();
+builder.Services.AddScoped<ISubmissionsRepository, SubmissionsRepository>();
+
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
