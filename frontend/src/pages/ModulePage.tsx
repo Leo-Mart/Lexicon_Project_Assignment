@@ -74,7 +74,13 @@ export default function ModulePage() {
                 />
                 <Button className="row-span-2">Course Material</Button>
                 <div className="row-span-2 rounded-md px-4 py-2 bg-buttons text-text-light">
-                    <h1 className="text-4xl text-center">Activities</h1>
+                    <div className="flex flex-row justify-between">
+                        <div></div>
+                        <h1 className="text-4xl text-center">Activities</h1>
+                        <button className="rounded-md p-2 w-10 bg-buttons border-text-light border-3">
+                            +
+                        </button>
+                    </div>
                     {module.activities?.length ? (
                         <div className="mt-5">
                             {module.activities.map(
