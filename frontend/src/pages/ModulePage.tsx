@@ -72,7 +72,8 @@ export default function ModulePage() {
                     teacher="Michael"
                 />
                 <Button className="row-span-2">Course Material</Button>
-                <Button className="row-span-2">
+                <div className="row-span-2 rounded-md px-4 py-2 bg-buttons text-text-light">
+                    <h1 className="text-4xl text-center">Activities</h1>
                     {module.activities?.length ? (
                         <div>
                             {module.activities.map(
@@ -81,7 +82,7 @@ export default function ModulePage() {
                                         key={activity.activityId}
                                         className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-3"
                                     >
-                                        <h2 className="font-bold text-xl mb-2 bg-bg-window w-full p-4">
+                                        <h2 className="font-bold text-xl mb-2 bg-bg-header w-full p-4">
                                             {activity.name}
                                         </h2>
                                     </div>
@@ -89,9 +90,9 @@ export default function ModulePage() {
                             )}
                         </div>
                     ) : (
-                        "Activities"
+                        "Module has no activities"
                     )}
-                </Button>
+                </div>
             </div>
         </>
     );
