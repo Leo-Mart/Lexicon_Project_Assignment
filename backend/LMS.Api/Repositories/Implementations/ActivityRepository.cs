@@ -25,6 +25,7 @@ public class ActivityRepository : IActivityRepository
     {
         return await _context.Activities
             .AsNoTracking()
+            .OrderBy(activity => activity.StartAt)
             .FirstOrDefaultAsync(activity => activity.ActivityId == activityId, cancellationToken);
     }
 
