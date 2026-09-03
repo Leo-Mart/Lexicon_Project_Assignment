@@ -12,9 +12,29 @@ public class SubmissionsService(
         IUnitOfWork _unitOfWork,
         IMapper _mapper) : ISubmissionsService
 {
-    public void SetFeedbackAsync(Guid activityId, Guid studentId, string feedbackText)
+    //Enum exists
+    //    public enum SubmissionStatus
+    // {
+    //     Submitted = 1,
+    //     Late = 2
+    // }
+
+    public async Task<bool> SetFeedbackAsync(SetFeedbackCommand setFeedbackCommand)
     {
-        throw new NotImplementedException();
+        Submission? submission = await _submissionsRepository.GetByIdAsync(setFeedbackCommand.SubmissionId);
+        if (submission == null)
+        {
+            return false;
+        }
+        submission.Feedback = setFeedbackCommand.Details.Feedback;
+        submission.FeedbackByTeacherId = setFeedbackCommand.TeacherId;
+        submission.FeedbackAt = DateTime.UtcNow;
+        submission.UpdatedAt = DateTime.UtcNow;
+        _submissionsRepository.Update(submission);
+        await _unitOfWork.SaveChangesAsync();
+
+        return true;
+
     }
 
     public async Task<List<SubmissionDto>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -22,7 +42,6 @@ public class SubmissionsService(
         List<Submission> resources = await _submissionsRepository.GetAllAsync(cancellationToken);
 
         //HACK
-        Console.WriteLine(_unitOfWork + "This is a hack, will be removed later");
         return _mapper.Map<List<SubmissionDto>>(resources);
     }
 
@@ -49,8 +68,4 @@ public class SubmissionsService(
        : _mapper.Map<List<SubmissionDto>>(submissionsList);
     }
 
-    Task<bool> ISubmissionsService.SetFeedbackAsync(Guid activityId, Guid studentId, string feedbackText)
-    {
-        throw new NotImplementedException();
-    }
 }
