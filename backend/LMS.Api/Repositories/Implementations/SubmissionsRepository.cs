@@ -28,4 +28,8 @@ public class SubmissionsRepository(LMSDbContext _context) : ISubmissionsReposito
     }
     public void Update(Submission submission) => _context.Submissions.Update(submission);
 
+    public async Task CreateAsync(Submission submission, CancellationToken cancellationToken)
+    {
+        await _context.AddAsync(submission);
+    }
 }

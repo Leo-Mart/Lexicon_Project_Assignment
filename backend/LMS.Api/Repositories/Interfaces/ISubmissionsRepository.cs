@@ -5,6 +5,7 @@ namespace LMS.Api.Repositories.Interfaces;
 
 public interface ISubmissionsRepository
 {
+    Task CreateAsync(Submission submission, CancellationToken cancellationToken);
     Task<List<Submission>> GetAllAsync(CancellationToken cancellationToken = default);
 
     Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default);

@@ -1,6 +1,7 @@
 using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.DTOs.Submissions;
+using LMS.Api.Enums.Model;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using LMS.Api.Services.Interfaces;
@@ -19,7 +20,7 @@ public class SubmissionsService(
     //     Late = 2
     // }
 
-    public async Task<bool> SetFeedbackAsync(SetFeedbackCommand setFeedbackCommand)
+    public async Task<bool> SetFeedbackAsync(SetFeedbackCommand setFeedbackCommand, CancellationToken cancellationToken = default)
     {
         Submission? submission = await _submissionsRepository.GetByIdAsync(setFeedbackCommand.SubmissionId);
         if (submission == null)
@@ -41,7 +42,6 @@ public class SubmissionsService(
     {
         List<Submission> resources = await _submissionsRepository.GetAllAsync(cancellationToken);
 
-        //HACK
         return _mapper.Map<List<SubmissionDto>>(resources);
     }
 
@@ -58,14 +58,28 @@ public class SubmissionsService(
             : _mapper.Map<SubmissionDto>(submission);
     }
 
-    public async Task<List<SubmissionDto>?> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
+    public async Task<List<SubmissionDto>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
         List<Submission> submissionsList =
           await _submissionsRepository.GetByStudentIdAsync(studentId, cancellationToken);
 
-        return submissionsList.Count == 0
-       ? null
-       : _mapper.Map<List<SubmissionDto>>(submissionsList);
+        return _mapper.Map<List<SubmissionDto>>(submissionsList);
     }
 
+    public async Task<bool> CreateSubmission(SubmissionsCreateCommand command, CancellationToken cancellationToken)
+    {
+        Submission submission = new()
+        {
+            ActivityId = command.ActivityId,
+            StudentId = command.StudentId,
+            Text = command.Text,
+            CreatedAt = DateTime.UtcNow,
+            SubmittedAt = DateTime.UtcNow,
+            Status = SubmissionStatus.Submitted,
+        };
+
+        await _submissionsRepository.CreateAsync(submission, cancellationToken);
+        await _unitOfWork.SaveChangesAsync();
+        return true;
+    }
 }
