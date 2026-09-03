@@ -6,8 +6,10 @@ using LMS.Api.Data;
 using LMS.Api.Data.Seed;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.Models;
+using LMS.Api.Repositories.Implementations;
 using LMS.Api.Repositories.Implementations.Course;
 using LMS.Api.Repositories.Implementations.Module;
+using LMS.Api.Repositories.Interfaces;
 using LMS.Api.Repositories.Interfaces.Course;
 using LMS.Api.Repositories.Interfaces.Module;
 using LMS.Api.Services.Implementations;
@@ -62,6 +64,9 @@ builder.Services.AddScoped<IModuleService, ModuleService>();
 
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<IModuleRepository, ModuleRepository>();
+
+builder.Services.AddScoped<ISubmissionsService, SubmissionsService>();
+builder.Services.AddScoped<ISubmissionsRepository, SubmissionsRepository>();
 
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
