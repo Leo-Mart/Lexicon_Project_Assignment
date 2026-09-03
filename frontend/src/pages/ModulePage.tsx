@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Button from "../components/Button";
 import Lecture from "../components/Lecture";
-import type { Module } from "../interfaces/Module";
+import type { ModuleDto } from "../interfaces/module/ModuleDto";
 import ModuleSideView from "../components/ModuleSideView";
 import { fetchModuleById } from "../services/moduleService";
 import type { Activity } from "../interfaces/Activity";
@@ -11,7 +11,7 @@ import type { Activity } from "../interfaces/Activity";
 export default function ModulePage() {
     const { id } = useParams<{ id: string }>();
     const moduleId = id || "40000000-0000-0000-0000-000000000004";
-    const [module, setModule] = useState<Module | null>(null);
+    const [module, setModule] = useState<ModuleDto | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
