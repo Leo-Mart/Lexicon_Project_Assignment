@@ -6,16 +6,13 @@ using LMS.Api.Models;
 namespace LMS.Api.Mappings;
 
 /// <summary>
-/// Defines the object-to-object mappings between resources and their DTOs.
+/// Defines the object-to-object mappings between submissions and their DTOs.
 /// </summary>
 public class SubmissionsProfile : Profile
 {
     public SubmissionsProfile()
     {
         CreateMap<Submission, SubmissionDto>();
-
-        // Neither DTO carries the id, the owner or the timestamps.
-        // The service sets those after the map.
         CreateMap<SubmissionCreateDto, Submission>();
     }
 }
