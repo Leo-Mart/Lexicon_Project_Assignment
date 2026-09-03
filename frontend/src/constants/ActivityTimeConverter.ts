@@ -1,8 +1,9 @@
 export const ActivityDate = (dateString: string): string => {
     const date = new Date(dateString);
+    const year = date.getFullYear();
     const month = date.getMonth();
     const day = date.getDate();
-    return `${month}/${day}`;
+    return `${day}/${month}/${year}`;
 };
 
 export const ActivityTime = (dateString: string): string => {

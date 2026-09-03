@@ -9,6 +9,7 @@ export default function ActivityCard({
     activity: ActivityRequest;
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
+    console.log("Deadline ", activity.deadline);
     return (
         <div
             key={activity.activityId}
@@ -31,12 +32,21 @@ export default function ActivityCard({
                     <p className="text-m text-text-dark  p-3">
                         {activity.description}
                     </p>
-                    <p className="text-sm text-text-dark  p-3 pt-0">
-                        {ActivityDate(activity.startAt)}
-                        {" | "}
-                        {ActivityTime(activity.startAt)}-
-                        {ActivityTime(activity.endAt)}
-                    </p>
+                    <div className="flex flex-row justify-between items-center">
+                        <p className="text-sm text-text-dark  p-3 pt-0">
+                            {ActivityDate(activity.startAt)}
+                            {" | "}
+                            {ActivityTime(activity.startAt)}-
+                            {ActivityTime(activity.endAt)}
+                        </p>
+                        {activity.deadline != null && (
+                            <p className="text-sm text-red-600  p-3 pt-0">
+                                {" Deadline "}
+                                {ActivityDate(activity.deadline)} {"  "}
+                                {ActivityTime(activity.deadline)}
+                            </p>
+                        )}
+                    </div>
                 </div>
             )}
         </div>
