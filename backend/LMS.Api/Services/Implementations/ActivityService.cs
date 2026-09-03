@@ -33,7 +33,7 @@ public class ActivityService : IActivityService
     {
         List<Activity> activities = await _activityRepository.GetAllAsync(cancellationToken);
 
-        return activities.Select(MapToDto).ToList();
+        return _mapper.Map<List<ActivityDto>>(activities);
     }
 
     public async Task<ActivityDto?> GetByIdAsync(
@@ -43,7 +43,7 @@ public class ActivityService : IActivityService
     {
         Activity? activity = await _activityRepository.GetByIdAsync(activityId, cancellationToken);
 
-        return activity is null ? null : MapToDto(activity);
+        return activity is null ? null : _mapper.Map<ActivityDto>(activity);
     }
 
     public async Task<List<ActivityDto>> GetByModuleIdAsync(
@@ -56,7 +56,7 @@ public class ActivityService : IActivityService
             cancellationToken
         );
 
-        return activities.Select(MapToDto).ToList();
+        return _mapper.Map<List<ActivityDto>>(activities);
     }
 
     public async Task<ActivityDto> CreateAsync(
@@ -91,7 +91,7 @@ public class ActivityService : IActivityService
         await _activityRepository.AddAsync(activity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return MapToDto(activity);
+        return _mapper.Map<ActivityDto>(activity);
     }
 
     public async Task<bool> UpdateAsync(
@@ -147,23 +147,6 @@ public class ActivityService : IActivityService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;
-    }
-
-    private static ActivityDto MapToDto(Activity activity)
-    {
-        return new ActivityDto
-        {
-            ActivityId = activity.ActivityId,
-            ModuleId = activity.ModuleId,
-            Type = activity.Type,
-            Name = activity.Name,
-            Description = activity.Description,
-            StartAt = activity.StartAt,
-            EndAt = activity.EndAt,
-            CreatedAt = activity.CreatedAt,
-            UpdatedAt = activity.UpdatedAt,
-            Deadline = activity.Deadline,
-        };
     }
 
     private async Task ValidateActivityDatesAsync(
