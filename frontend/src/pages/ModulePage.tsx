@@ -7,6 +7,7 @@ import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 import ModuleSideView from "../components/ModuleSideView";
 import { fetchModuleById } from "../services/moduleService";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
+import ActivityCard from "../components/ActivityCard";
 
 export default function ModulePage() {
     const { id } = useParams<{ id: string }>();
@@ -72,26 +73,20 @@ export default function ModulePage() {
                     teacher="Michael"
                 />
                 <Button className="row-span-2">Course Material</Button>
-                <Button className="row-span-2">
+                <div className="row-span-2 rounded-md px-4 py-2 bg-buttons text-text-light">
+                    <h1 className="text-4xl text-center">Activities</h1>
                     {module.activities?.length ? (
                         <div>
                             {module.activities.map(
                                 (activity: ActivityRequest) => (
-                                    <div
-                                        key={activity.activityId}
-                                        className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-3"
-                                    >
-                                        <h2 className="font-bold text-xl mb-2 bg-bg-window w-full p-4">
-                                            {activity.name}
-                                        </h2>
-                                    </div>
+                                    <ActivityCard activity={activity} />
                                 ),
                             )}
                         </div>
                     ) : (
-                        "Activities"
+                        "Module has no activities"
                     )}
-                </Button>
+                </div>
             </div>
         </>
     );
