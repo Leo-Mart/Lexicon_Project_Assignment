@@ -20,7 +20,7 @@ export default function Login() {
         <>
             <div className="flex flex-1 flex-col items-center justify-center">
                 <div className="flex flex-col items-center p-5 rounded-lg  bg-bg-window dark:bg-bg-window-dark w-1/3">
-                    <h1 className="text-3xl mb-3 font-bold text-text-light">
+                    <h1 className="text-3xl mb-3 font-bold text-text-dark dark:text-text-light">
                         Login
                     </h1>
                     <form
