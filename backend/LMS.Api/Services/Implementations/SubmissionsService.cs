@@ -5,6 +5,8 @@ using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using LMS.Api.Services.Interfaces;
 
+namespace LMS.Api.Services.Implementations;
+
 public class SubmissionsService(
         ISubmissionsRepository _submissionsRepository,
         IUnitOfWork _unitOfWork,
