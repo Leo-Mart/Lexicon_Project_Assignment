@@ -122,35 +122,35 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
         return success ? NoContent() : NotFound();
     }
 
-    // /// <summary>
-    // /// Gets a submission by ID.
-    // /// </summary>
-    // /// <param name="submissionId">The resource ID.</param>
-    // /// <param name="cancellationToken">Cancellation token.</param>
-    // /// 
-    // [HttpGet("{id:guid}")]
-    // [ProducesResponseType(typeof(SubmissionDto), StatusCodes.Status200OK)]
-    // [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    // [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    // [ProducesResponseType(StatusCodes.Status404NotFound)]
-    // [Authorize]
-    // public async Task<ActionResult<SubmissionDto>> GetById([FromRoute] Guid submissionId, CancellationToken cancellationToken)
-    // {
-    //     //We need: Student ID, we need Activity ID. 
-    //     string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    /// <summary>
+    /// Gets a submission by ID.
+    /// </summary>
+    /// <param name="submissionId">The resource ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// 
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(SubmissionDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize]
+    public async Task<ActionResult<SubmissionDto>> GetById([FromRoute] Guid submissionId, CancellationToken cancellationToken)
+    {
+        //We need: Student ID, we need Activity ID. 
+        string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-    //     if (!Guid.TryParse(userIdClaim, out Guid teacherId))
-    //     {
-    //         return Unauthorized();
-    //     }
+        if (!Guid.TryParse(userIdClaim, out Guid teacherId))
+        {
+            return Unauthorized();
+        }
 
-    //     SubmissionDto? submission = await _submissionsService.GetByIdAsync(submissionId, cancellationToken);
+        SubmissionDto? submission = await _submissionsService.GetByIdAsync(submissionId, cancellationToken);
 
-    //     if (submission is null)
-    //     {
-    //         return NotFound();
-    //     }
+        if (submission is null)
+        {
+            return NotFound();
+        }
 
-    //     return Ok(submission);
-    // }
+        return Ok(submission);
+    }
 }
