@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LMS.Api.DTOs.Submissions
 {
-    public record CreateNewSubmissionDto
+    public record SubmissionCreateDto
     {
         [Required(ErrorMessage = "An activity id is required.")]
         public Guid ActivityId { get; set; }
