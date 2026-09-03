@@ -7,7 +7,7 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
     const [modules, setModules] = useState<ModuleResponse[]>();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
+    const [isExpanded, setIsExpanded] = useState(false);
     useEffect(() => {
         const fetchModule = async () => {
             setLoading(true);
@@ -30,7 +30,6 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
         fetchModule();
     }, []);
 
-    const [isExpanded, setIsExpanded] = useState(false);
     if (loading) return <div>Loading...</div>;
     if (error)
         return <div className="text-red-500 text-4xl">Error: {error}</div>;
