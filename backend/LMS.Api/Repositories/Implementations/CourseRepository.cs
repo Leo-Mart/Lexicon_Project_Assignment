@@ -43,7 +43,10 @@ public class CourseRepository(LMSDbContext context) : ICourseRepository
 
     public async Task<IEnumerable<Course>> GetCoursesAsync()
     {
-        return await _context.Courses.Include(c => c.Modules).ToListAsync();
+        return await _context.Courses
+        .Include(c => c.Modules)
+        .OrderBy(course => course.StartDate)
+        .ToListAsync();
     }
 
     public async Task<Course> UpdateCourseAsync(Course course)
