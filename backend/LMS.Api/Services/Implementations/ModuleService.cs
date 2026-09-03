@@ -4,6 +4,7 @@ using LMS.Api.Exceptions;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using LMS.Api.Services.Interfaces;
+using LMS.Api.Validators;
 
 namespace LMS.Api.Services.Implementations;
 
@@ -19,46 +20,17 @@ public class ModuleService(
 
     public async Task<ModuleDto> CreateNewModule(CreateNewModuleDto newModule)
     {
-        if (newModule.StartDate < DateOnly.FromDateTime(DateTime.UtcNow.Date))
-        {
-            throw new InvalidDateException("Start date cannot be in the past.", 400);
-        }
-        int result = newModule.EndDate.CompareTo(newModule.StartDate);
-        if (result < 0 || result == 0)
-        {
-            throw new InvalidDateException("End date has to be in the future.", 400);
-        }
+        await ValidateModuleDatesAsync(
+            newModule.CourseId,
+            newModule.StartDate,
+            newModule.EndDate,
+            validateNotBefore: true
+        );
 
         var course = await _courseRepo.GetCourseByIdAsync(newModule.CourseId);
         if (course == null)
         {
             throw new ArgumentException("Could not find course.");
-        }
-
-        //TODO: Break out into date-check helpers?
-        // bool isWithinCourseTimeframe =
-        //     course.StartDate < newModule.StartDate && course.EndDate > newModule.EndDate;
-        //
-        // if (isWithinCourseTimeframe)
-        // {
-        //     throw new ArgumentException(
-        //         $"Could not create module. Module start or end-date sits outside the timeframe of the course."
-        //     );
-        // }
-        //
-
-        foreach (var module in course.Modules)
-        {
-            bool overlaps =
-                module.StartDate < newModule.EndDate && newModule.StartDate < module.EndDate;
-
-            if (overlaps)
-            {
-                throw new OverlappingDateException(
-                    $"Could not create module. Dates overlap with existing module: {module.Name}",
-                    400
-                );
-            }
         }
 
         var moduleToSave = _mapper.Map<Module>(newModule);
@@ -101,24 +73,84 @@ public class ModuleService(
 
     public async Task<ModuleDto?> UpdateModule(Guid moduleId, UpdateModuleDto updateModule)
     {
-        if (updateModule.StartDate < DateOnly.FromDateTime(DateTime.UtcNow.Date))
-        {
-            throw new InvalidDateException("Start date cannot be in the past.", 400);
-        }
-        int result = updateModule.EndDate.CompareTo(updateModule.StartDate);
-        if (result < 0 || result == 0)
-        {
-            throw new InvalidDateException("End date has to be in the future.", 400);
-        }
         var moduleFromDb = await _moduleRepo.GetModuleByIdAsync(moduleId);
         if (moduleFromDb == null)
         {
             return null;
         }
 
+        await ValidateModuleDatesAsync(
+            moduleFromDb.CourseId,
+            updateModule.StartDate,
+            updateModule.EndDate,
+            excludedModuleId: moduleId
+        );
+
         _mapper.Map(updateModule, moduleFromDb);
         var updatedModule = await _moduleRepo.UpdateModuleAsync(moduleFromDb);
 
         return _mapper.Map<ModuleDto>(updatedModule);
+    }
+
+    private async Task ValidateModuleDatesAsync(
+        Guid courseId,
+        DateOnly startDate,
+        DateOnly endDate,
+        Guid? excludedModuleId = null,
+        bool validateNotBefore = false
+    )
+    {
+        DateRangeValidator.ValidateRange(startDate, endDate, "Module");
+
+        if (validateNotBefore)
+        {
+            DateRangeValidator.ValidateNotBefore(
+                startDate,
+                DateOnly.FromDateTime(DateTime.UtcNow),
+                "Module"
+            );
+        }
+
+        Course? course = await _courseRepo.GetCourseByIdAsync(courseId);
+
+        if (course is null)
+        {
+            throw new KeyNotFoundException("Course not found.");
+        }
+
+        DateRangeValidator.ValidateWithinParent(
+            startDate,
+            endDate,
+            course.StartDate,
+            course.EndDate,
+            "Module",
+            "Course"
+        );
+
+        foreach (Module existingModule in course.Modules)
+        {
+            if (
+                excludedModuleId.HasValue
+                && existingModule.ModuleId == excludedModuleId.Value
+            )
+            {
+                continue;
+            }
+
+            bool overlaps = DateRangeValidator.Overlaps(
+                startDate,
+                endDate,
+                existingModule.StartDate,
+                existingModule.EndDate
+            );
+
+            if (overlaps)
+            {
+                throw new OverlappingDateException(
+                    $"Module overlaps with existing module: {existingModule.Name}.",
+                    400
+                );
+            }
+        }
     }
 }
