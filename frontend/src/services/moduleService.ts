@@ -1,29 +1,30 @@
 import { authFetch } from "./authService";
 import { API_BASE_URL, HttpMethod, JSON_HEADERS } from "../constants/Constants";
-import type { ModuleDto } from "../interfaces/module/ModuleDto";
-import type { CreateNewModuleDto } from "../interfaces/module/CreateNewModuleDto";
-import type { UpdateModuleDto } from "../interfaces/module/UpdateModuleDto";
+import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
+import type { ModuleRequest } from "../interfaces/module/ModuleRequest";
 
 const API_URL = API_BASE_URL + "/modules";
 
-export const fetchModuleById = async (moduleId: string): Promise<ModuleDto> => {
+export const fetchModuleById = async (
+    moduleId: string,
+): Promise<ModuleResponse> => {
     const response = await authFetch(`${API_URL}/${moduleId}`);
 
     if (!response.ok) {
         throw new Error(`Failed to fetch module: ${response.status}`);
     }
 
-    return (await response.json()) as ModuleDto;
+    return (await response.json()) as ModuleResponse;
 };
 
-export const fetchModules = async (): Promise<ModuleDto[]> => {
+export const fetchModules = async (): Promise<ModuleResponse[]> => {
     const response = await authFetch(API_URL);
 
     if (!response.ok) {
         throw new Error(`Failed to fetch module: ${response.status}`);
     }
 
-    return (await response.json()) as ModuleDto[];
+    return (await response.json()) as ModuleResponse[];
 };
 
 export const deleteModule = async (id: string): Promise<void> => {
@@ -37,8 +38,8 @@ export const deleteModule = async (id: string): Promise<void> => {
 };
 
 export const createModule = async (
-    newModule: CreateNewModuleDto,
-): Promise<ModuleDto> => {
+    newModule: ModuleRequest,
+): Promise<ModuleResponse> => {
     const response = await authFetch(API_URL, {
         method: HttpMethod.POST,
         headers: JSON_HEADERS,
@@ -49,12 +50,12 @@ export const createModule = async (
         throw new Error(`Could not create the module: ${response.status}`);
     }
 
-    return (await response.json()) as ModuleDto;
+    return (await response.json()) as ModuleResponse;
 };
 
 export const updateModule = async (
     id: string,
-    updatedModule: UpdateModuleDto,
+    updatedModule: ModuleRequest,
 ): Promise<void> => {
     const response = await authFetch(`${API_URL}/${id}`, {
         method: HttpMethod.PUT,

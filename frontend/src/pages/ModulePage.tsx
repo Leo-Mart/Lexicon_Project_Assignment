@@ -3,15 +3,15 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Button from "../components/Button";
 import Lecture from "../components/Lecture";
-import type { ModuleDto } from "../interfaces/module/ModuleDto";
+import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 import ModuleSideView from "../components/ModuleSideView";
 import { fetchModuleById } from "../services/moduleService";
-import type { Activity } from "../interfaces/Activity";
+import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 
 export default function ModulePage() {
     const { id } = useParams<{ id: string }>();
     const moduleId = id || "40000000-0000-0000-0000-000000000004";
-    const [module, setModule] = useState<ModuleDto | null>(null);
+    const [module, setModule] = useState<ModuleResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -75,16 +75,18 @@ export default function ModulePage() {
                 <Button className="row-span-2">
                     {module.activities?.length ? (
                         <div>
-                            {module.activities.map((activity: Activity) => (
-                                <div
-                                    key={activity.activityId}
-                                    className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-3"
-                                >
-                                    <h2 className="font-bold text-xl mb-2 bg-bg-window w-full p-4">
-                                        {activity.name}
-                                    </h2>
-                                </div>
-                            ))}
+                            {module.activities.map(
+                                (activity: ActivityRequest) => (
+                                    <div
+                                        key={activity.activityId}
+                                        className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-3"
+                                    >
+                                        <h2 className="font-bold text-xl mb-2 bg-bg-window w-full p-4">
+                                            {activity.name}
+                                        </h2>
+                                    </div>
+                                ),
+                            )}
                         </div>
                     ) : (
                         "Activities"
