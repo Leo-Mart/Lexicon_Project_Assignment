@@ -69,10 +69,10 @@ export default function Courses() {
                 <table className="w-full text-left">
                     <thead className="bg-bg-window h-10 border-b text-text-dark">
                         <tr>
-                            <th className="p-3">Name</th>
-                            <th className="p-3">Description</th>
-                            <th className="p-3">Start date</th>
-                            <th className="p-3">End date</th>
+                            <th className="p-3 w-2/8">Name</th>
+                            <th className="p-3 w-4/8">Description</th>
+                            <th className="p-3 w-1/8">Start date</th>
+                            <th className="p-3 w-1/8">End date</th>
                         </tr>
                     </thead>
                     <tbody>
