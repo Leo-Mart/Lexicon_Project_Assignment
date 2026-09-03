@@ -26,4 +26,6 @@ public class SubmissionsRepository(LMSDbContext _context) : ISubmissionsReposito
     {
         return await _context.Submissions.AsNoTracking().Where(submission => submission.StudentId == studentId).ToListAsync(cancellationToken);
     }
+    public void Update(Submission submission) => _context.Submissions.Update(submission);
+
 }

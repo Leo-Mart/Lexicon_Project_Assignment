@@ -20,7 +20,6 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
     /// Gets all submissions.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
-
     [HttpGet]
     [ProducesResponseType(typeof(List<SubmissionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -32,6 +31,7 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
 
         return Ok(resources);
     }
+
     /// <summary>
     /// Gets a submission by ID.
     /// </summary>
@@ -62,49 +62,49 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
         return Ok(submission);
     }
 
+    // /// <summary>
+    // /// Creates a submission.
+    // /// </summary>
+    // /// <param name="cancellationToken">Cancellation token.</param>
+    // /// 
+    // [HttpPost]
+    // [ProducesResponseType(typeof(List<SubmissionDto>), StatusCodes.Status200OK)]
+    // [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    // [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    // [ProducesResponseType(StatusCodes.Status404NotFound)]
+    // [Authorize(Roles = RoleConstants.Student)]
+    // public async Task<ActionResult<List<SubmissionDto>>> CreateSubmission( [FromBody] string submissionText, CancellationToken cancellationToken)
+    // {
+    //     string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+    //     if (!Guid.TryParse(userIdClaim, out Guid studentId))
+    //     {
+    //         return Unauthorized();
+    //     }
+
+    //     List<SubmissionDto>? submission = await _submissionsService.CreateSubmission(studentId, cancellationToken);
+
+    //     if (submission is null)
+    //     {
+    //         return NotFound();
+    //     }
+
+    //     return Ok(submission);
+    // }
+
     /// <summary>
-    /// Creates a submission.
+    /// Updates the submission with feedback from a teacher.
     /// </summary>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// 
-    [HttpPost]
-    [ProducesResponseType(typeof(List<SubmissionDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Roles = RoleConstants.Student)]
-    public async Task<ActionResult<List<SubmissionDto>>> CreateSubmission(CancellationToken cancellationToken)
-    {
-        string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (!Guid.TryParse(userIdClaim, out Guid studentId))
-        {
-            return Unauthorized();
-        }
-
-        List<SubmissionDto>? submission = await _submissionsService.GetByStudentIdAsync(studentId, cancellationToken);
-
-        if (submission is null)
-        {
-            return NotFound();
-        }
-
-        return Ok(submission);
-    }
-    /// <summary>
-    /// Sets feedback on a student submission.
-    /// </summary>
-    /// <param name="activityId">Activity Id.</param>
-    /// <param name="studentId">Student Id.</param>
-    /// <param name="feedbackText">The feedback text.</param>
-    [HttpPost("{feedbackText}")]
-    [ProducesResponseType(typeof(List<SubmissionDto>), StatusCodes.Status200OK)]
+    /// <param name="submissionId">Submission Id.</param>
+    /// <param name="feedbackDto">The required feedback text.</param>
+    [HttpPut("{submissionId:guid}/feedback")]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Roles = RoleConstants.Teacher)]
-    public async Task<ActionResult<List<SubmissionDto>>> CreateFeedback(Guid activityId,
-    Guid studentId, string feedbackText)
+    public async Task<ActionResult> SetFeedback([FromRoute] Guid submissionId,
+       [FromBody] SubmissionFeedbackDto feedbackDto)
     {
         string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -113,16 +113,17 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
             return Unauthorized();
         }
 
-        var succeded = _submissionsService.SetFeedbackAsync(activityId: activityId,
-        studentId: studentId, feedbackText: feedbackText, teacherId: teacherId);
-
-        if (succeded is null)
+        SetFeedbackCommand command = new()
         {
-            return BadRequest("Could not set feedback.");
-        }
+            SubmissionId = submissionId,
+            TeacherId = teacherId,
+            Details = feedbackDto,
+        };
 
-        return Ok();
+        bool success = await _submissionsService.SetFeedbackAsync(command);
+        return success ? NoContent() : NotFound();
     }
+
     // /// <summary>
     // /// Gets a submission by ID.
     // /// </summary>
