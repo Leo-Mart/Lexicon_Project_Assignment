@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import type { Module } from "../interfaces/Module";
+import type { ModuleDto } from "../interfaces/module/ModuleDto";
 
-export default function ModuleSideViewPart({ module }: { module: Module }) {
+export default function ModuleSideViewPart({ module }: { module: ModuleDto }) {
     // Parse the end date and check if it's in the past
     const dateString: string = "2026-10-01T00:00:00Z";
     const isPast = new Date(module.endDate) < new Date(dateString);
