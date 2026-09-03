@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { ModuleDto } from "../interfaces/module/ModuleDto";
+import type { ModuleDto } from "../interfaces/module/ModuleResponse";
 import ModuleSideViewPart from "./ModuleSideViewPart";
 import { fetchModules } from "../services/moduleService";
 

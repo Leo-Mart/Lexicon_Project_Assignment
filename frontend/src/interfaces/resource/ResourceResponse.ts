@@ -1,4 +1,4 @@
-export interface ResourceDto {
+export interface ResourceResponse {
     resourceId: string;
     createdByTeacherId: string;
     name: string;

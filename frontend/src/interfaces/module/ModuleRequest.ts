@@ -1,4 +1,4 @@
-export interface CreateNewModuleDto {
+export interface ModuleRequest {
     courseId: string;
     name: string;
     description: string;
