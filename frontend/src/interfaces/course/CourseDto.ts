@@ -1,4 +1,4 @@
-import type { ModuleDto } from "../module/ModuleDto";
+import type { ModuleDto } from "../module/ModuleResponse";
 
 export interface CourseDto {
     courseId: string;

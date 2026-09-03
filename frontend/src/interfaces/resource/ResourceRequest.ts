@@ -1,4 +1,4 @@
-export interface ResourceUpdateDto {
+export interface ResourceRequest {
     name: string;
     description: string;
     content?: string | null;

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import type { ModuleDto } from "../interfaces/module/ModuleDto";
+import type { ModuleDto } from "../interfaces/module/ModuleResponse";
 
 export default function ModuleSideViewPart({ module }: { module: ModuleDto }) {
     // Parse the end date and check if it's in the past

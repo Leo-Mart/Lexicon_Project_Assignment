@@ -1,29 +1,28 @@
 import { authFetch } from "./authService";
 import { API_BASE_URL, HttpMethod, JSON_HEADERS } from "../constants/Constants";
-import type { ResourceDto } from "../interfaces/resource/ResourceDto";
-import type { ResourceCreateDto } from "../interfaces/resource/ResourceCreateDto";
-import type { ResourceUpdateDto } from "../interfaces/resource/ResourceUpdateDto";
+import type { ResourceResponse } from "../interfaces/resource/ResourceResponse";
+import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
 
 const API_URL = API_BASE_URL + "/resources";
 
-export const fetchResources = async (): Promise<ResourceDto[]> => {
+export const fetchResources = async (): Promise<ResourceResponse[]> => {
     const response = await authFetch(API_URL);
 
     if (!response.ok) {
         throw new Error(`Failed to fetch Resource: ${response.status}`);
     }
 
-    return (await response.json()) as ResourceDto[];
+    return (await response.json()) as ResourceResponse[];
 };
 
-export const fetchResource = async (id: string): Promise<ResourceDto> => {
+export const fetchResource = async (id: string): Promise<ResourceResponse> => {
     const response = await authFetch(`${API_URL}/${id}`);
 
     if (!response.ok) {
         throw new Error(`Failed to fetch Resource: ${response.status}`);
     }
 
-    return (await response.json()) as ResourceDto;
+    return (await response.json()) as ResourceResponse;
 };
 
 export const deleteResource = async (id: string): Promise<void> => {
@@ -37,8 +36,8 @@ export const deleteResource = async (id: string): Promise<void> => {
 };
 
 export const createResource = async (
-    newResource: ResourceCreateDto,
-): Promise<ResourceDto> => {
+    newResource: ResourceRequest,
+): Promise<ResourceResponse> => {
     const response = await authFetch(API_URL, {
         method: HttpMethod.POST,
         headers: JSON_HEADERS,
@@ -49,12 +48,12 @@ export const createResource = async (
         throw new Error(`Could not create the Resource: ${response.status}`);
     }
 
-    return (await response.json()) as ResourceDto;
+    return (await response.json()) as ResourceResponse;
 };
 
 export const updateResource = async (
     id: string,
-    updatedResource: ResourceUpdateDto,
+    updatedResource: ResourceRequest,
 ): Promise<void> => {
     const response = await authFetch(`${API_URL}/${id}`, {
         method: HttpMethod.PUT,
