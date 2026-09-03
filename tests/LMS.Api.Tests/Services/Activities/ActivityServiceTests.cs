@@ -1,11 +1,14 @@
+using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.DTOs.Activities;
 using LMS.Api.Enums.Model;
 using LMS.Api.Exceptions;
+using LMS.Api.Mappings;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using LMS.Api.Services.Implementations;
 using LMS.Api.Services.Interfaces;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using ModuleEntity = LMS.Api.Models.Module;
 
@@ -24,10 +27,16 @@ public class ActivityServiceTests
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _moduleRepositoryMock = new Mock<IModuleRepository>();
 
+        IMapper mapper = new MapperConfiguration(
+            cfg => cfg.AddProfile<ActivityProfile>(),
+            NullLoggerFactory.Instance
+        ).CreateMapper();
+
         _activityService = new ActivityService(
             _activityRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _moduleRepositoryMock.Object
+            _moduleRepositoryMock.Object,
+            mapper
         );
     }
 
