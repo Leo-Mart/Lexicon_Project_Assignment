@@ -48,6 +48,8 @@ public class CourseRepository(LMSDbContext context) : ICourseRepository
 
     public async Task<Course> UpdateCourseAsync(Course course)
     {
+        course.UpdatedAt = DateTime.UtcNow;
+
         _context.Courses.Update(course);
         await _context.SaveChangesAsync();
 
