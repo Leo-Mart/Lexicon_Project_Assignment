@@ -21,4 +21,9 @@ public class SubmissionsRepository(LMSDbContext _context) : ISubmissionsReposito
             .Submissions.AsNoTracking()
             .FirstOrDefaultAsync(submission => submission.SubmissionId == resourceId, cancellationToken);
     }
+
+    public async Task<List<Submission>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Submissions.AsNoTracking().Where(submission => submission.StudentId == studentId).ToListAsync(cancellationToken);
+    }
 }

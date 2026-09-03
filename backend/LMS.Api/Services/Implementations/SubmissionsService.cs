@@ -12,6 +12,10 @@ public class SubmissionsService(
         IUnitOfWork _unitOfWork,
         IMapper _mapper) : ISubmissionsService
 {
+    public void SetFeedbackAsync(Guid activityId, Guid studentId, string feedbackText)
+    {
+        throw new NotImplementedException();
+    }
 
     public async Task<List<SubmissionDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -33,5 +37,20 @@ public class SubmissionsService(
         return submission is null
             ? null
             : _mapper.Map<SubmissionDto>(submission);
+    }
+
+    public async Task<List<SubmissionDto>?> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
+    {
+        List<Submission> submissionsList =
+          await _submissionsRepository.GetByStudentIdAsync(studentId, cancellationToken);
+
+        return submissionsList.Count == 0
+       ? null
+       : _mapper.Map<List<SubmissionDto>>(submissionsList);
+    }
+
+    Task<bool> ISubmissionsService.SetFeedbackAsync(Guid activityId, Guid studentId, string feedbackText)
+    {
+        throw new NotImplementedException();
     }
 }
