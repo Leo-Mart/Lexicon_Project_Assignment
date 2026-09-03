@@ -19,5 +19,6 @@ public static class DatabaseSeeder
         await ResourceSeeder.SeedAsync(context);
         await EnrollmentSeeder.SeedAsync(context);
         await SubmissionSeeder.SeedAsync(context);
+        await ResourceRelationSeeder.SeedAsync(context);
     }
 }
