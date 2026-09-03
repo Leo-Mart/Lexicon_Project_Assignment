@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
+import { ActivityTime, ActivityDate } from "../constants/ActivityTimeConverter";
 
 export default function ActivityCard({
     activity,
@@ -27,7 +28,10 @@ export default function ActivityCard({
                         {activity.description}
                     </p>
                     <p className="font-bold text-sm text-text-dark  p-3 pt-0">
-                        {activity.startAt} - {activity.endAt}
+                        {ActivityDate(activity.startAt)}
+                        {" | "}
+                        {ActivityTime(activity.startAt)}-
+                        {ActivityTime(activity.endAt)}
                     </p>
                 </div>
             )}
