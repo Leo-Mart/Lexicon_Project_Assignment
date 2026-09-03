@@ -4,7 +4,7 @@ import type { CourseDto } from "../interfaces/course/CourseDto";
 import type { CreateNewCourseDto } from "../interfaces/course/CreateNewCourseDto";
 import type { UpdateCourseDto } from "../interfaces/course/UpdateCourseDto";
 
-const API_URL = API_BASE_URL + "/course";
+const API_URL = API_BASE_URL + "/courses";
 
 export const fetchCourses = async (): Promise<CourseDto[]> => {
     const response = await authFetch(API_URL);

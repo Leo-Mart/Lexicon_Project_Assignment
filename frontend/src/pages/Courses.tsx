@@ -1,48 +1,51 @@
 import { useState, useEffect } from "react";
 import "../index.css";
-import type { CourseDto } from "../interfaces/CourseDto";
-
-const API_URL = "http://localhost:5068/api/courses";
+import type { CourseDto } from "../interfaces/course/CourseDto";
+import { fetchCourses } from "../services/courseService";
 
 export default function Courses() {
     // STATE
-    const [courses, setCourses] = useState<CourseDto[]>([
-        {
-            courseId: "0",
-            name: "",
-            description: "",
-            startDate: "",
-            endDate: "",
-        },
-    ]);
-
+    const [courses, setCourses] = useState<CourseDto[] | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
     // READ ALL
 
     useEffect(() => {
-        async function loadData() {
+        const fetchAllCourses = async () => {
+            setLoading(true);
+            setError(null);
             try {
-                const response = await fetch(API_URL, {
-                    method: "GET",
-                    headers: { accept: "application/json; charset=utf-8" },
-                });
-                if (!response.ok) throw new Error("Couldn't fetch courses");
-
-                const data: CourseDto[] = await response.json();
-
-                setCourses(data);
-            } catch (error) {
-                console.error("Error reading:", error);
+                const courseData = await fetchCourses();
+                setCourses(courseData);
+            } catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to fetch module",
+                );
+                console.error("Fetch error:", err);
             } finally {
                 setLoading(false);
             }
-        }
-        loadData();
+        };
+
+        fetchAllCourses();
     }, []);
 
     // RENDER
-    if (loading) return <p>Laddar kurser från API...</p>;
+    if (loading) return <p>Loading...</p>;
+
+    if (error)
+        return <div className="text-red-500 text-4xl">Error: {error}</div>;
+    if (!courses)
+        return (
+            <div className="flex flex-col items-center">
+                <h1 className="text-4xl text-text-dark pt-5">
+                    Courses not found
+                </h1>
+            </div>
+        );
 
     return (
         <>

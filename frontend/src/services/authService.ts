@@ -7,6 +7,21 @@ const API_URL = API_BASE_URL + "/auth";
 let accessToken: string | null = null;
 let refreshPromise: Promise<boolean> | null = null;
 
+type Listener = (token: string | null) => void;
+const listeners = new Set<Listener>();
+
+const setAccessToken = (token: string | null) => {
+    accessToken = token;
+    listeners.forEach((l) => l(token));
+};
+
+export const getAccessToken = () => accessToken;
+
+export const subscribeToken = (listener: Listener): (() => void) => {
+    listeners.add(listener);
+    return () => listeners.delete(listener);
+};
+
 export const login = async (loginDto: LoginDto): Promise<void> => {
     const response = await fetch(`${API_URL}/login`, {
         method: HttpMethod.POST,
@@ -15,13 +30,17 @@ export const login = async (loginDto: LoginDto): Promise<void> => {
         body: JSON.stringify(loginDto),
     });
 
+    if (response.status === 401) {
+        throw new Error("Invalid email and/or password");
+    }
+
     if (!response.ok) {
         throw new Error(`Login failed: ${response.status}`);
     }
 
     const data = (await response.json()) as AccessTokenResponse;
 
-    accessToken = data.accessToken;
+    setAccessToken(data.accessToken);
 };
 
 export const refreshSession = async (): Promise<boolean> => {
@@ -32,17 +51,17 @@ export const refreshSession = async (): Promise<boolean> => {
         });
 
         if (!response.ok) {
-            accessToken = null;
+            setAccessToken(null);
             return false;
         }
 
         const data = (await response.json()) as AccessTokenResponse;
 
-        accessToken = data.accessToken;
+        setAccessToken(data.accessToken);
 
         return true;
     } catch {
-        accessToken = null;
+        setAccessToken(null);
         return false;
     }
 };
@@ -85,7 +104,7 @@ export const logout = async (): Promise<void> => {
             throw new Error(`Logout failed: ${response.status}`);
         }
     } finally {
-        accessToken = null;
+        setAccessToken(null);
     }
 };
 
