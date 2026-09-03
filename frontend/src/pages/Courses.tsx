@@ -53,18 +53,22 @@ export default function Courses() {
                 Courses
             </h1>
 
-            <div className="flex flex-row">
+            <div className="flex flex-row flex-wrap justify-center">
                 {courses.map((course) => (
-                    <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-3">
-                        <h2 className="font-bold text-xl mb-2 bg-bg-window w-full p-4">
+                    <div
+                        key={course.courseId}
+                        className="w-sm rounded overflow-hidden shadow-lg bg-white m-3"
+                    >
+                        <h2 className="font-bold text-xl mb-2 bg-bg-window w-full h-20 p-4">
                             {course.name}
                         </h2>
-                        <div className="px-6 py-4">
-                            <p className="text-base mb-2">
+                        <div className="px-4 py-2">
+                            <p className="font-bold">
+                                {course.startDate} - {course.endDate}
+                            </p>
+                            <p className="text-base mt-2 h-30 overflow-hidden">
                                 {course.description}
                             </p>
-                            <p>Startdate: {course.startDate}</p>
-                            <p>Enddate: {course.endDate}</p>
                         </div>
                     </div>
                 ))}
