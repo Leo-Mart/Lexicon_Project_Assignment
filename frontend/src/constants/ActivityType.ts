@@ -7,3 +7,11 @@ export const ActivityType = {
 } as const;
 
 export type ActivityType = (typeof ActivityType)[keyof typeof ActivityType];
+
+export const ActivityTypeNames: Record<ActivityType, string> = {
+    [ActivityType.ELearning]: "E-Learning",
+    [ActivityType.Lecture]: "Lecture",
+    [ActivityType.Practice]: "Practice",
+    [ActivityType.Task]: "Task",
+    [ActivityType.Other]: "Other",
+};

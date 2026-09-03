@@ -76,7 +76,7 @@ export default function ModulePage() {
                 <div className="row-span-2 rounded-md px-4 py-2 bg-buttons text-text-light">
                     <h1 className="text-4xl text-center">Activities</h1>
                     {module.activities?.length ? (
-                        <div>
+                        <div className="mt-5">
                             {module.activities.map(
                                 (activity: ActivityRequest) => (
                                     <ActivityCard activity={activity} />
