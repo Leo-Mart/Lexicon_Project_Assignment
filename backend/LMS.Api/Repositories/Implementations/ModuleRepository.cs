@@ -47,6 +47,7 @@ public class ModuleRepository(LMSDbContext context) : IModuleRepository
         return await _context
             .Modules.Include(m => m.Course)
             .Include(m => m.Activities)
+            .OrderBy(module => module.StartDate)
             .ToListAsync();
     }
 
