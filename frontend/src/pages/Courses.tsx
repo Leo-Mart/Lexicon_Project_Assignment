@@ -1,55 +1,51 @@
 import { useState, useEffect } from "react";
 import "../index.css";
-
-interface CourseDto {
-    courseId: string;
-    name: string;
-    description: string;
-    startDate: string;
-    endDate: string;
-}
-
-const API_URL = "http://localhost:5068/api/courses";
+import type { CourseResponse } from "../interfaces/course/CourseResponse";
+import { fetchCourses } from "../services/courseService";
 
 export default function Courses() {
     // STATE
-    const [courses, setCourses] = useState<CourseDto[]>([
-        {
-            courseId: "0",
-            name: "",
-            description: "",
-            startDate: "",
-            endDate: "",
-        },
-    ]);
-
+    const [courses, setCourses] = useState<CourseResponse[] | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
     // READ ALL
 
     useEffect(() => {
-        async function loadData() {
+        const fetchAllCourses = async () => {
+            setLoading(true);
+            setError(null);
             try {
-                const response = await fetch(API_URL, {
-                    method: "GET",
-                    headers: { accept: "application/json; charset=utf-8" },
-                });
-                if (!response.ok) throw new Error("Couldn't fetch courses");
-
-                const data: CourseDto[] = await response.json();
-
-                setCourses(data);
-            } catch (error) {
-                console.error("Error reading:", error);
+                const courseData = await fetchCourses();
+                setCourses(courseData);
+            } catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to fetch module",
+                );
+                console.error("Fetch error:", err);
             } finally {
                 setLoading(false);
             }
-        }
-        loadData();
+        };
+
+        fetchAllCourses();
     }, []);
 
     // RENDER
-    if (loading) return <p>Laddar kurser från API...</p>;
+    if (loading) return <p>Loading...</p>;
+
+    if (error)
+        return <div className="text-red-500 text-4xl">Error: {error}</div>;
+    if (!courses)
+        return (
+            <div className="flex flex-col items-center">
+                <h1 className="text-4xl text-text-dark pt-5">
+                    Courses not found
+                </h1>
+            </div>
+        );
 
     return (
         <>
@@ -57,18 +53,22 @@ export default function Courses() {
                 Courses
             </h1>
 
-            <div className="flex flex-row">
+            <div className="flex flex-row flex-wrap justify-center">
                 {courses.map((course) => (
-                    <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-3">
-                        <h2 className="font-bold text-xl mb-2 bg-bg-window w-full p-4">
+                    <div
+                        key={course.courseId}
+                        className="w-sm rounded overflow-hidden shadow-lg bg-white m-3"
+                    >
+                        <h2 className="font-bold text-xl mb-2 bg-bg-window w-full h-20 p-4">
                             {course.name}
                         </h2>
-                        <div className="px-6 py-4">
-                            <p className="text-base mb-2">
+                        <div className="px-4 py-2">
+                            <p className="font-bold">
+                                {course.startDate} - {course.endDate}
+                            </p>
+                            <p className="text-base mt-2 h-30 overflow-hidden">
                                 {course.description}
                             </p>
-                            <p>Startdate: {course.startDate}</p>
-                            <p>Enddate: {course.endDate}</p>
                         </div>
                     </div>
                 ))}

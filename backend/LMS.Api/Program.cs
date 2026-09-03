@@ -5,20 +5,14 @@ using LMS.Api.Constants;
 using LMS.Api.Data;
 using LMS.Api.Data.Seed;
 using LMS.Api.Data.UnitOfWork;
+using LMS.Api.Exceptions;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Implementations;
-using LMS.Api.Repositories.Implementations.Course;
-using LMS.Api.Repositories.Implementations.Module;
 using LMS.Api.Repositories.Interfaces;
-using LMS.Api.Repositories.Interfaces.Course;
-using LMS.Api.Repositories.Interfaces.Module;
 using LMS.Api.Services.Implementations;
 using LMS.Api.Services.Implementations.Auth;
-using LMS.Api.Services.Implementations.Course;
 using LMS.Api.Services.Interfaces;
 using LMS.Api.Services.Interfaces.Auth;
-using LMS.Api.Services.Interfaces.Course;
-using LMS.Api.Services.Interfaces.Module;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +35,9 @@ builder.Services.AddDbContext<LMSDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 builder
     .Services.AddIdentityCore<User>()
     .AddRoles<IdentityRole<Guid>>()
@@ -52,7 +49,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.MaxDepth = 128;
 });
-
+builder.Services.AddScoped<IResourceService, ResourceService>();
+builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
@@ -61,9 +59,11 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IModuleService, ModuleService>();
+builder.Services.AddScoped<IActivityService, ActivityService>();
 
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<IModuleRepository, ModuleRepository>();
+builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
 
 builder.Services.AddScoped<ISubmissionsService, SubmissionsService>();
 builder.Services.AddScoped<ISubmissionsRepository, SubmissionsRepository>();
@@ -144,7 +144,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseExceptionHandler();
 app.UseRouting();
 
 app.UseCors("Frontend");

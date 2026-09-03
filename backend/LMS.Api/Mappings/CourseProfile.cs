@@ -12,6 +12,7 @@ public class CourseProfile : Profile
     public CourseProfile()
     {
         CreateMap<Course, CourseDto>();
+        CreateMap<Course, BasicCourseInfoDto>();
         CreateMap<CreateNewCourseDto, Course>();
         CreateMap<UpdateCourseDto, Course>();
     }

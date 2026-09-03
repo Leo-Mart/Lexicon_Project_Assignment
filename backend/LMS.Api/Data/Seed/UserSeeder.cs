@@ -59,19 +59,28 @@ public static class UserSeeder
     }
 
     private static async Task CreateUserAsync(
-        UserManager<User> userManager,
-        Guid id,
-        string name,
-        string email,
-        string password,
-        string role)
+    UserManager<User> userManager,
+    Guid id,
+    string name,
+    string email,
+    string password,
+    string role)
     {
-        if (await userManager.FindByEmailAsync(email) is not null)
+        User? existingUserById = await userManager.FindByIdAsync(id.ToString());
+
+        if (existingUserById is not null)
         {
             return;
         }
 
-        var user = new User
+        User? existingUserByEmail = await userManager.FindByEmailAsync(email);
+
+        if (existingUserByEmail is not null)
+        {
+            return;
+        }
+
+        User user = new()
         {
             Id = id,
             Name = name,
@@ -82,29 +91,21 @@ public static class UserSeeder
             UpdatedAt = DateTime.UtcNow
         };
 
-        IdentityResult createResult =
-            await userManager.CreateAsync(user, password);
+        IdentityResult createResult = await userManager.CreateAsync(user, password);
 
         if (!createResult.Succeeded)
         {
             throw new InvalidOperationException(
-                string.Join(
-                    ", ",
-                    createResult.Errors.Select(error => error.Description)
-                )
+                string.Join(", ", createResult.Errors.Select(error => error.Description))
             );
         }
 
-        IdentityResult roleResult =
-            await userManager.AddToRoleAsync(user, role);
+        IdentityResult roleResult = await userManager.AddToRoleAsync(user, role);
 
         if (!roleResult.Succeeded)
         {
             throw new InvalidOperationException(
-                string.Join(
-                    ", ",
-                    roleResult.Errors.Select(error => error.Description)
-                )
+                string.Join(", ", roleResult.Errors.Select(error => error.Description))
             );
         }
     }
