@@ -4,6 +4,7 @@ import Button from "../components/Button";
 import CourseModal from "./CourseModal";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import { fetchCourses } from "../services/courseService";
+import { deleteCourse } from "../services/courseService";
 
 export default function Courses() {
     // STATE
@@ -12,14 +13,29 @@ export default function Courses() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    const [isCourseModalVisible, setIsCourseModalVisible] = useState(false);
-
-    const handleShowCourseModal = () => {
-        setIsCourseModalVisible(true);
+    const newCourse = {
+        courseId: "",
+        name: "",
+        description: "",
+        startDate: "",
+        endDate: "",
+        modules: [],
     };
+
+    const [isCourseModalVisible, setIsCourseModalVisible] = useState(false);
+    const [selectedRow, setSelectedRow] = useState<CourseResponse>(newCourse);
 
     const handleCloseCourseModal = () => {
         setIsCourseModalVisible(false);
+
+        if (selectedRow.courseId != "") {
+            // Update the course
+        }
+    };
+
+    const handleShowCourseModal = (course: CourseResponse) => {
+        setSelectedRow(course);
+        setIsCourseModalVisible(true);
     };
 
     // READ ALL
@@ -46,6 +62,28 @@ export default function Courses() {
         fetchAllCourses();
     }, []);
 
+    // DELETE
+    async function handleDelete(course: CourseResponse) {
+        if (
+            !window.confirm(
+                'Är du säker på att du vill radera kursen "' +
+                    course.name +
+                    '"?',
+            )
+        ) {
+            return;
+        }
+
+        try {
+            deleteCourse(course.courseId);
+            // Filter the deleted course from state
+            setCourses(courses!.filter((c) => c.courseId !== course.courseId));
+        } catch (error) {
+            alert(error);
+            console.error("Fel vid radering:", error);
+        }
+    }
+
     // RENDER
     if (loading) return <p>Loading...</p>;
 
@@ -69,10 +107,11 @@ export default function Courses() {
                 <table className="w-full text-left">
                     <thead className="bg-bg-window h-10 border-b text-text-dark">
                         <tr>
-                            <th className="p-3 w-2/8">Name</th>
-                            <th className="p-3 w-4/8">Description</th>
-                            <th className="p-3 w-1/8">Start date</th>
-                            <th className="p-3 w-1/8">End date</th>
+                            <th className="p-3 w-2/10">Name</th>
+                            <th className="p-3 w-4/10">Description</th>
+                            <th className="p-3 w-1/10">Start date</th>
+                            <th className="p-3 w-1/10">End date</th>
+                            <th className="p-3 w-2/10"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -87,17 +126,39 @@ export default function Courses() {
                                 <td className="p-3">{course.description}</td>
                                 <td className="p-3">{course.startDate}</td>
                                 <td className="p-3">{course.endDate}</td>
+                                <td className="p-3">
+                                    <Button
+                                        onClick={() =>
+                                            handleShowCourseModal(course)
+                                        }
+                                        className="col-span-2"
+                                    >
+                                        Update
+                                    </Button>
+                                    <Button
+                                        onClick={() => handleDelete(course)}
+                                        className="col-span-2 mx-2"
+                                    >
+                                        Delete
+                                    </Button>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
             <div className="m-3">
-                <Button onClick={handleShowCourseModal} className="col-span-2">
+                <Button
+                    onClick={() => handleShowCourseModal(newCourse)}
+                    className="col-span-2"
+                >
                     Create course
                 </Button>
                 {isCourseModalVisible && (
-                    <CourseModal onClose={handleCloseCourseModal} />
+                    <CourseModal
+                        selectedCourse={selectedRow}
+                        onClose={handleCloseCourseModal}
+                    />
                 )}
             </div>
         </>
