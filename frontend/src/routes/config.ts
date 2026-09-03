@@ -35,6 +35,13 @@ export const routes = [
         createHeader: false,
     },
     {
+        path: "/resources",
+        displayName: "Resources",
+        component: lazy(() => import("../pages/ResourceManagement")),
+        createHeader: false,
+        isProtected: false,
+    },
+    {
         path: "/module",
         displayName: "Module",
         component: lazy(() => import("../pages/ModulePage")),
