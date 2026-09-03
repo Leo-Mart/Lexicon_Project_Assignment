@@ -4,6 +4,7 @@ using LMS.Api.Exceptions;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using LMS.Api.Services.Interfaces;
+using LMS.Api.Validators;
 
 namespace LMS.Api.Services.Implementations;
 
@@ -14,15 +15,12 @@ public class CourseService(ICourseRepository courseRepo, IMapper mapper) : ICour
 
     public async Task<CourseDto> CreateNewCourse(CreateNewCourseDto newCourse)
     {
-        if (newCourse.StartDate < DateOnly.FromDateTime(DateTime.UtcNow.Date))
-        {
-            throw new InvalidDateException("Start date cannot be in the past.", 400);
-        }
-        int result = newCourse.EndDate.CompareTo(newCourse.StartDate);
-        if (result < 0 || result == 0)
-        {
-            throw new InvalidDateException("End date has to be in the future.", 400);
-        }
+        ValidateCourseDates(
+       newCourse.StartDate,
+       newCourse.EndDate,
+       validateNotBefore: true
+   );
+
         var courseToSave = _mapper.Map<Course>(newCourse);
 
         var savedCourse = await _courseRepo.CreateCourseAsync(courseToSave);
@@ -81,5 +79,23 @@ public class CourseService(ICourseRepository courseRepo, IMapper mapper) : ICour
         var updatedCourseFromDb = await _courseRepo.UpdateCourseAsync(courseFromDb);
 
         return _mapper.Map<CourseDto>(updatedCourseFromDb);
+    }
+
+    private static void ValidateCourseDates(
+    DateOnly startDate,
+    DateOnly endDate,
+    bool validateNotBefore = false
+)
+    {
+        DateRangeValidator.ValidateRange(startDate, endDate, "Course");
+
+        if (validateNotBefore)
+        {
+            DateRangeValidator.ValidateNotBefore(
+                startDate,
+                DateOnly.FromDateTime(DateTime.UtcNow),
+                "Course"
+            );
+        }
     }
 }

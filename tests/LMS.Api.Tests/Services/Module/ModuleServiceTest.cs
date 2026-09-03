@@ -124,7 +124,7 @@ public class ModuleServiceTests
             Name = "A bad module",
             Description = "A module whose dates overlap with those of an existing module",
             StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(7)),
-            EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(28)),
+            EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(14)),
         };
 
         _mockCourseRepo
