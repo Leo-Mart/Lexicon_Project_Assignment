@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import type { Module } from "../interfaces/Module";
+import type { ModuleDto } from "../interfaces/module/ModuleDto";
 import ModuleSideViewPart from "./ModuleSideViewPart";
 import { fetchModules } from "../services/moduleService";
 
-export default function ModuleSideView({ module }: { module: Module }) {
-    const [modules, setModules] = useState<Module[]>();
+export default function ModuleSideView({ module }: { module: ModuleDto }) {
+    const [modules, setModules] = useState<ModuleDto[]>();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
