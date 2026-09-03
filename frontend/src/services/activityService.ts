@@ -1,29 +1,28 @@
 import { authFetch } from "./authService";
 import { API_BASE_URL, HttpMethod, JSON_HEADERS } from "../constants/Constants";
-import type { ActivityDto } from "../interfaces/activity/ActivityDto";
-import type { ActivityCreateDto } from "../interfaces/activity/ActivityCreateDto";
-import type { ActivityUpdateDto } from "../interfaces/activity/ActivityUpdateDto";
+import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
+import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 
 const API_URL = API_BASE_URL + "/activity";
 
-export const fetchActivitys = async (): Promise<ActivityDto[]> => {
+export const fetchActivitys = async (): Promise<ActivityResponse[]> => {
     const response = await authFetch(API_URL);
 
     if (!response.ok) {
         throw new Error(`Failed to fetch activity: ${response.status}`);
     }
 
-    return (await response.json()) as ActivityDto[];
+    return (await response.json()) as ActivityResponse[];
 };
 
-export const fetchActivity = async (id: string): Promise<ActivityDto> => {
+export const fetchActivity = async (id: string): Promise<ActivityResponse> => {
     const response = await authFetch(`${API_URL}/${id}`);
 
     if (!response.ok) {
         throw new Error(`Failed to fetch activity: ${response.status}`);
     }
 
-    return (await response.json()) as ActivityDto;
+    return (await response.json()) as ActivityResponse;
 };
 
 export const deleteActivity = async (id: string): Promise<void> => {
@@ -37,8 +36,8 @@ export const deleteActivity = async (id: string): Promise<void> => {
 };
 
 export const createActivity = async (
-    newActivity: ActivityCreateDto,
-): Promise<ActivityDto> => {
+    newActivity: ActivityRequest,
+): Promise<ActivityResponse> => {
     const response = await authFetch(API_URL, {
         method: HttpMethod.POST,
         headers: JSON_HEADERS,
@@ -49,12 +48,12 @@ export const createActivity = async (
         throw new Error(`Could not create the course: ${response.status}`);
     }
 
-    return (await response.json()) as ActivityDto;
+    return (await response.json()) as ActivityResponse;
 };
 
 export const updateCourse = async (
     id: string,
-    updatedActivity: ActivityUpdateDto,
+    updatedActivity: ActivityRequest,
 ): Promise<void> => {
     const response = await authFetch(`${API_URL}/${id}`, {
         method: HttpMethod.PUT,
