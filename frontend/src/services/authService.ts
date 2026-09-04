@@ -1,6 +1,7 @@
 import { API_BASE_URL, HttpMethod, JSON_HEADERS } from "../constants/Constants";
 import type { LoginDto } from "../interfaces/auth/LoginDto";
 import type { AccessTokenResponse } from "../interfaces/auth/AccessTokenDto";
+import type { AuthUser } from "../interfaces/auth/AuthUser";
 
 const API_URL = API_BASE_URL + "/auth";
 
@@ -132,4 +133,14 @@ const getRefreshPromise = (): Promise<boolean> => {
     }
 
     return refreshPromise;
+};
+
+export const getCurrentUser = async (): Promise<AuthUser> => {
+    const response = await authFetch(`${API_URL}/me`);
+
+    if (!response.ok) {
+        throw new Error(`Could not fetch current user: ${response.status}`);
+    }
+
+    return (await response.json()) as AuthUser;
 };
