@@ -106,7 +106,7 @@ const ModalCreateResource = (props: CreateResouceModalProps) => {
                             Save
                         </Button>
                         <Button
-                            type="button"
+                            type="reset"
                             className="hover:cursor-pointer"
                             variant="primary"
                         >
