@@ -79,7 +79,7 @@ export default function Courses() {
     async function handleDelete(course: CourseResponse) {
         if (
             !window.confirm(
-                'Är du säker på att du vill radera kursen "' +
+                'Are you sure you want to delete the course "' +
                     course.name +
                     '"?',
             )

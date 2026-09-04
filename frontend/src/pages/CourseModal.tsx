@@ -42,8 +42,7 @@ export default function CourseModal({
             }
             //onClose();
         } catch (error) {
-            alert(error);
-            console.error("Fel vid sparning:", error);
+            console.error("Error on saving:", error);
         }
     };
 
