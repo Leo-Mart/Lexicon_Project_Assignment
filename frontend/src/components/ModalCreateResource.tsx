@@ -31,7 +31,7 @@ const ModalCreateResource = (props: CreateResouceModalProps) => {
 
         try {
             const resp = await createResource(newResourcePayload);
-            console.log(resp);
+            console.log(resp); //TODO: pass the course/module/activity id into the modal
             props.onClose();
         } catch (error) {
             if (error instanceof Error) {
