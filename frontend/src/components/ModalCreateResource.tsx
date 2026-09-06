@@ -19,19 +19,19 @@ const ModalCreateResource = (props: CreateResouceModalProps) => {
         const newResourcePayload: ResourceRequest = {
             name: formData.get("name")!.toString(),
             description: formData.get("description")!.toString(),
-            content: formData.get("content")?.toString(),
-            uri: formData.get("uri")?.toString(),
+            content:
+                formData.get("content")?.toString() === ""
+                    ? null
+                    : formData.get("content")?.toString(),
+            uri:
+                formData.get("uri")?.toString() === ""
+                    ? null
+                    : formData.get("uri")?.toString(),
         };
 
-        if (newResourcePayload.content === "") {
-            newResourcePayload.content = null;
-        }
-        if (newResourcePayload.uri === "") {
-            newResourcePayload.uri = null;
-        }
-
         try {
-            await createResource(newResourcePayload);
+            const resp = await createResource(newResourcePayload);
+            console.log(resp);
             props.onClose();
         } catch (error) {
             if (error instanceof Error) {
