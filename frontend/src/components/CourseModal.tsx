@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "../index.css";
-import Button from "../components/Button";
+import Button from "./Button";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import { createCourse } from "../services/courseService";
 import { updateCourse } from "../services/courseService";
