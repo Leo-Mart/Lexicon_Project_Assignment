@@ -36,10 +36,11 @@ export default function UserTableRow({
                     <Button variant="cancel" onClick={() => onDelete(user.id)}>
                         Delete
                     </Button>
-
-                    <Button onClick={() => onAssignCourse(user.id)}>
-                        Assign course
-                    </Button>
+                    {user.role === "Student" && !user.courseId && (
+                        <Button onClick={() => onAssignCourse(user.id)}>
+                            Assign course
+                        </Button>
+                    )}
                 </div>
             </td>
         </tr>
