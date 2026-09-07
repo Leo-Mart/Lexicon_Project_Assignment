@@ -65,3 +65,56 @@ export const updateResource = async (
         throw new Error(`Could not update the Resource: ${response.status}`);
     }
 };
+
+export const addResourceToCourse = async (
+    resourceId: string,
+    courseId: string,
+): Promise<void> => {
+    const response = await authFetch(
+        `${API_URL}/${resourceId}/course/${courseId}`,
+        {
+            method: HttpMethod.POST,
+            headers: JSON_HEADERS,
+        },
+    );
+
+    if (!response.ok) {
+        throw new Error(`Could not add resource to course: ${response.status}`);
+    }
+};
+
+export const addResourceToModule = async (
+    resourceId: string,
+    moduleId: string,
+): Promise<void> => {
+    const response = await authFetch(
+        `${API_URL}/${resourceId}/module/${moduleId}`,
+        {
+            method: HttpMethod.POST,
+            headers: JSON_HEADERS,
+        },
+    );
+
+    if (!response.ok) {
+        throw new Error(`Could not add resource to module: ${response.status}`);
+    }
+};
+
+export const addResourceToActivity = async (
+    resourceId: string,
+    activityId: string,
+): Promise<void> => {
+    const response = await authFetch(
+        `${API_URL}/${resourceId}/activity/${activityId}`,
+        {
+            method: HttpMethod.POST,
+            headers: JSON_HEADERS,
+        },
+    );
+
+    if (!response.ok) {
+        throw new Error(
+            `Could not add resource to activity: ${response.status}`,
+        );
+    }
+};
