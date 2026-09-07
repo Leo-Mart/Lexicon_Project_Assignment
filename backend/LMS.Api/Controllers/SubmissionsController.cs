@@ -20,6 +20,8 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
     /// Gets all submissions.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A list of all submissions.</returns>
+    /// 
     [HttpGet]
     [ProducesResponseType(typeof(List<SubmissionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -33,10 +35,10 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
     }
 
     /// <summary>
-    /// Gets the students submissions.
+    /// Gets the currently logged in students submissions.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// 
+    /// <returns>Submissions created by the currently logged in student.</returns>
     [HttpGet("me")]
     [ProducesResponseType(typeof(List<SubmissionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -93,7 +95,7 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
     /// <param name="submissionId">Submission Id.</param>
     /// <param name="feedbackDto">The required feedback text.</param>
     /// <param name="cancellationToken">The required feedback text.</param>
-    /// 
+
     [HttpPut("{submissionId:guid}/feedback")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -123,11 +125,11 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
     }
 
     /// <summary>
-    /// Gets a submission by ID.
+    /// Gets a submission by submission ID.
     /// </summary>
-    /// <param name="submissionId">The resource ID.</param>
+    /// <param name="submissionId">The submission ID.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// 
+    /// <returns>A specific submission based on a submission ID.</returns>
     [HttpGet("{submissionId:guid}")]
     [ProducesResponseType(typeof(SubmissionDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -159,5 +161,19 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
         }
 
         return Ok(submission);
+    }
+
+    /// <summary>
+    /// Gets all submissions belonging to an activity.
+    /// </summary>
+    /// <param name="activityId">The module ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A list of submissions belonging to an activity.</returns>
+    [HttpGet("activity/{activityId:guid}")]
+    public async Task<ActionResult<List<SubmissionDto>>> GetByActivityIdAsync([FromRoute] Guid activityId, CancellationToken cancellationToken = default)
+    {
+        List<SubmissionDto> submissions = await _submissionsService.GetByActivityIdAsync(activityId, cancellationToken);
+
+        return Ok(submissions);
     }
 }
