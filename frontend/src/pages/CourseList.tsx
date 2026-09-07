@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "../index.css";
 import Button from "../components/Button";
-import CourseModal from "./CourseModal";
+import CourseModal from "../components/CourseModal";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import { fetchCourses } from "../services/courseService";
 import { deleteCourse } from "../services/courseService";
