@@ -27,12 +27,14 @@ export default function CourseModal({
         modules: [],
     });
 
+    const courseId = selectedCourse.courseId;
+
     const handleOnSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
 
         try {
-            if (formData.courseId != "") {
-                await updateCourse(formData.courseId, formData).then(() => {
+            if (courseId) {
+                await updateCourse(courseId, formData).then(() => {
                     onSubmit(formData);
                 });
             } else {
@@ -79,14 +81,6 @@ export default function CourseModal({
                             className="px-8 pt-6 pb-8 mb-4"
                             onSubmit={handleOnSubmit}
                         >
-                            <div>
-                                <input
-                                    type="text"
-                                    id="id"
-                                    value={formData.courseId}
-                                    hidden
-                                />
-                            </div>
                             <div className="mb-4">
                                 <label htmlFor="name">Name</label>
                                 <input
