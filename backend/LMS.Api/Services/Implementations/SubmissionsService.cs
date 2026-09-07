@@ -66,6 +66,14 @@ public class SubmissionsService(
         return _mapper.Map<List<SubmissionDto>>(submissionsList);
     }
 
+    public async Task<List<SubmissionDto>> GetByActivityIdAsync(Guid activityId, CancellationToken cancellationToken = default)
+    {
+        List<Submission> submissionsList =
+          await _submissionsRepository.GetByActivityIdAsync(activityId, cancellationToken);
+
+        return _mapper.Map<List<SubmissionDto>>(submissionsList);
+    }
+
     public async Task<bool> CreateSubmission(SubmissionsCreateCommand command, CancellationToken cancellationToken)
     {
         Submission submission = new()
