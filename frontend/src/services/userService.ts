@@ -5,6 +5,8 @@ import type { UserCreateDto } from "../interfaces/user/UserCreateDto";
 import type { UserUpdateDto } from "../interfaces/user/UserUpdateDto";
 import type { UserStatusUpdateDto } from "../interfaces/user/UserStatusUpdateDto";
 import type { UserWithCourseResponse } from "../interfaces/user/UserWithCourseResponse";
+import type { PagedResponse } from "../interfaces/common/PagedResponse";
+import type { QueryParameters } from "../interfaces/common/QueryParameters";
 
 const API_URL = API_BASE_URL + "/users";
 
@@ -84,10 +86,20 @@ export const updateUserStatus = async (
     }
 };
 
-export const fetchUsersWithCourse = async (): Promise<
-    UserWithCourseResponse[]
-> => {
-    const response = await authFetch(`${API_URL}/with-course`);
+export const fetchUsersWithCourse = async (
+    query: QueryParameters,
+): Promise<PagedResponse<UserWithCourseResponse>> => {
+    const params = new URLSearchParams({
+        search: query.search,
+        sortBy: query.sortBy,
+        direction: query.direction,
+        page: query.page.toString(),
+        pageSize: query.pageSize.toString(),
+    });
+
+    const response = await authFetch(
+        `${API_URL}/with-course?${params.toString()}`,
+    );
 
     if (!response.ok) {
         throw new Error(
@@ -95,5 +107,5 @@ export const fetchUsersWithCourse = async (): Promise<
         );
     }
 
-    return (await response.json()) as UserWithCourseResponse[];
+    return (await response.json()) as PagedResponse<UserWithCourseResponse>;
 };

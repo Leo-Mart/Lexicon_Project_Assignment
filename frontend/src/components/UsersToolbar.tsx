@@ -32,11 +32,9 @@ export default function UsersToolbar({
             >
                 <option value="name-asc">Name A-Z</option>
                 <option value="name-desc">Name Z-A</option>
-                <option value="email-asc">Email A-Z</option>
-                <option value="status">Status</option>
-                <option value="role">Role</option>
                 <option value="course-asc">Course A-Z</option>
                 <option value="course-desc">Course Z-A</option>
+                <option value="status">Status</option>
             </select>
 
             <Button onClick={onAddUser} className="ml-auto cursor-pointer">
