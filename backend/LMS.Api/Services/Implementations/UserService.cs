@@ -160,23 +160,31 @@ public class UserService : IUserService
 
     public async Task<List<UserWithCourseDto>> GetAllWithCourseAsync()
     {
-        return await _userManager.Users
+        List<User> users = await _userManager.Users
             .AsNoTracking()
             .Include(user => user.Enrollment)
                 .ThenInclude(enrollment => enrollment!.Course)
-            .Select(user => new UserWithCourseDto
+            .ToListAsync();
+
+        List<UserWithCourseDto> result = [];
+
+        foreach (User user in users)
+        {
+            IList<string> roles = await _userManager.GetRolesAsync(user);
+
+            result.Add(new UserWithCourseDto
             {
                 Id = user.Id,
                 Name = user.Name,
                 Email = user.Email,
                 Status = user.Status,
-                CourseId = user.Enrollment != null
-                    ? user.Enrollment.CourseId
-                    : null,
-                CourseName = user.Enrollment != null
-                    ? user.Enrollment.Course.Name
-                    : null
-            })
-            .ToListAsync();
+                Role = roles.FirstOrDefault() ?? string.Empty,
+                CourseId = user.Enrollment?.CourseId,
+                CourseName = user.Enrollment?.Course.Name
+            });
+        }
+
+        return result;
     }
 }
+

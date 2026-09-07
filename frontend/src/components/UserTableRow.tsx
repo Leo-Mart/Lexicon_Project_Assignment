@@ -19,8 +19,8 @@ export default function UserTableRow({
     onAssignCourse,
 }: UserTableRowProps) {
     return (
-        <tr>
-            <td>{user.name}</td>
+        <tr className="border-t border-gray-700 hover:bg-gray-700/40">
+            <td className="px-4 py-3">{user.name}</td>
             <td>{user.email}</td>
             <td>{getUserStatusName(user.status)}</td>
             <td><UserBadge role={user.role} /></td>
