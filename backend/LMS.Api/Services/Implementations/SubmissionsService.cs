@@ -1,5 +1,6 @@
 using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
+using LMS.Api.DTOs.Activities;
 using LMS.Api.DTOs.Submissions;
 using LMS.Api.Enums.Model;
 using LMS.Api.Models;
@@ -10,15 +11,10 @@ namespace LMS.Api.Services.Implementations;
 
 public class SubmissionsService(
         ISubmissionsRepository _submissionsRepository,
+        IActivityService _activityService,
         IUnitOfWork _unitOfWork,
         IMapper _mapper) : ISubmissionsService
 {
-    //Enum exists
-    //    public enum SubmissionStatus
-    // {
-    //     Submitted = 1,
-    //     Late = 2
-    // }
 
     public async Task<SubmissionDto?> SetFeedbackAsync(SetFeedbackCommand setFeedbackCommand, CancellationToken cancellationToken = default)
     {
@@ -75,14 +71,20 @@ public class SubmissionsService(
 
     public async Task<SubmissionDto> CreateSubmission(SubmissionsCreateCommand command, CancellationToken cancellationToken)
     {
+        DateTime submittedAt = DateTime.UtcNow;
+        ActivityDto? activity = await _activityService.GetByIdAsync(command.ActivityId, cancellationToken);
+
+        // No deadline (or no activity found) means it can't be late.
+        bool isLate = activity?.Deadline is not null && submittedAt > activity.Deadline;
+
         Submission submission = new()
         {
             ActivityId = command.ActivityId,
             StudentId = command.StudentId,
             Text = command.Text,
             CreatedAt = DateTime.UtcNow,
-            SubmittedAt = DateTime.UtcNow,
-            Status = SubmissionStatus.Submitted,
+            SubmittedAt = submittedAt,
+            Status = isLate ? SubmissionStatus.Late : SubmissionStatus.Submitted,
         };
 
         await _submissionsRepository.CreateAsync(submission, cancellationToken);
