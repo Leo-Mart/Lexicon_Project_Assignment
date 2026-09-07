@@ -42,7 +42,9 @@ export default function SubmissionsTest() {
                 </Button>
 
                 <Button
-                    onClick={() => run("GET /submissions/me", getCurrentUserSubmissions)}
+                    onClick={() =>
+                        run("GET /submissions/me", getCurrentUserSubmissions)
+                    }
                 >
                     Get my submissions
                 </Button>
@@ -50,7 +52,10 @@ export default function SubmissionsTest() {
                 <Button
                     onClick={() => {
                         const id = window.prompt("Submission id?");
-                        if (id) run(`GET /submissions/${id}`, () => fetchSubmissionById(id));
+                        if (id)
+                            run(`GET /submissions/${id}`, () =>
+                                fetchSubmissionById(id),
+                            );
                     }}
                 >
                     Get by id
@@ -71,7 +76,9 @@ export default function SubmissionsTest() {
                 <Button
                     onClick={() => {
                         const id = window.prompt("Submission id?");
-                        const feedback = id ? window.prompt("Feedback text?") : null;
+                        const feedback = id
+                            ? window.prompt("Feedback text?")
+                            : null;
                         if (id && feedback)
                             run(`PUT /submissions/${id}/feedback`, () =>
                                 setFeedback(id, { feedback }),
