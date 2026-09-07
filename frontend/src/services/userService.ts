@@ -4,6 +4,7 @@ import type { UserResponse } from "../interfaces/user/UserResponse";
 import type { UserCreateDto } from "../interfaces/user/UserCreateDto";
 import type { UserUpdateDto } from "../interfaces/user/UserUpdateDto";
 import type { UserStatusUpdateDto } from "../interfaces/user/UserStatusUpdateDto";
+import type { UserWithCourseResponse } from "../interfaces/user/UserWithCourseResponse";
 
 const API_URL = API_BASE_URL + "/users";
 
@@ -81,4 +82,14 @@ export const updateUserStatus = async (
     if (!response.ok) {
         throw new Error(`Could not update user status: ${response.status}`);
     }
+};
+
+export const fetchUsersWithCourse = async (): Promise<UserWithCourseResponse[]> => {
+    const response = await authFetch(`${API_URL}/with-course`);
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch users with course: ${response.status}`);
+    }
+
+    return (await response.json()) as UserWithCourseResponse[];
 };
