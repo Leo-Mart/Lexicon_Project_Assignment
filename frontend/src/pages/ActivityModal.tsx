@@ -21,15 +21,15 @@ export default function ActivityModal({
 }: ModalProps) {
     const [formData, setFormData] = useState<ActivityResponse>({
         activityId: selectedActivity.activityId,
-        moduleId: selectedActivity.moduleId,
+        moduleId: "40000000-0000-0000-0000-000000000004",
         name: selectedActivity.name,
         description: selectedActivity.description,
-        type: selectedActivity.type,
+        type: ActivityType.Other,
         startAt: selectedActivity.startAt,
         endAt: selectedActivity.endAt,
-        deadline: selectedActivity.deadline,
-        createdAt: selectedActivity.createdAt,
-        updatedAt: selectedActivity.updatedAt,
+        deadline: selectedActivity.endAt,
+        createdAt: selectedActivity.endAt,
+        updatedAt: selectedActivity.endAt,
     });
 
     const activityId = selectedActivity.activityId;
