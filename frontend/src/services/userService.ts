@@ -84,11 +84,15 @@ export const updateUserStatus = async (
     }
 };
 
-export const fetchUsersWithCourse = async (): Promise<UserWithCourseResponse[]> => {
+export const fetchUsersWithCourse = async (): Promise<
+    UserWithCourseResponse[]
+> => {
     const response = await authFetch(`${API_URL}/with-course`);
 
     if (!response.ok) {
-        throw new Error(`Failed to fetch users with course: ${response.status}`);
+        throw new Error(
+            `Failed to fetch users with course: ${response.status}`,
+        );
     }
 
     return (await response.json()) as UserWithCourseResponse[];

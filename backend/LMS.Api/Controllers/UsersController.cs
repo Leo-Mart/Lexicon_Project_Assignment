@@ -1,4 +1,5 @@
 using AutoMapper;
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Users;
 using LMS.Api.Models;
 using LMS.Api.Services.Interfaces;
@@ -154,17 +155,16 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Gets all users together with their enrolled course, if available.
+    /// Gets users with their enrolled course using search, sorting and pagination.
     /// </summary>
-    /// <returns>
-    /// A list of users including course information.
-    /// Users without an enrolled course are also included.
-    /// </returns>
+    /// <param name="query">Search, sorting and pagination parameters.</param>
+    /// <returns>A paginated list of users with course information.</returns>
     [HttpGet("with-course")]
-    [ProducesResponseType(typeof(List<UserWithCourseDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<UserWithCourseDto>>> GetUsersWithCourseAsync()
+    [ProducesResponseType(typeof(PagedResponse<UserWithCourseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PagedResponse<UserWithCourseDto>>> GetUsersWithCourseAsync([FromQuery] UserQueryParametersDto query)
     {
-        List<UserWithCourseDto> users = await _userService.GetAllWithCourseAsync();
+        PagedResponse<UserWithCourseDto> users = await _userService.GetAllWithCourseAsync(query);
 
         return Ok(users);
     }

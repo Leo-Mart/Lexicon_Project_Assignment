@@ -1,3 +1,4 @@
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Users;
 using LMS.Api.Enums.Model;
 using LMS.Api.Models;
@@ -19,5 +20,5 @@ public interface IUserService
     Task<IdentityResult> UpdateUserAsync(Guid userId, UserUpdateDto request);
 
     Task<IdentityResult> UpdateUserStatusAsync(Guid userId, UserStatus status);
-    Task<List<UserWithCourseDto>> GetAllWithCourseAsync();
+    Task<PagedResponse<UserWithCourseDto>> GetAllWithCourseAsync(UserQueryParametersDto query);
 }

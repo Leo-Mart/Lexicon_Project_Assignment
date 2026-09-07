@@ -15,7 +15,7 @@ export default function UsersTable({
     onAssignCourse,
 }: UsersTableProps) {
     return (
-       <div className="overflow-x-auto rounded-lg border border-gray-600">
+        <div className="overflow-x-auto rounded-lg border border-gray-600">
             <table className="w-full text-left text-gray-100">
                 <thead className="bg-gray-700">
                     <tr>
@@ -40,6 +40,6 @@ export default function UsersTable({
                     ))}
                 </tbody>
             </table>
-    </div>
+        </div>
     );
 }

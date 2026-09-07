@@ -1,5 +1,6 @@
 import type { UserWithCourseResponse } from "../interfaces/user/UserWithCourseResponse";
 import UserBadge from "./UserBadge";
+import Button from "./Button";
 import {
     UserStatus,
     type UserStatus as UserStatusType,
@@ -23,31 +24,22 @@ export default function UserTableRow({
             <td className="px-4 py-3">{user.name}</td>
             <td>{user.email}</td>
             <td>{getUserStatusName(user.status)}</td>
-            <td><UserBadge role={user.role} /></td>
+            <td>
+                <UserBadge role={user.role} />
+            </td>
             <td>{user.courseName ?? "Not assigned"}</td>
 
             <td>
                 <div className="flex gap-2">
-                    <button
-                        type="button"
-                        onClick={() => onEdit(user.id)}
-                    >
-                        Edit
-                    </button>
+                    <Button onClick={() => onEdit(user.id)}>Edit</Button>
 
-                    <button
-                        type="button"
-                        onClick={() => onDelete(user.id)}
-                    >
+                    <Button variant="cancel" onClick={() => onDelete(user.id)}>
                         Delete
-                    </button>
+                    </Button>
 
-                    <button
-                        type="button"
-                        onClick={() => onAssignCourse(user.id)}
-                    >
+                    <Button onClick={() => onAssignCourse(user.id)}>
                         Assign course
-                    </button>
+                    </Button>
                 </div>
             </td>
         </tr>
@@ -55,7 +47,8 @@ export default function UserTableRow({
 }
 
 const getUserStatusName = (status: UserStatusType): string => {
-    return Object.entries(UserStatus).find(
-        ([, value]) => value === status,
-    )?.[0] ?? "Unknown";
+    return (
+        Object.entries(UserStatus).find(([, value]) => value === status)?.[0] ??
+        "Unknown"
+    );
 };
