@@ -1,12 +1,21 @@
 import ModalWrapper from "./ModalWrapper";
 import Button from "./Button";
 import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
-import { createResource } from "../services/resourceService";
 import { useState } from "react";
+import {
+    addResourceToActivity,
+    addResourceToCourse,
+    addResourceToModule,
+    createResource,
+} from "../services/resourceService";
+
+type createForEntity = "course" | "module" | "activity";
 
 type CreateResouceModalProps = {
     open: boolean;
     onClose: () => void;
+    entityId: string;
+    createFor: createForEntity;
     loading: boolean;
 };
 
@@ -31,7 +40,25 @@ const ModalCreateResource = (props: CreateResouceModalProps) => {
 
         try {
             const resp = await createResource(newResourcePayload);
-            console.log(resp); //TODO: pass the course/module/activity id into the modal
+            switch (props.createFor) {
+                case "course": {
+                    await addResourceToCourse(resp.resourceId, props.entityId);
+                    break;
+                }
+                case "module": {
+                    await addResourceToModule(resp.resourceId, props.entityId);
+                    break;
+                }
+                case "activity": {
+                    await addResourceToActivity(
+                        resp.resourceId,
+                        props.entityId,
+                    );
+                    break;
+                }
+                default:
+                    throw new Error("Invalid resource type");
+            }
             props.onClose();
         } catch (error) {
             if (error instanceof Error) {
