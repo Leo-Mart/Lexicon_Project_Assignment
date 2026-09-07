@@ -7,7 +7,6 @@ import { fetchCourses } from "../services/courseService";
 import { deleteCourse } from "../services/courseService";
 import { createPortal } from "react-dom";
 import ModalCreateResource from "../components/ModalCreateResource";
-import { Link } from "react-router-dom";
 
 export default function CourseList() {
     // STATE
@@ -142,9 +141,7 @@ export default function CourseList() {
                                         : "bg-bg dark:bg-bg-dark"
                                 }
                             >
-                                <Link to={`/courses/${course.courseId}`}>
-                                    <td className="p-3">{course.name}</td>
-                                </Link>
+                                <td className="p-3">{course.name}</td>
                                 <td className="p-3">{course.description}</td>
                                 <td className="p-3">{course.startDate}</td>
                                 <td className="p-3">{course.endDate}</td>
