@@ -168,4 +168,30 @@ public class UsersController : ControllerBase
 
         return Ok(users);
     }
+
+    /// <summary>
+/// Deletes a user by ID.
+/// </summary>
+/// <param name="id">The user ID.</param>
+[HttpDelete("{id:guid}")]
+[ProducesResponseType(StatusCodes.Status204NoContent)]
+[ProducesResponseType(StatusCodes.Status404NotFound)]
+[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+[ProducesResponseType(StatusCodes.Status403Forbidden)]
+public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
+{
+    IdentityResult result = await _userService.DeleteUserAsync(id);
+
+    if (!result.Succeeded)
+    {
+        if (result.Errors.Any(error => error.Code == "UserNotFound"))
+        {
+            return NotFound();
+        }
+
+        return BadRequest(result.Errors);
+    }
+
+    return NoContent();
+}
 }
