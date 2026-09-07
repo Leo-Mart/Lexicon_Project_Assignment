@@ -170,28 +170,28 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-/// Deletes a user by ID.
-/// </summary>
-/// <param name="id">The user ID.</param>
-[HttpDelete("{id:guid}")]
-[ProducesResponseType(StatusCodes.Status204NoContent)]
-[ProducesResponseType(StatusCodes.Status404NotFound)]
-[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-[ProducesResponseType(StatusCodes.Status403Forbidden)]
-public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
-{
-    IdentityResult result = await _userService.DeleteUserAsync(id);
-
-    if (!result.Succeeded)
+    /// Deletes a user by ID.
+    /// </summary>
+    /// <param name="id">The user ID.</param>
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
     {
-        if (result.Errors.Any(error => error.Code == "UserNotFound"))
+        IdentityResult result = await _userService.DeleteUserAsync(id);
+
+        if (!result.Succeeded)
         {
-            return NotFound();
+            if (result.Errors.Any(error => error.Code == "UserNotFound"))
+            {
+                return NotFound();
+            }
+
+            return BadRequest(result.Errors);
         }
 
-        return BadRequest(result.Errors);
+        return NoContent();
     }
-
-    return NoContent();
-}
 }
