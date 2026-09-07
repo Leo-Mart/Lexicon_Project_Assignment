@@ -4,6 +4,7 @@ import {
     createUser,
     fetchUsersWithCourse,
     updateUser,
+    deleteUser,
 } from "../services/userService";
 import UsersTable from "../components/UsersTable";
 import UsersToolbar from "../components/UsersToolbar";
@@ -12,8 +13,8 @@ import Pagination from "../components/Pagination";
 import ModalWrapper from "../components/ModalWrapper";
 import UserForm from "../components/UserForm";
 import type { UserCreateRequest } from "../interfaces/user/UserCreateRequest";
-
 import type { UserUpdateRequest } from "../interfaces/user/UserUpdateRequest";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 20;
@@ -30,6 +31,8 @@ export default function Users() {
     const [refreshKey, setRefreshKey] = useState(0);
     const [userFormError, setUserFormError] = useState<string>();
     const [editingUser, setEditingUser] =
+        useState<UserWithCourseResponse | null>(null);
+    const [userToDelete, setUserToDelete] =
         useState<UserWithCourseResponse | null>(null);
 
     const handleSearchChange = (value: string) => {
@@ -67,6 +70,12 @@ export default function Users() {
         await updateUser(editingUser.id, values);
 
         setEditingUser(null);
+        setRefreshKey((current) => current + 1);
+    };
+
+    const handleDeleteUser = async (id: string) => {
+        await deleteUser(id);
+
         setRefreshKey((current) => current + 1);
     };
 
@@ -110,7 +119,13 @@ export default function Users() {
                         setEditingUser(user);
                     }
                 }}
-                onDelete={(id) => console.log("Delete", id)}
+                onDelete={(id) => {
+                    const user = users.find((user) => user.id === id);
+
+                    if (user) {
+                        setUserToDelete(user);
+                    }
+                }}
                 onAssignCourse={(id) => console.log("Assign course", id)}
             />
 
@@ -154,6 +169,19 @@ export default function Users() {
                         onCancel={() => setEditingUser(null)}
                     />
                 </ModalWrapper>
+            )}
+
+            {userToDelete && (
+                <ConfirmDialog
+                    open={true}
+                    title="Delete user"
+                    message={`Are you sure you want to delete ${userToDelete.name}?`}
+                    onCancel={() => setUserToDelete(null)}
+                    onConfirm={async () => {
+                        await handleDeleteUser(userToDelete.id);
+                        setUserToDelete(null);
+                    }}
+                />
             )}
         </div>
     );
