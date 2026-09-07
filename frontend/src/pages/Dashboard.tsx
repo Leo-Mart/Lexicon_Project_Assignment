@@ -1,6 +1,6 @@
 import Button from "../components/Button";
 import Schedule from "../components/Schedule";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 //import { routes } from "../routes/config"; // Adjust the import path
 
@@ -22,7 +22,11 @@ export default function Dashboard() {
             </Button>
             <Button onClick={handleUsers}className="col-span-2">
                 User Control</Button>
-            <Button className="col-span-2">Resource Manager</Button>
+            <Link to="/resources" className="col-span-2">
+                <Button className="size-full hover:cursor-pointer">
+                    Resource Manager
+                </Button>
+            </Link>
             <Schedule />
         </div>
     );
