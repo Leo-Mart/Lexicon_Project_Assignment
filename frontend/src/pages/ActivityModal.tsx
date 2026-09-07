@@ -32,12 +32,14 @@ export default function ActivityModal({
         updatedAt: selectedActivity.updatedAt,
     });
 
+    const activityId = selectedActivity.activityId;
+
     const handleOnSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
 
         try {
-            if (formData.activityId != "") {
-                await updateActivity(formData.activityId, formData).then(() => {
+            if (activityId != "") {
+                await updateActivity(activityId, formData).then(() => {
                     onSubmit(formData);
                 });
             } else {
@@ -88,14 +90,6 @@ export default function ActivityModal({
                             className="px-8 pt-6 pb-8 mb-4"
                             onSubmit={handleOnSubmit}
                         >
-                            <div>
-                                <input
-                                    type="text"
-                                    id="id"
-                                    value={formData.activityId}
-                                    hidden
-                                />
-                            </div>
                             <div className="mb-4">
                                 <label htmlFor="name">Name</label>
                                 <input

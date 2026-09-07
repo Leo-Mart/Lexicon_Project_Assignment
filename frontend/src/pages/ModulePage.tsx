@@ -8,6 +8,8 @@ import ModuleSideView from "../components/ModuleSideView";
 import { fetchModuleById } from "../services/moduleService";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 import ActivityCard from "../components/ActivityCard";
+import ActivityModal from "./ActivityModal";
+import { ActivityType } from "../constants/ActivityType";
 
 export default function ModulePage() {
     const { id } = useParams<{ id: string }>();
@@ -15,6 +17,27 @@ export default function ModulePage() {
     const [module, setModule] = useState<ModuleResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showActivityModal, setShowActivityModal] = useState(false);
+    const newActivity = {
+        activityId: "",
+        moduleId: "",
+        name: "",
+        description: "",
+        type: ActivityType.Other,
+        startAt: "",
+        endAt: "",
+        deadline: "",
+        createdAt: "",
+        updatedAt: "",
+    };
+
+    const handleCloseModal = () => {
+        setShowActivityModal(false);
+    };
+
+    const handleOpenModal = () => {
+        setShowActivityModal(true);
+    };
 
     useEffect(() => {
         const fetchModule = async () => {
@@ -52,47 +75,62 @@ export default function ModulePage() {
 
     return (
         <>
-            <ModuleSideView module={module} />
-            <div className="flex flex-col items-center">
-                <h1 className="text-4xl text-text-dark pt-5">
-                    Current Module: {module.name}
-                </h1>
-                <div className="flex gap-5 pt-5">
-                    <p className="text-2xl text-text-dark">
-                        Start: {module.startDate}
-                    </p>
-                    <p className="text-2xl text-text-dark">
-                        End: {module.endDate}
-                    </p>
-                </div>
-            </div>
-            <div className="bg-bg-light h-[calc(100vh-12rem)] p-10 grid grid-flow-col grid-rows-3 grid-cols-2 gap-8 m-8">
-                <Lecture
-                    lectureName="Dependency Injection"
-                    lectureTime="13:30"
-                    teacher="Michael"
-                />
-                <Button className="row-span-2">Course Material</Button>
-                <div className="row-span-2 rounded-md px-4 py-2 bg-buttons text-text-light">
-                    <div className="flex flex-row justify-between">
-                        <div></div>
-                        <h1 className="text-4xl text-center">Activities</h1>
-                        <button className="rounded-md p-2 w-10 bg-buttons border-text-light border-3">
-                            +
-                        </button>
+            <div>
+                <ModuleSideView module={module} />
+                <div className="flex flex-col items-center">
+                    <h1 className="text-4xl text-text-dark pt-5">
+                        Current Module: {module.name}
+                    </h1>
+                    <div className="flex gap-5 pt-5">
+                        <p className="text-2xl text-text-dark">
+                            Start: {module.startDate}
+                        </p>
+                        <p className="text-2xl text-text-dark">
+                            End: {module.endDate}
+                        </p>
                     </div>
-                    {module.activities?.length ? (
-                        <div className="mt-5">
-                            {module.activities.map(
-                                (activity: ActivityRequest) => (
-                                    <ActivityCard activity={activity} />
-                                ),
-                            )}
-                        </div>
-                    ) : (
-                        "Module has no activities"
-                    )}
                 </div>
+                <div className="bg-bg-light h-[calc(100vh-12rem)] p-10 grid grid-flow-col grid-rows-3 grid-cols-2 gap-8 m-8">
+                    <Lecture
+                        lectureName="Dependency Injection"
+                        lectureTime="13:30"
+                        teacher="Michael"
+                    />
+                    <Button className="row-span-2">Course Material</Button>
+                    <div className="row-span-2 rounded-md px-4 py-2 bg-buttons text-text-light">
+                        <div className="flex flex-row justify-between">
+                            <div></div>
+                            <h1 className="text-4xl text-center">Activities</h1>
+                            <button
+                                onClick={() => handleOpenModal()}
+                                className="rounded-md p-2 w-10 bg-buttons border-text-light border-3"
+                            >
+                                +
+                            </button>
+                        </div>
+                        {module.activities?.length ? (
+                            <div className="mt-5">
+                                {module.activities.map(
+                                    (activity: ActivityRequest) => (
+                                        <ActivityCard
+                                            key={activity.name}
+                                            activity={activity}
+                                        />
+                                    ),
+                                )}
+                            </div>
+                        ) : (
+                            "Module has no activities"
+                        )}
+                    </div>
+                </div>
+                {showActivityModal && (
+                    <ActivityModal
+                        selectedActivity={newActivity}
+                        onClose={handleCloseModal}
+                        onSubmit={handleCloseModal}
+                    />
+                )}
             </div>
         </>
     );

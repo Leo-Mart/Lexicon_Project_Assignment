@@ -45,7 +45,7 @@ export const createActivity = async (
     });
 
     if (!response.ok) {
-        throw new Error(`Could not create the course: ${response.status}`);
+        throw new Error(`Could not create the activity: ${response.status}`);
     }
 
     return (await response.json()) as ActivityResponse;
