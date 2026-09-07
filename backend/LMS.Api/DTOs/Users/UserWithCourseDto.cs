@@ -15,4 +15,5 @@ public class UserWithCourseDto
     public Guid? CourseId { get; set; }
 
     public string? CourseName { get; set; }
+    public string Role { get; set; } = string.Empty;
 }
