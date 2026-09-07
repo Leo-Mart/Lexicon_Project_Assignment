@@ -1,0 +1,12 @@
+title = "gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+  description = "Known placeholder values from local dev, not real secrets"
+  fingerprints = [
+    # Old local-dev JWT signing key, later moved to user-secrets - never a
+    # real production credential.
+    "8b7ad08729e96b302fa4938a551977bb2c785713:backend/LMS.Api/appsettings.json:generic-api-key:13",
+  ]
