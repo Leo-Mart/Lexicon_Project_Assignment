@@ -48,4 +48,11 @@ export const routes = [
         createHeader: true,
         isProtected: false,
     },
+    {
+        path: "/users",
+        displayName: "Users",
+        component: lazy(() => import("../pages/Users")),
+        createHeader: true,
+        isProtected: false,
+    },
 ];

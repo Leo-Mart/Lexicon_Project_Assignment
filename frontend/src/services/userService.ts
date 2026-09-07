@@ -1,30 +1,30 @@
 import { authFetch } from "./authService";
 import { API_BASE_URL, HttpMethod, JSON_HEADERS } from "../constants/Constants";
-import type { UserDto } from "../interfaces/user/UserDto";
+import type { UserResponse } from "../interfaces/user/UserResponse";
 import type { UserCreateDto } from "../interfaces/user/UserCreateDto";
 import type { UserUpdateDto } from "../interfaces/user/UserUpdateDto";
 import type { UserStatusUpdateDto } from "../interfaces/user/UserStatusUpdateDto";
 
 const API_URL = API_BASE_URL + "/users";
 
-export const fetchUsers = async (): Promise<UserDto[]> => {
+export const fetchUsers = async (): Promise<UserResponse[]> => {
     const response = await authFetch(API_URL);
 
     if (!response.ok) {
         throw new Error(`Failed to fetch user: ${response.status}`);
     }
 
-    return (await response.json()) as UserDto[];
+    return (await response.json()) as UserResponse[];
 };
 
-export const fetchUser = async (id: string): Promise<UserDto> => {
+export const fetchUser = async (id: string): Promise<UserResponse> => {
     const response = await authFetch(`${API_URL}/${id}`);
 
     if (!response.ok) {
         throw new Error(`Failed to fetch user: ${response.status}`);
     }
 
-    return (await response.json()) as UserDto;
+    return (await response.json()) as UserResponse;
 };
 
 export const deleteUser = async (id: string): Promise<void> => {
@@ -39,7 +39,7 @@ export const deleteUser = async (id: string): Promise<void> => {
 
 export const createCourse = async (
     newUser: UserCreateDto,
-): Promise<UserDto> => {
+): Promise<UserResponse> => {
     const response = await authFetch(API_URL, {
         method: HttpMethod.POST,
         headers: JSON_HEADERS,
@@ -50,7 +50,7 @@ export const createCourse = async (
         throw new Error(`Could not create the user: ${response.status}`);
     }
 
-    return (await response.json()) as UserDto;
+    return (await response.json()) as UserResponse;
 };
 
 export const updateUser = async (
