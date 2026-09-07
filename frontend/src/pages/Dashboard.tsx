@@ -44,9 +44,12 @@ export default function Dashboard() {
                         <CourseList />
                     </div>
                 )}
-                {activeTab === 3 &&  (
+                {activeTab === 3 && (
                     <div className="text-text-light">
-                        <div> <Users /></div>
+                        <div>
+                            {" "}
+                            <Users />
+                        </div>
                     </div>
                 )}
                 {activeTab === 4 && (
