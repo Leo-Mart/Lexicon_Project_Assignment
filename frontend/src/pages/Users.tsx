@@ -1,10 +1,19 @@
 import { useEffect, useState } from "react";
 import type { UserWithCourseResponse } from "../interfaces/user/UserWithCourseResponse";
-import { fetchUsersWithCourse } from "../services/userService";
+import {
+    createUser,
+    fetchUsersWithCourse,
+    updateUser,
+} from "../services/userService";
 import UsersTable from "../components/UsersTable";
 import UsersToolbar from "../components/UsersToolbar";
 import type { QueryParameters } from "../interfaces/common/QueryParameters";
 import Pagination from "../components/Pagination";
+import ModalWrapper from "../components/ModalWrapper";
+import UserForm from "../components/UserForm";
+import type { UserCreateRequest } from "../interfaces/user/UserCreateRequest";
+
+import type { UserUpdateRequest } from "../interfaces/user/UserUpdateRequest";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 20;
@@ -17,6 +26,11 @@ export default function Users() {
     const [pageSize] = useState(DEFAULT_PAGE_SIZE);
     const [search, setSearch] = useState("");
     const [sortBy, setSortBy] = useState(DEFAULT_SORT);
+    const [showUserForm, setShowUserForm] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
+    const [userFormError, setUserFormError] = useState<string>();
+    const [editingUser, setEditingUser] =
+        useState<UserWithCourseResponse | null>(null);
 
     const handleSearchChange = (value: string) => {
         setSearch(value);
@@ -26,6 +40,34 @@ export default function Users() {
     const handleSortChange = (value: string) => {
         setSortBy(value);
         setPage(DEFAULT_PAGE);
+    };
+
+    const handleCreateUser = async (values: UserCreateRequest) => {
+        try {
+            setUserFormError(undefined);
+
+            await createUser(values);
+
+            setShowUserForm(false);
+            setRefreshKey((current) => current + 1);
+        } catch (error) {
+            setUserFormError(
+                error instanceof Error
+                    ? error.message
+                    : "Could not create user.",
+            );
+        }
+    };
+
+    const handleUpdateUser = async (values: UserUpdateRequest) => {
+        if (!editingUser) {
+            return;
+        }
+
+        await updateUser(editingUser.id, values);
+
+        setEditingUser(null);
+        setRefreshKey((current) => current + 1);
     };
 
     useEffect(() => {
@@ -47,7 +89,7 @@ export default function Users() {
         };
 
         void loadUsers();
-    }, [search, sortBy, page, pageSize]);
+    }, [search, sortBy, page, pageSize, refreshKey]);
 
     return (
         <div className="p-4">
@@ -56,12 +98,18 @@ export default function Users() {
                 sortBy={sortBy}
                 onSearchChange={handleSearchChange}
                 onSortChange={handleSortChange}
-                onAddUser={() => console.log("Add user")}
+                onAddUser={() => setShowUserForm(true)}
             />
 
             <UsersTable
                 users={users}
-                onEdit={(id) => console.log("Edit", id)}
+                onEdit={(id) => {
+                    const user = users.find((user) => user.id === id);
+
+                    if (user) {
+                        setEditingUser(user);
+                    }
+                }}
                 onDelete={(id) => console.log("Delete", id)}
                 onAssignCourse={(id) => console.log("Assign course", id)}
             />
@@ -72,6 +120,41 @@ export default function Users() {
                 totalCount={totalCount}
                 onPageChange={setPage}
             />
+
+            {showUserForm && (
+                <ModalWrapper
+                    open={showUserForm}
+                    onClose={() => setShowUserForm(false)}
+                    title="Create user"
+                >
+                    <UserForm
+                        mode="create"
+                        onSubmit={handleCreateUser}
+                        onCancel={() => setShowUserForm(false)}
+                        submitError={userFormError}
+                    />
+                </ModalWrapper>
+            )}
+
+            {editingUser && (
+                <ModalWrapper
+                    open={true}
+                    onClose={() => setEditingUser(null)}
+                    title="Edit user"
+                >
+                    <UserForm
+                        mode="edit"
+                        initialValues={{
+                            name: editingUser.name,
+                            email: editingUser.email ?? "",
+                            role: editingUser.role,
+                            status: editingUser.status,
+                        }}
+                        onSubmit={handleUpdateUser}
+                        onCancel={() => setEditingUser(null)}
+                    />
+                </ModalWrapper>
+            )}
         </div>
     );
 }

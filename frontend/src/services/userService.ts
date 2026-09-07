@@ -1,8 +1,8 @@
 import { authFetch } from "./authService";
 import { API_BASE_URL, HttpMethod, JSON_HEADERS } from "../constants/Constants";
 import type { UserResponse } from "../interfaces/user/UserResponse";
-import type { UserCreateDto } from "../interfaces/user/UserCreateDto";
-import type { UserUpdateDto } from "../interfaces/user/UserUpdateDto";
+import type { UserCreateRequest as UserCreateRequest } from "../interfaces/user/UserCreateRequest";
+import type { UserUpdateRequest } from "../interfaces/user/UserUpdateRequest";
 import type { UserStatusUpdateDto } from "../interfaces/user/UserStatusUpdateDto";
 import type { UserWithCourseResponse } from "../interfaces/user/UserWithCourseResponse";
 import type { PagedResponse } from "../interfaces/common/PagedResponse";
@@ -40,8 +40,8 @@ export const deleteUser = async (id: string): Promise<void> => {
     }
 };
 
-export const createCourse = async (
-    newUser: UserCreateDto,
+export const createUser = async (
+    newUser: UserCreateRequest,
 ): Promise<UserResponse> => {
     const response = await authFetch(API_URL, {
         method: HttpMethod.POST,
@@ -58,7 +58,7 @@ export const createCourse = async (
 
 export const updateUser = async (
     id: string,
-    updatedUser: UserUpdateDto,
+    updatedUser: UserUpdateRequest,
 ): Promise<void> => {
     const response = await authFetch(`${API_URL}/${id}`, {
         method: HttpMethod.PUT,
