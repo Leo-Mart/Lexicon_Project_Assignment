@@ -44,11 +44,13 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
 
     return (
         <>
-            <div className="flex flex-row absolute">
+            <div className="flex flex-row absolute mt-1">
                 {isExpanded && (
-                    <div className="bg-bg-window h-[calc(100vh-1rem)] w-50 border-2 border-bg-header flex flex-col gap-3">
-                        <ModuleSideViewPart module={module} />
-                        <p>---------------</p>
+                    <div className="bg-bg-window h-[calc(100vh-1rem)] w-55 flex flex-col mx-1 z-50">
+                        <div className="border-b-4 border-dotted py-4 text-white">
+                            <ModuleSideViewPart module={module} />
+                        </div>
+
                         {[...modules]
                             .sort(
                                 (a, b) =>
@@ -61,7 +63,7 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
                     </div>
                 )}
                 <button
-                    className="bg-bg-window m-20px rotate-45 w-20 h-20 m-5 "
+                    className="bg-bg-window rotate-45 w-20 h-20 m-5"
                     onClick={() => setIsExpanded(!isExpanded)}
                 >
                     Module Side View
