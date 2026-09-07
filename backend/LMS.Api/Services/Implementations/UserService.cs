@@ -229,5 +229,17 @@ public class UserService : IUserService
             PageSize = query.PageSize
         };
     }
+
+    public async Task<IdentityResult> DeleteUserAsync(Guid userId)
+    {
+        User? user = await FindUserByIdAsync(userId);
+
+        if (user is null)
+        {
+            return UserNotFoundResult();
+        }
+
+        return await _userManager.DeleteAsync(user);
+    }
 }
 

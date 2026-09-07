@@ -21,4 +21,5 @@ public interface IUserService
 
     Task<IdentityResult> UpdateUserStatusAsync(Guid userId, UserStatus status);
     Task<PagedResponse<UserWithCourseDto>> GetAllWithCourseAsync(UserQueryParametersDto query);
+    Task<IdentityResult> DeleteUserAsync(Guid userId);
 }
