@@ -152,4 +152,20 @@ public class UsersController : ControllerBase
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Gets all users together with their enrolled course, if available.
+    /// </summary>
+    /// <returns>
+    /// A list of users including course information.
+    /// Users without an enrolled course are also included.
+    /// </returns>
+    [HttpGet("with-course")]
+    [ProducesResponseType(typeof(List<UserWithCourseDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<UserWithCourseDto>>> GetUsersWithCourseAsync()
+    {
+        List<UserWithCourseDto> users = await _userService.GetAllWithCourseAsync();
+
+        return Ok(users);
+    }
 }

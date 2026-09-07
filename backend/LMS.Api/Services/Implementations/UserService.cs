@@ -157,4 +157,26 @@ public class UserService : IUserService
 
         return await _userManager.AddToRoleAsync(user, role);
     }
+
+    public async Task<List<UserWithCourseDto>> GetAllWithCourseAsync()
+    {
+        return await _userManager.Users
+            .AsNoTracking()
+            .Include(user => user.Enrollment)
+                .ThenInclude(enrollment => enrollment!.Course)
+            .Select(user => new UserWithCourseDto
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Status = user.Status,
+                CourseId = user.Enrollment != null
+                    ? user.Enrollment.CourseId
+                    : null,
+                CourseName = user.Enrollment != null
+                    ? user.Enrollment.Course.Name
+                    : null
+            })
+            .ToListAsync();
+    }
 }

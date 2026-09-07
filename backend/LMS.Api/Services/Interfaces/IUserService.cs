@@ -19,4 +19,5 @@ public interface IUserService
     Task<IdentityResult> UpdateUserAsync(Guid userId, UserUpdateDto request);
 
     Task<IdentityResult> UpdateUserStatusAsync(Guid userId, UserStatus status);
+    Task<List<UserWithCourseDto>> GetAllWithCourseAsync();
 }
