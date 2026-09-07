@@ -15,7 +15,6 @@ const ResourceManagement = () => {
                 createPortal(
                     <ModalCreateResource
                         open={modalOpen}
-                        loading={false}
                         entityId="123"
                         createFor="activity"
                         onClose={() => setModalOpen(false)}

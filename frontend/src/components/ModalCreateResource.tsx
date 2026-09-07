@@ -16,7 +16,6 @@ type CreateResouceModalProps = {
     onClose: () => void;
     entityId: string;
     createFor: createForEntity;
-    loading: boolean;
 };
 
 const ModalCreateResource = (props: CreateResouceModalProps) => {

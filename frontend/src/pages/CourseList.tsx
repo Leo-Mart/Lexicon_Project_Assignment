@@ -5,6 +5,8 @@ import CourseModal from "./CourseModal";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import { fetchCourses } from "../services/courseService";
 import { deleteCourse } from "../services/courseService";
+import { createPortal } from "react-dom";
+import ModalCreateResource from "../components/ModalCreateResource";
 
 export default function Courses() {
     // STATE
@@ -23,6 +25,8 @@ export default function Courses() {
     const [error, setError] = useState<string | null>(null);
 
     const [isCourseModalVisible, setIsCourseModalVisible] = useState(false);
+    const [isCreateResourceModalVisible, setIsCreateResourceModalVisible] =
+        useState(false);
     const [selectedRow, setSelectedRow] = useState<CourseResponse>(newCourse);
 
     const handleSubmitCourseModal = (returnData: CourseResponse) => {
@@ -149,8 +153,34 @@ export default function Courses() {
                                         Update
                                     </Button>
                                     <Button
+                                        onClick={() =>
+                                            setIsCreateResourceModalVisible(
+                                                true,
+                                            )
+                                        }
+                                        className="hover:cursor-pointer mx-2"
+                                    >
+                                        Create Resource
+                                    </Button>
+                                    {isCreateResourceModalVisible &&
+                                        createPortal(
+                                            <ModalCreateResource
+                                                open={
+                                                    isCreateResourceModalVisible
+                                                }
+                                                entityId={course.courseId}
+                                                createFor="course"
+                                                onClose={() =>
+                                                    setIsCreateResourceModalVisible(
+                                                        false,
+                                                    )
+                                                }
+                                            />,
+                                            document.getElementById("root")!,
+                                        )}
+                                    <Button
                                         onClick={() => handleDelete(course)}
-                                        className="col-span-2 mx-2"
+                                        className="col-span-2"
                                     >
                                         Delete
                                     </Button>
