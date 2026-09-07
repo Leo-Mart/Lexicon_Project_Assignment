@@ -51,7 +51,7 @@ export const createActivity = async (
     return (await response.json()) as ActivityResponse;
 };
 
-export const updateCourse = async (
+export const updateActivity = async (
     id: string,
     updatedActivity: ActivityRequest,
 ): Promise<void> => {
