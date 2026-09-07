@@ -65,12 +65,11 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
     /// <param name="submissionCreateDto">Requires activity ID and text content.</param>
     /// 
     [HttpPost]
-    [ProducesResponseType(typeof(List<SubmissionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(SubmissionDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Roles = RoleConstants.Student)]
-    public async Task<ActionResult<List<SubmissionDto>>> CreateSubmission([FromBody] SubmissionCreateDto submissionCreateDto, CancellationToken cancellationToken)
+    public async Task<ActionResult<SubmissionDto>> CreateSubmission([FromBody] SubmissionCreateDto submissionCreateDto, CancellationToken cancellationToken)
     {
         string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
