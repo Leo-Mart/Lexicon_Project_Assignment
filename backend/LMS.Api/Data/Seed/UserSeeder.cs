@@ -56,6 +56,22 @@ public static class UserSeeder
             "Student123!",
             RoleSeeder.StudentRole
         );
+
+        for (int i = 4; i <= 13; i++)
+        {
+            Guid studentId = Guid.Parse(
+                $"20000000-0000-0000-0000-{i:D12}"
+            );
+
+            await CreateUserAsync(
+                userManager,
+                studentId,
+                $"Student {i}",
+                $"student{i}@example.com",
+                "Student123!",
+                RoleSeeder.StudentRole
+            );
+        }
     }
 
     private static async Task CreateUserAsync(
