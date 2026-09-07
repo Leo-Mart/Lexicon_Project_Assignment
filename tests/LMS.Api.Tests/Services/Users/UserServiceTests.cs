@@ -621,4 +621,103 @@ public class UserServiceTests
             null!
         );
     }
+
+    [Fact]
+    public async Task DeleteUserAsync_WhenUserExists_DeletesUser()
+    {
+        Guid userId = Guid.NewGuid();
+
+        var user = new User
+        {
+            Id = userId,
+            Name = "Test User",
+            Email = "test@example.com"
+        };
+
+        _userManagerMock
+            .Setup(manager => manager.FindByIdAsync(userId.ToString()))
+            .ReturnsAsync(user);
+
+        _userManagerMock
+            .Setup(manager => manager.DeleteAsync(user))
+            .ReturnsAsync(IdentityResult.Success);
+
+        IdentityResult result =
+            await _userService.DeleteUserAsync(userId);
+
+        Assert.True(result.Succeeded);
+
+        _userManagerMock.Verify(
+            manager => manager.DeleteAsync(user),
+            Times.Once
+        );
+    }
+    [Fact]
+    public async Task DeleteUserAsync_WhenUserDoesNotExist_ReturnsFailedResult()
+    {
+        Guid userId = Guid.NewGuid();
+
+        _userManagerMock
+            .Setup(manager => manager.FindByIdAsync(userId.ToString()))
+            .ReturnsAsync((User?)null);
+
+        IdentityResult result =
+            await _userService.DeleteUserAsync(userId);
+
+        Assert.False(result.Succeeded);
+
+        Assert.Contains(
+            result.Errors,
+            error => error.Code == "UserNotFound"
+        );
+
+        _userManagerMock.Verify(
+            manager => manager.DeleteAsync(It.IsAny<User>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task DeleteUserAsync_WhenDeleteFails_ReturnsFailedResult()
+    {
+        Guid userId = Guid.NewGuid();
+
+        var user = new User
+        {
+            Id = userId,
+            Name = "Test User",
+            Email = "test@example.com"
+        };
+
+        IdentityResult deleteFailure = IdentityResult.Failed(
+            new IdentityError
+            {
+                Code = "DeleteFailed",
+                Description = "User could not be deleted."
+            }
+        );
+
+        _userManagerMock
+            .Setup(manager => manager.FindByIdAsync(userId.ToString()))
+            .ReturnsAsync(user);
+
+        _userManagerMock
+            .Setup(manager => manager.DeleteAsync(user))
+            .ReturnsAsync(deleteFailure);
+
+        IdentityResult result =
+            await _userService.DeleteUserAsync(userId);
+
+        Assert.False(result.Succeeded);
+
+        Assert.Contains(
+            result.Errors,
+            error => error.Code == "DeleteFailed"
+        );
+
+        _userManagerMock.Verify(
+            manager => manager.DeleteAsync(user),
+            Times.Once
+        );
+    }
 }
