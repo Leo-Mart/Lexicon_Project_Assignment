@@ -32,4 +32,9 @@ public class SubmissionsRepository(LMSDbContext _context) : ISubmissionsReposito
     {
         await _context.AddAsync(submission);
     }
+
+    public async Task<List<Submission>> GetByActivityIdAsync(Guid activityId, CancellationToken cancellationToken)
+    {
+        return await _context.Submissions.AsNoTracking().Where(submission => submission.ActivityId == activityId).ToListAsync(cancellationToken);
+    }
 }
