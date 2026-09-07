@@ -1,37 +1,65 @@
+import { useState } from "react";
 import Button from "../components/Button";
 import Schedule from "../components/Schedule";
-import { Link, useNavigate } from "react-router-dom";
+import CourseList from "./CourseList";
+import ResourceManagement from "./ResourceManagement";
+import Users from "./Users";
 
-//import { routes } from "../routes/config"; // Adjust the import path
+const tabs = [
+    { label: "Overview" },
+    { label: "Course Management" },
+    { label: "User Management" },
+    { label: "Resource Management" },
+    { label: "Schedule" },
+];
 
 export default function Dashboard() {
-    const navigate = useNavigate();
-
-    const handleNavigation = () => {
-        navigate("/courselist");
-    };
-
-    const handleUsers = () => {
-        navigate("/users");
-    };
-
+    const [activeTab, setActiveTab] = useState(1);
     return (
-        <div className="bg-bg-light h-[calc(100vh-8rem)] p-10 grid grid-flow-col grid-rows-3 gap-8 grid-cols-5">
-            <Button onClick={handleNavigation} className="col-span-2">
-                Course Management
-            </Button>
-
-            <Button onClick={handleUsers} className="col-span-2">
-                User Control
-            </Button>
-
-            <Link to="/resources" className="col-span-2">
-                <Button className="size-full hover:cursor-pointer">
-                    Resource Manager
-                </Button>
-            </Link>
-
-            <Schedule />
+        <div className="bg-bg flex dark:bg-bg-dark min-h-screen p-10">
+            <nav className="flex flex-col w-1/7 mr-3">
+                <ul className="flex flex-col gap-5">
+                    {tabs.map((tab, index) => {
+                        return (
+                            <li key={index}>
+                                <Button
+                                    onClick={() => setActiveTab(index + 1)}
+                                    className="size-full hover:cursor-pointer"
+                                >
+                                    {tab.label}
+                                </Button>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </nav>
+            <div className="w-full">
+                {activeTab === 1 && (
+                    <div className="text-text-light">
+                        Maybe some overview fields here?
+                    </div>
+                )}
+                {activeTab === 2 && (
+                    <div>
+                        <CourseList />
+                    </div>
+                )}
+                {activeTab === 3 &&  (
+                    <div className="text-text-light">
+                        <div> <Users /></div>
+                    </div>
+                )}
+                {activeTab === 4 && (
+                    <div className="text-text-light">
+                        <ResourceManagement />
+                    </div>
+                )}
+                {activeTab === 5 && (
+                    <div className="text-text-light">
+                        <Schedule />
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

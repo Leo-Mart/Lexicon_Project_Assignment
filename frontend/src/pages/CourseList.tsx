@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import "../index.css";
 import Button from "../components/Button";
-import CourseModal from "./CourseModal";
+import CourseModal from "../components/CourseModal";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import { fetchCourses } from "../services/courseService";
 import { deleteCourse } from "../services/courseService";
 import { createPortal } from "react-dom";
 import ModalCreateResource from "../components/ModalCreateResource";
 
-export default function Courses() {
+export default function CourseList() {
     // STATE
 
     const newCourse = {
@@ -117,12 +117,12 @@ export default function Courses() {
 
     return (
         <>
-            <div className="bg-bg border rounded m-3">
-                <h1 className="text-3xl font-bold px-3 pb-3 text-center bg-bg-header text-white">
+            <div className="bg-bg dark:bg-bg-dark border rounded m-3">
+                <h1 className="text-3xl font-bold px-3 pb-3 text-center bg-bg-header dark:bg-bg-header-dark text-white dark:text-text-light">
                     Courses
                 </h1>
                 <table className="w-full text-left">
-                    <thead className="bg-bg-window h-10 border-b text-text-dark">
+                    <thead className="bg-bg-window dark:bg-bg-window-dark h-10 border-b border-accent-blue text-text-dark dark:text-text-light">
                         <tr>
                             <th className="p-3 w-2/10">Name</th>
                             <th className="p-3 w-4/10">Description</th>
@@ -131,12 +131,14 @@ export default function Courses() {
                             <th className="p-3 w-2/10"></th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="text-text-dark dark:text-text-light">
                         {courses.map((course, index) => (
                             <tr
                                 key={course.courseId}
                                 className={
-                                    index % 2 === 0 ? "bg-white" : "bg-bg"
+                                    index % 2 === 0
+                                        ? "bg-white dark:bg-bg-window-dark"
+                                        : "bg-bg dark:bg-bg-dark"
                                 }
                             >
                                 <td className="p-3">{course.name}</td>
