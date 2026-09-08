@@ -51,7 +51,7 @@ export const routes = [
     {
         path: "/courselist",
         displayName: "Course list",
-        component: lazy(() => import("../pages/CourseList")),
+        component: lazy(() => import("../pages/CourseListPage")),
         createHeader: false,
         isProtected: false,
     },

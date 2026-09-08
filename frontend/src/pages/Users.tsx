@@ -194,6 +194,8 @@ export default function Users() {
 
             <UsersTable
                 users={users}
+                sortBy={sortBy}
+                onSortChange={handleSortChange}
                 onEdit={(id) => {
                     const user = users.find((user) => user.id === id);
 
