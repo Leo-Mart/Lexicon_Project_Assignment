@@ -2,17 +2,29 @@ import { authFetch } from "./authService";
 import { API_BASE_URL, HttpMethod, JSON_HEADERS } from "../constants/Constants";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import type { CourseRequest } from "../interfaces/course/CourseRequest";
+import type { PagedResponse } from "../interfaces/common/PagedResponse";
+import type { QueryParameters } from "../interfaces/common/QueryParameters";
 
 const API_URL = API_BASE_URL + "/courses";
 
-export const fetchCourses = async (): Promise<CourseResponse[]> => {
-    const response = await authFetch(API_URL);
+export const fetchCourses = async (
+    query: QueryParameters,
+): Promise<PagedResponse<CourseResponse>> => {
+    const params = new URLSearchParams({
+        search: query.search,
+        sortBy: query.sortBy,
+        direction: query.direction,
+        page: query.page.toString(),
+        pageSize: query.pageSize.toString(),
+    });
+
+    const response = await authFetch(`${API_URL}?${params.toString()}`);
 
     if (!response.ok) {
-        throw new Error(`Failed to fetch course: ${response.status}`);
+        throw new Error(`Failed to fetch courses: ${response.status}`);
     }
 
-    return (await response.json()) as CourseResponse[];
+    return (await response.json()) as PagedResponse<CourseResponse>;
 };
 
 export const fetchCourse = async (id: string): Promise<CourseResponse> => {

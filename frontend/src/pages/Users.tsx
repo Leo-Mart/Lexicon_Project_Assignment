@@ -174,9 +174,15 @@ export default function Users() {
 
     useEffect(() => {
         const loadCourses = async () => {
-            const data = await fetchCourses();
+            const data = await fetchCourses({
+                search: "",
+                sortBy: "name",
+                direction: "asc",
+                page: 1,
+                pageSize: 200,
+            });
 
-            setCourses(data);
+            setCourses(data.items);
         };
 
         void loadCourses();
