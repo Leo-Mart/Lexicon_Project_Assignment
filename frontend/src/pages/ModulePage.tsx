@@ -85,7 +85,10 @@ export default function ModulePage() {
                         <div className="mt-5">
                             {module.activities.map(
                                 (activity: ActivityRequest) => (
-                                    <ActivityCard activity={activity} />
+                                    <ActivityCard
+                                        key={activity.activityId}
+                                        activity={activity}
+                                    />
                                 ),
                             )}
                         </div>

@@ -2,6 +2,17 @@ import { useState } from "react";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 import { ActivityTime, ActivityDate } from "../constants/ActivityTimeConverter";
 import { ActivityTypeNames } from "../constants/ActivityType";
+import Button from "../components/Button";
+import FormModal, { type EntityFormConfig } from "../components/FormModal";
+import { createSubmission } from "../services/submissionService";
+import type { SubmissionRequest } from "../interfaces/submission/SubmissionRequest";
+
+const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
+    title: "Add submission",
+    fields: [
+        { name: "text", label: "Submission", type: "textarea", required: true, maxLength: 2000 },
+    ],
+};
 
 export default function ActivityCard({
     activity,
@@ -9,6 +20,7 @@ export default function ActivityCard({
     activity: ActivityRequest;
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [addingSubmission, setAddingSubmission] = useState(false);
     console.log("Deadline ", activity.deadline);
     return (
         <div
@@ -52,7 +64,21 @@ export default function ActivityCard({
                             </p>
                         )}
                     </div>
+                    <Button variant="primary" onClick={() => setAddingSubmission(true)}>
+                        Add submission
+                    </Button>
                 </div>
+            )}
+            {addingSubmission && (
+                <FormModal
+                    config={submissionFormConfig}
+                    initialValue={{ activityId: activity.activityId, text: "" }}
+                    onSave={async (data) => {
+                        await createSubmission(data);
+                        setAddingSubmission(false);
+                    }}
+                    onClose={() => setAddingSubmission(false)}
+                />
             )}
         </div>
     );
