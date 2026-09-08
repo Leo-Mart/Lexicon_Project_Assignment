@@ -159,7 +159,7 @@ public class UserService : IUserService
         return await _userManager.AddToRoleAsync(user, role);
     }
 
-    public async Task<PagedResponse<UserWithCourseDto>> GetAllWithCourseAsync(UserQueryParametersDto query)
+    public async Task<PagedResponse<UserWithCourseDto>> GetAllWithCourseAsync(QueryParametersDto query)
     {
         IQueryable<User> usersQuery = _userManager.Users
             .AsNoTracking()

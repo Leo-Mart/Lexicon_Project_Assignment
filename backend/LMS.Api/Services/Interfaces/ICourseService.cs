@@ -1,10 +1,11 @@
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Course;
 
 namespace LMS.Api.Services.Interfaces;
 
 public interface ICourseService
 {
-    Task<IEnumerable<CourseDto>?> GetAllCourses();
+    Task<PagedResponse<CourseDto>> GetAllCourses(QueryParametersDto query, CancellationToken cancellationToken = default);
     Task<CourseDto?> GetCourseById(Guid courseId);
     Task<CourseDto> CreateNewCourse(CreateNewCourseDto newCourse);
     Task<CourseDto?> UpdateCourse(Guid courseId, UpdateCourseDto updateCourse);
