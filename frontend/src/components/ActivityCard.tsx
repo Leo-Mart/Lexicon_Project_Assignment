@@ -6,6 +6,8 @@ import Button from "../components/Button";
 import FormModal, { type EntityFormConfig } from "../components/FormModal";
 import { createSubmission } from "../services/submissionService";
 import type { SubmissionRequest } from "../interfaces/submission/SubmissionRequest";
+import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
+import { SubmissionStatusNames } from "../constants/SubmissionStatus";
 
 const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
     title: "Add submission",
@@ -22,12 +24,23 @@ const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
 
 export default function ActivityCard({
     activity,
+    submission,
 }: {
     activity: ActivityRequest;
+    submission?: SubmissionResponse;
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [addingSubmission, setAddingSubmission] = useState(false);
-    console.log("Deadline ", activity.deadline);
+
+    // No submission row yet: derive a status from the deadline instead.
+    const isPastDeadline =
+        activity.deadline != null && new Date() > new Date(activity.deadline);
+    const submissionStatusText = submission
+        ? SubmissionStatusNames[submission.status]
+        : isPastDeadline
+          ? "Late"
+          : "Not submitted";
+
     return (
         <div
             key={activity.activityId}
@@ -70,12 +83,17 @@ export default function ActivityCard({
                             </p>
                         )}
                     </div>
-                    <Button
-                        variant="primary"
-                        onClick={() => setAddingSubmission(true)}
-                    >
-                        Add submission
-                    </Button>
+                    <p className="text-sm text-text-dark p-3 pt-0">
+                        Status: {submissionStatusText}
+                    </p>
+                    {!submission && (
+                        <Button
+                            variant="primary"
+                            onClick={() => setAddingSubmission(true)}
+                        >
+                            Add submission
+                        </Button>
+                    )}
                 </div>
             )}
             {addingSubmission && (

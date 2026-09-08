@@ -6,13 +6,18 @@ import Lecture from "../components/Lecture";
 import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 import ModuleSideView from "../components/ModuleSideView";
 import { fetchModuleById } from "../services/moduleService";
+import { getCurrentUserSubmissions } from "../services/submissionService";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
+import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import ActivityCard from "../components/ActivityCard";
 
 export default function ModulePage() {
     const { id } = useParams<{ id: string }>();
     const moduleId = id || "40000000-0000-0000-0000-000000000004";
     const [module, setModule] = useState<ModuleResponse | null>(null);
+    const [submissionsByActivityId, setSubmissionsByActivityId] = useState<
+        Map<string, SubmissionResponse>
+    >(new Map());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -23,6 +28,16 @@ export default function ModulePage() {
             try {
                 const moduleData = await fetchModuleById(moduleId);
                 setModule(moduleData);
+
+                // Only students have submissions; teachers get a 403 here, so ignore failures.
+                try {
+                    const submissions = await getCurrentUserSubmissions();
+                    setSubmissionsByActivityId(
+                        new Map(submissions.map((s) => [s.activityId, s])),
+                    );
+                } catch {
+                    setSubmissionsByActivityId(new Map());
+                }
             } catch (err) {
                 setError(
                     err instanceof Error
@@ -88,6 +103,9 @@ export default function ModulePage() {
                                     <ActivityCard
                                         key={activity.activityId}
                                         activity={activity}
+                                        submission={submissionsByActivityId.get(
+                                            activity.activityId,
+                                        )}
                                     />
                                 ),
                             )}
