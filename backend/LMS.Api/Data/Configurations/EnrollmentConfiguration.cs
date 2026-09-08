@@ -22,7 +22,7 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollment>
         builder.HasOne(enrollment => enrollment.Student)
             .WithOne(user => user.Enrollment)
             .HasForeignKey<Enrollment>(enrollment => enrollment.StudentId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(enrollment => enrollment.Course)
             .WithMany(course => course.Enrollments)
