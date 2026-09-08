@@ -23,6 +23,15 @@ public class EnrollmentRepository : IEnrollmentRepository
                 cancellationToken);
     }
 
+    public async Task<List<Enrollment>> GetByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Enrollments
+            .AsNoTracking()
+            .Include(enrollment => enrollment.Student)
+            .Where(enrollment => enrollment.CourseId == courseId)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task AddAsync(Enrollment enrollment, CancellationToken cancellationToken = default)
     {
         await _context.Enrollments.AddAsync(enrollment, cancellationToken);

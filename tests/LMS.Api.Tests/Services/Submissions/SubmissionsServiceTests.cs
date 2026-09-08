@@ -17,6 +17,8 @@ public class SubmissionsServiceTests
 {
     private readonly Mock<ISubmissionsRepository> _submissionsRepositoryMock;
     private readonly Mock<IActivityService> _activityServiceMock;
+    private readonly Mock<IModuleService> _moduleServiceMock;
+    private readonly Mock<IEnrollmentService> _enrollmentServiceMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly ISubmissionsService _submissionsService;
 
@@ -24,6 +26,8 @@ public class SubmissionsServiceTests
     {
         _submissionsRepositoryMock = new Mock<ISubmissionsRepository>();
         _activityServiceMock = new Mock<IActivityService>();
+        _moduleServiceMock = new Mock<IModuleService>();
+        _enrollmentServiceMock = new Mock<IEnrollmentService>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
 
         // A real mapper, not a mock: the service's job is to map, so a
@@ -36,6 +40,8 @@ public class SubmissionsServiceTests
         _submissionsService = new SubmissionsService(
             _submissionsRepositoryMock.Object,
             _activityServiceMock.Object,
+            _moduleServiceMock.Object,
+            _enrollmentServiceMock.Object,
             _unitOfWorkMock.Object,
             mapper
         );
@@ -130,7 +136,7 @@ public class SubmissionsServiceTests
         SubmissionDto? result = await _submissionsService.GetByIdAsync(submissionId);
 
         Assert.NotNull(result);
-        Assert.True(result.IsLate);
+        Assert.True(result.SubmittedLate);
     }
 
     [Fact]
@@ -169,7 +175,7 @@ public class SubmissionsServiceTests
 
         SubmissionDto result = await _submissionsService.CreateSubmission(command, CancellationToken.None);
 
-        Assert.False(result.IsLate);
+        Assert.False(result.SubmittedLate);
     }
 
     [Fact]
@@ -184,7 +190,7 @@ public class SubmissionsServiceTests
 
         SubmissionDto result = await _submissionsService.CreateSubmission(command, CancellationToken.None);
 
-        Assert.True(result.IsLate);
+        Assert.True(result.SubmittedLate);
     }
 
     [Fact]
@@ -223,6 +229,6 @@ public class SubmissionsServiceTests
 
         SubmissionDto result = await _submissionsService.CreateSubmission(command, CancellationToken.None);
 
-        Assert.False(result.IsLate);
+        Assert.False(result.SubmittedLate);
     }
 }

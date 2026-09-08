@@ -65,13 +65,13 @@ public static class SubmissionSeeder
                 StudentId = UserSeeder.StudentThreeId,
                 Text = "React component exercise completed.",
                 SubmittedAt = new DateTime(
-                    2026, 10, 2, 13, 0, 0, DateTimeKind.Utc
+                    2026, 9, 1, 13, 0, 0, DateTimeKind.Utc
                 ),
                 ReviewStatus = SubmissionReviewStatus.Approved,
                 Feedback = "Well structured components.",
                 FeedbackByTeacherId = UserSeeder.TeacherId,
                 FeedbackAt = new DateTime(
-                    2026, 10, 4, 11, 0, 0, DateTimeKind.Utc
+                    2026, 9, 3, 11, 0, 0, DateTimeKind.Utc
                 ),
                 CreatedAt = now,
                 UpdatedAt = now

@@ -6,7 +6,7 @@ export interface SubmissionResponse {
     studentId: string;
     text: string;
     submittedAt: string;
-    isLate: boolean;
+    submittedLate: boolean;
     reviewStatus: SubmissionReviewStatus | null;
     feedback: string | null;
     feedbackByTeacherId: string | null;

@@ -104,7 +104,7 @@ export default function SubmissionsTest() {
                         <tr className="border-b">
                             <th className="pr-4">Id</th>
                             <th className="pr-4">Student</th>
-                            <th className="pr-4">Late</th>
+                            <th className="pr-4">Submitted Late</th>
                             <th className="pr-4">Review status</th>
                             <th>Feedback</th>
                         </tr>
@@ -114,7 +114,7 @@ export default function SubmissionsTest() {
                             <tr key={s.submissionId} className="border-b">
                                 <td className="pr-4">{s.submissionId}</td>
                                 <td className="pr-4">{s.studentId}</td>
-                                <td className="pr-4">{s.isLate ? "Yes" : "No"}</td>
+                                <td className="pr-4">{s.submittedLate ? "Yes" : "No"}</td>
                                 <td className="pr-4">{s.reviewStatus ?? "-"}</td>
                                 <td>{s.feedback ?? "-"}</td>
                             </tr>

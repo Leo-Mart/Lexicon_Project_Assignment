@@ -7,38 +7,43 @@ public static class EnrollmentSeeder
 {
     public static async Task SeedAsync(LMSDbContext context)
     {
-        if (await context.Enrollments.AnyAsync())
+        DateTime now = DateTime.UtcNow;
+
+        await EnrollAsync(context, UserSeeder.StudentOneId, CourseSeeder.DotNetCourseId, now);
+        await EnrollAsync(context, UserSeeder.StudentTwoId, CourseSeeder.DotNetCourseId, now);
+        await EnrollAsync(context, UserSeeder.StudentThreeId, CourseSeeder.FrontendCourseId, now);
+
+        // The extra students UserSeeder adds (ids ...0004 to ...0030),
+        // split evenly across both courses.
+        for (int i = 4; i <= 30; i++)
+        {
+            Guid studentId = Guid.Parse($"20000000-0000-0000-0000-{i:D12}");
+            Guid courseId = i % 2 == 0 ? CourseSeeder.DotNetCourseId : CourseSeeder.FrontendCourseId;
+
+            await EnrollAsync(context, studentId, courseId, now);
+        }
+    }
+
+    private static async Task EnrollAsync(
+        LMSDbContext context,
+        Guid studentId,
+        Guid courseId,
+        DateTime now)
+    {
+        bool alreadyEnrolled = await context.Enrollments
+            .AnyAsync(enrollment => enrollment.StudentId == studentId);
+
+        if (alreadyEnrolled)
         {
             return;
         }
 
-        DateTime now = DateTime.UtcNow;
-
-        var enrollments = new List<Enrollment>
+        context.Enrollments.Add(new Enrollment
         {
-            new()
-            {
-                StudentId = UserSeeder.StudentOneId,
-                CourseId = CourseSeeder.DotNetCourseId,
-                EnrolledAt = now
-            },
-
-            new()
-            {
-                StudentId = UserSeeder.StudentTwoId,
-                CourseId = CourseSeeder.DotNetCourseId,
-                EnrolledAt = now
-            },
-
-            new()
-            {
-                StudentId = UserSeeder.StudentThreeId,
-                CourseId = CourseSeeder.FrontendCourseId,
-                EnrolledAt = now
-            }
-        };
-
-        context.Enrollments.AddRange(enrollments);
+            StudentId = studentId,
+            CourseId = courseId,
+            EnrolledAt = now
+        });
 
         await context.SaveChangesAsync();
     }

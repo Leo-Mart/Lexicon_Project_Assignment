@@ -9,20 +9,28 @@ import type { SubmissionRequest } from "../interfaces/submission/SubmissionReque
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import { SubmissionReviewStatusNames } from "../constants/SubmissionReviewStatus";
 
-// Colors per status text, for the header dot and the "Status: ..." line.
+// Submitted/late state: drives the header dot and the "Status: ..." line.
 const statusDotColor: Record<string, string> = {
-    Submitted: "bg-green-400",
-    "Submitted (Late)": "bg-orange-400",
-    Approved: "bg-green-400",
-    "Needs completion": "bg-yellow-400",
+    "Not submitted": "bg-gray-400",
+    Submitted: "bg-blue-400",
+    "Submitted (Late)": "bg-blue-400",
 };
 const statusTextColor: Record<string, string> = {
     Late: "text-red-600",
-    "Submitted (Late)": "text-orange-500",
-    Submitted: "text-green-600",
+    "Not submitted": "text-gray-500",
+    Submitted: "text-blue-600",
+    "Submitted (Late)": "text-blue-600",
+};
+
+// Whether it's been reviewed, and the outcome: separate from submitted/late above.
+const reviewTextColor: Record<string, string> = {
+    "Not reviewed": "text-gray-500",
     Approved: "text-green-600",
     "Needs completion": "text-yellow-600",
-    "Not submitted": "text-gray-500",
+};
+const reviewDotColor: Record<string, string> = {
+    Approved: "bg-green-400",
+    "Needs completion": "bg-yellow-400",
 };
 
 const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
@@ -58,14 +66,25 @@ export default function ActivityCard({
         activity.deadline != null && new Date() > new Date(activity.deadline);
     const missingAndLate = !submission && isPastDeadline;
     const submissionStatusText = submission
-        ? submission.reviewStatus != null
-            ? SubmissionReviewStatusNames[submission.reviewStatus]
-            : submission.isLate
-              ? "Submitted (Late)"
-              : "Submitted"
+        ? submission.submittedLate
+            ? "Submitted (Late)"
+            : "Submitted"
         : isPastDeadline
           ? "Late"
           : "Not submitted";
+
+    // Only meaningful once submitted.
+    const reviewStatusText = submission
+        ? submission.reviewStatus != null
+            ? SubmissionReviewStatusNames[submission.reviewStatus]
+            : "Not reviewed"
+        : null;
+
+    // Once reviewed, the dot shows the review outcome instead of submitted/late.
+    const headerDotColor =
+        reviewStatusText && reviewStatusText !== "Not reviewed"
+            ? reviewDotColor[reviewStatusText]
+            : statusDotColor[submissionStatusText];
 
     return (
         <div
@@ -81,13 +100,10 @@ export default function ActivityCard({
                     {hasStarted && missingAndLate && (
                         <div className="rotate-45 w-5 h-5 bg-red-400"></div>
                     )}
-                    {hasStarted && submission && (
+                    {hasStarted && !missingAndLate && (
                         <div
-                            className={`rounded-full w-5 h-5 ${statusDotColor[submissionStatusText]}`}
+                            className={`rounded-full w-5 h-5 ${headerDotColor}`}
                         ></div>
-                    )}
-                    {hasStarted && !submission && !missingAndLate && (
-                        <div className="rounded-full w-5 h-5 bg-gray-400"></div>
                     )}
                     <button
                         className="border-2 border-bg-header-dark p-1"
@@ -110,12 +126,19 @@ export default function ActivityCard({
                             {ActivityTime(activity.endAt)}
                         </p>
                         {hasStarted && (
-                            <div className="flex flex-col items-start gap-1 px-3">
+                            <div className="flex flex-col items-start gap-2 px-3">
                                 <span
                                     className={`text-base font-bold ${statusTextColor[submissionStatusText]}`}
                                 >
                                     Status: {submissionStatusText}
                                 </span>
+                                {reviewStatusText && (
+                                    <span
+                                        className={`text-sm font-bold ${reviewTextColor[reviewStatusText]}`}
+                                    >
+                                        Review: {reviewStatusText}
+                                    </span>
+                                )}
                                 {activity.deadline != null && !submission && (
                                     <p
                                         className={`text-sm ${missingAndLate ? "text-red-600" : "text-text-dark"}`}
