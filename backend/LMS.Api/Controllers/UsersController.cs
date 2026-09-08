@@ -1,4 +1,5 @@
 using AutoMapper;
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Users;
 using LMS.Api.Models;
 using LMS.Api.Services.Interfaces;
@@ -147,6 +148,48 @@ public class UsersController : ControllerBase
 
         if (!result.Succeeded)
         {
+            return BadRequest(result.Errors);
+        }
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Gets users with their enrolled course using search, sorting and pagination.
+    /// </summary>
+    /// <param name="query">Search, sorting and pagination parameters.</param>
+    /// <returns>A paginated list of users with course information.</returns>
+    [HttpGet("with-course")]
+    [ProducesResponseType(typeof(PagedResponse<UserWithCourseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PagedResponse<UserWithCourseDto>>> GetUsersWithCourseAsync([FromQuery] UserQueryParametersDto query)
+    {
+        PagedResponse<UserWithCourseDto> users = await _userService.GetAllWithCourseAsync(query);
+
+        return Ok(users);
+    }
+
+    /// <summary>
+    /// Deletes a user by ID.
+    /// </summary>
+    /// <param name="id">The user ID.</param>
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
+    {
+        IdentityResult result = await _userService.DeleteUserAsync(id);
+
+        if (!result.Succeeded)
+        {
+            if (result.Errors.Any(error => error.Code == "UserNotFound"))
+            {
+                return NotFound();
+            }
+
             return BadRequest(result.Errors);
         }
 

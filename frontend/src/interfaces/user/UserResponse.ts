@@ -1,6 +1,6 @@
 import type { UserStatus } from "../../constants/UserConstant";
 
-export interface UserDto {
+export interface UserResponse {
     id: string;
     name: string;
     email: string;

@@ -3,6 +3,7 @@ import Button from "../components/Button";
 import Schedule from "../components/Schedule";
 import CourseList from "./CourseList";
 import ResourceManagement from "./ResourceManagement";
+import Users from "./Users";
 
 const tabs = [
     { label: "Overview" },
@@ -45,7 +46,10 @@ export default function Dashboard() {
                 )}
                 {activeTab === 3 && (
                     <div className="text-text-light">
-                        <div>This is where user-management goes</div>
+                        <div>
+                            {" "}
+                            <Users />
+                        </div>
                     </div>
                 )}
                 {activeTab === 4 && (

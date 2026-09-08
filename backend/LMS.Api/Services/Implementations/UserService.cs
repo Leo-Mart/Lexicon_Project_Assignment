@@ -1,5 +1,6 @@
 using AutoMapper;
 using LMS.Api.Constants;
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Users;
 using LMS.Api.Enums.Model;
 using LMS.Api.Models;
@@ -157,4 +158,88 @@ public class UserService : IUserService
 
         return await _userManager.AddToRoleAsync(user, role);
     }
+
+    public async Task<PagedResponse<UserWithCourseDto>> GetAllWithCourseAsync(UserQueryParametersDto query)
+    {
+        IQueryable<User> usersQuery = _userManager.Users
+            .AsNoTracking()
+            .Include(user => user.Enrollment)
+                .ThenInclude(enrollment => enrollment!.Course);
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            string search = query.Search.Trim();
+
+            usersQuery = usersQuery.Where(user =>
+                user.Name.Contains(search) ||
+                (user.Email != null && user.Email.Contains(search)) ||
+                (user.Enrollment != null &&
+                user.Enrollment.Course.Name.Contains(search)));
+        }
+
+        usersQuery = query.SortBy.ToLowerInvariant() switch
+        {
+            "email" => query.Direction == "desc"
+                ? usersQuery.OrderByDescending(user => user.Email)
+                : usersQuery.OrderBy(user => user.Email),
+
+            "status" => query.Direction == "desc"
+                ? usersQuery.OrderByDescending(user => user.Status)
+                : usersQuery.OrderBy(user => user.Status),
+
+            "course" => query.Direction == "desc"
+                ? usersQuery.OrderByDescending(user => user.Enrollment!.Course.Name)
+                : usersQuery.OrderBy(user => user.Enrollment!.Course.Name),
+
+            _ => query.Direction == "desc"
+                ? usersQuery.OrderByDescending(user => user.Name)
+                : usersQuery.OrderBy(user => user.Name)
+        };
+
+        int totalCount = await usersQuery.CountAsync();
+
+        List<User> users = await usersQuery
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToListAsync();
+
+        List<UserWithCourseDto> items = [];
+
+        foreach (User user in users)
+        {
+            IList<string> roles = await _userManager.GetRolesAsync(user);
+
+            items.Add(new UserWithCourseDto
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Status = user.Status,
+                Role = roles.FirstOrDefault() ?? string.Empty,
+                CourseId = user.Enrollment?.CourseId,
+                CourseName = user.Enrollment?.Course.Name
+            });
+        }
+
+        return new PagedResponse<UserWithCourseDto>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = query.Page,
+            PageSize = query.PageSize
+        };
+    }
+
+    public async Task<IdentityResult> DeleteUserAsync(Guid userId)
+    {
+        User? user = await FindUserByIdAsync(userId);
+
+        if (user is null)
+        {
+            return UserNotFoundResult();
+        }
+
+        return await _userManager.DeleteAsync(user);
+    }
 }
+
