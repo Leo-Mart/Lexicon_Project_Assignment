@@ -7,6 +7,7 @@ import { fetchCourses } from "../services/courseService";
 import { deleteCourse } from "../services/courseService";
 import { createPortal } from "react-dom";
 import ModalCreateResource from "../components/ModalCreateResource";
+import { Link } from "react-router-dom";
 
 export default function CourseList() {
     // STATE
@@ -186,6 +187,9 @@ export default function CourseList() {
                                     >
                                         Delete
                                     </Button>
+                                    <Link to={`/courses/${course.courseId}`}>
+                                        <Button>Go to course</Button>
+                                    </Link>
                                 </td>
                             </tr>
                         ))}
