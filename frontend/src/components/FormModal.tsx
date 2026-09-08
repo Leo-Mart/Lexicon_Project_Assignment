@@ -48,6 +48,7 @@ export default function FormModal<T extends Record<string, unknown>>({
     const [formData, setFormData] = useState<T>(initialValue);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState(false);
 
     // Copy every existing field, then overwrite just the one named `name`.
     const setField = (name: string, value: string) => {
@@ -60,6 +61,8 @@ export default function FormModal<T extends Record<string, unknown>>({
         setError(null);
         try {
             await onSave(formData);
+            setSuccess(true);
+            setTimeout(onClose, 3000);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Could not save.");
         } finally {
@@ -151,6 +154,11 @@ export default function FormModal<T extends Record<string, unknown>>({
                         </div>
                     ))}
                     {error && <p className="text-red-700 mb-2">{error}</p>}
+                    {success && (
+                        <p className="text-green-700 font-semibold text-base mb-2">
+                            Saved.
+                        </p>
+                    )}
                     <div>
                         <Button
                             type="submit"

@@ -84,7 +84,6 @@ export default function ActivityCard({
                     initialValue={{ activityId: activity.activityId, text: "" }}
                     onSave={async (data) => {
                         await createSubmission(data);
-                        setAddingSubmission(false);
                     }}
                     onClose={() => setAddingSubmission(false)}
                 />
