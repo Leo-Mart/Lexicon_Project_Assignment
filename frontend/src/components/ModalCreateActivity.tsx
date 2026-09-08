@@ -12,6 +12,7 @@ type ModalCreateActivityProps = {
     entityId?: string;
     createFor?: createForEntity;
 };
+const today = new Date();
 
 export default function ModalCreateActivity(props: ModalCreateActivityProps) {
     const [error, setError] = useState("");
@@ -66,7 +67,7 @@ export default function ModalCreateActivity(props: ModalCreateActivityProps) {
                             type="text"
                             id="name"
                             name="name"
-                            placeholder="Resource Name"
+                            placeholder="Activity Name"
                             maxLength={50}
                             required
                         />
@@ -77,32 +78,32 @@ export default function ModalCreateActivity(props: ModalCreateActivityProps) {
                             className="shadow appearance-none border rounded w-full bg-white p-2"
                             id="description"
                             name="description"
-                            placeholder="Resource description"
+                            placeholder="Activity description"
                             maxLength={200}
                             rows={5}
                             required
                         />
                     </div>
-                    <div>
-                        <label htmlFor="description">Content</label>
-                        <textarea
-                            className="shadow appearance-none border rounded w-full bg-white p-2"
-                            id="content"
-                            name="content"
-                            placeholder="Resource Content"
-                            maxLength={200}
-                            rows={5}
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="name">URL</label>
+                    <div className="mb-4">
+                        <label htmlFor="startDate">Start at</label>
                         <input
                             className="shadow appearance-none border rounded w-full bg-white p-2"
-                            type="url"
-                            id="uri"
-                            name="uri"
-                            placeholder="url to resource"
-                            maxLength={50}
+                            min={today.toLocaleDateString()}
+                            type="datetime-local"
+                            id="startDate"
+                            name="startDate"
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="startDate">End at</label>
+                        <input
+                            className="shadow appearance-none border rounded w-full bg-white p-2"
+                            min={today.toLocaleDateString()}
+                            type="datetime-local"
+                            id="startDate"
+                            name="startDate"
+                            required
                         />
                     </div>
                     {error && <span className="text-red-700">{error}</span>}
