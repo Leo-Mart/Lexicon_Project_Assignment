@@ -32,9 +32,7 @@ export const assignOrChangeCourse = async (
     }
 };
 
-export const removeCourse = async (
-    studentId: string,
-): Promise<void> => {
+export const removeCourse = async (studentId: string): Promise<void> => {
     const response = await authFetch(
         `${API_URL}/students/${studentId}/course`,
         {
@@ -43,8 +41,6 @@ export const removeCourse = async (
     );
 
     if (!response.ok) {
-        throw new Error(
-            `Could not remove course: ${response.status}`,
-        );
+        throw new Error(`Could not remove course: ${response.status}`);
     }
 };
