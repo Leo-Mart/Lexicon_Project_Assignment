@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Button from "../components/Button";
 import Schedule from "../components/Schedule";
-import CourseList from "./CourseListPage";
+import CourseListPage from "./CourseListPage";
 import ResourceManagement from "./ResourceManagement";
 import Users from "./Users";
 
@@ -41,7 +41,7 @@ export default function Dashboard() {
                 )}
                 {activeTab === 2 && (
                     <div>
-                        <CourseList />
+                        <CourseListPage />
                     </div>
                 )}
                 {activeTab === 3 && (

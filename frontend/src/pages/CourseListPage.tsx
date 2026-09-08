@@ -5,11 +5,11 @@ import CourseModal from "../components/CourseModal";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import { fetchCourses } from "../services/courseService";
 import { deleteCourse } from "../services/courseService";
-import { createPortal } from "react-dom";
 import ModalCreateResource from "../components/ModalCreateResource";
-import { Link } from "react-router-dom";
+import CourseTable from "../components/CourseTable";
+import { createPortal } from "react-dom";
 
-export default function CourseList() {
+export default function CourseListPage() {
     // STATE
 
     const newCourse = {
@@ -26,8 +26,9 @@ export default function CourseList() {
     const [error, setError] = useState<string | null>(null);
 
     const [isCourseModalVisible, setIsCourseModalVisible] = useState(false);
-    const [isCreateResourceModalVisible, setIsCreateResourceModalVisible] =
-        useState(false);
+    const [resourceTarget, setResourceTarget] = useState<CourseResponse | null>(
+        null,
+    );
     const [selectedRow, setSelectedRow] = useState<CourseResponse>(newCourse);
 
     const handleSubmitCourseModal = (returnData: CourseResponse) => {
@@ -132,90 +133,27 @@ export default function CourseList() {
                         onSubmit={handleSubmitCourseModal}
                     />
                 )}
+                {resourceTarget &&
+                    createPortal(
+                        <ModalCreateResource
+                            open={true}
+                            entityId={resourceTarget.courseId}
+                            createFor="course"
+                            onClose={() => setResourceTarget(null)}
+                        />,
+                        document.getElementById("root")!,
+                    )}
             </div>
             <div className="bg-bg dark:bg-bg-dark border rounded m-3">
                 <h1 className="text-3xl font-bold px-3 pb-3 text-center bg-bg-header dark:bg-bg-header-dark text-white dark:text-text-light">
                     Courses
                 </h1>
-                <table className="w-full text-left">
-                    <thead className="bg-bg-window dark:bg-bg-window-dark h-10 border-b border-accent-blue text-text-dark dark:text-text-light">
-                        <tr>
-                            {/*  <SortableTh
-                                field="name"
-                                label="Name"
-                                sortBy={sortBy}
-                                onSortChange={onSortChange}
-                            /> */}
-                            <th className="p-3 w-2/10">Name</th>
-                            <th className="p-3 w-4/10">Description</th>
-                            <th className="p-3 w-1/10">Start date</th>
-                            <th className="p-3 w-1/10">End date</th>
-                            <th className="p-3 w-2/10"></th>
-                        </tr>
-                    </thead>
-                    <tbody className="text-text-dark dark:text-text-light">
-                        {courses.map((course, index) => (
-                            <tr
-                                key={course.courseId}
-                                className={
-                                    index % 2 === 0
-                                        ? "bg-white dark:bg-bg-window-dark"
-                                        : "bg-bg dark:bg-bg-dark"
-                                }
-                            >
-                                <td className="p-3">{course.name}</td>
-                                <td className="p-3">{course.description}</td>
-                                <td className="p-3">{course.startDate}</td>
-                                <td className="p-3">{course.endDate}</td>
-                                <td className="p-3">
-                                    <Button
-                                        onClick={() =>
-                                            handleShowCourseModal(course)
-                                        }
-                                        className="col-span-2"
-                                    >
-                                        Update
-                                    </Button>
-                                    <Button
-                                        onClick={() =>
-                                            setIsCreateResourceModalVisible(
-                                                true,
-                                            )
-                                        }
-                                        className="hover:cursor-pointer mx-2"
-                                    >
-                                        Create Resource
-                                    </Button>
-                                    {isCreateResourceModalVisible &&
-                                        createPortal(
-                                            <ModalCreateResource
-                                                open={
-                                                    isCreateResourceModalVisible
-                                                }
-                                                entityId={course.courseId}
-                                                createFor="course"
-                                                onClose={() =>
-                                                    setIsCreateResourceModalVisible(
-                                                        false,
-                                                    )
-                                                }
-                                            />,
-                                            document.getElementById("root")!,
-                                        )}
-                                    <Button
-                                        onClick={() => handleDelete(course)}
-                                        className="col-span-2"
-                                    >
-                                        Delete
-                                    </Button>
-                                    <Link to={`/courses/${course.courseId}`}>
-                                        <Button>Go to course</Button>
-                                    </Link>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <CourseTable
+                    courses={courses}
+                    onUpdate={handleShowCourseModal}
+                    onCreateResource={(course) => setResourceTarget(course)}
+                    onDelete={handleDelete}
+                />
             </div>
         </>
     );
