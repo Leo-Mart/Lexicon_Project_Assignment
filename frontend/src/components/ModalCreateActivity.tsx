@@ -2,12 +2,7 @@ import ModalWrapper from "./ModalWrapper";
 import Button from "./Button";
 import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
 import { useState } from "react";
-import {
-    addResourceToActivity,
-    addResourceToCourse,
-    addResourceToModule,
-    createResource,
-} from "../services/resourceService";
+import { createActivity, updateCourse } from "../services/activityService";
 
 type createForEntity = "course" | "module" | "activity";
 
@@ -38,7 +33,7 @@ export default function ModalCreateResource(props: ModalCreateActivityProps) {
         };
 
         try {
-            const resp = await createResource(newResourcePayload);
+            const resp = await createActivity(newResourcePayload);
             switch (props.createFor) {
                 case "course": {
                     await addResourceToCourse(resp.resourceId, props.entityId);

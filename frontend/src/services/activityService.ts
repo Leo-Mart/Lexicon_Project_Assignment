@@ -5,7 +5,7 @@ import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 
 const API_URL = API_BASE_URL + "/activity";
 
-export const fetchActivitys = async (): Promise<ActivityResponse[]> => {
+export const fetchActivities = async (): Promise<ActivityResponse[]> => {
     const response = await authFetch(API_URL);
 
     if (!response.ok) {
@@ -51,7 +51,7 @@ export const createActivity = async (
     return (await response.json()) as ActivityResponse;
 };
 
-export const updateCourse = async (
+export const updatedActivity = async (
     id: string,
     updatedActivity: ActivityRequest,
 ): Promise<void> => {
