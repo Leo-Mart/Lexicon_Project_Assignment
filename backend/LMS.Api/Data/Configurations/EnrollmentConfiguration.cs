@@ -11,11 +11,7 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollment>
     {
         builder.ToTable("Enrollments");
 
-        builder.HasKey(enrollment => new
-        {
-            enrollment.StudentId,
-            enrollment.CourseId
-        });
+        builder.HasKey(enrollment => enrollment.StudentId);
 
         builder.HasIndex(enrollment => enrollment.StudentId)
             .IsUnique();
