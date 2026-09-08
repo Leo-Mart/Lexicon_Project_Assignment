@@ -4,7 +4,7 @@ export interface ResourceResponse {
     name: string;
     description: string;
     content?: string | null;
-    uri?: string | null;
+    uri?: string | undefined;
     createdAt: string;
     updatedAt: string;
 }

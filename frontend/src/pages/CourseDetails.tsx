@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { fetchCourse } from "../services/courseService";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import Button from "../components/Button";
+import type { ResourceResponse } from "../interfaces/resource/ResourceResponse";
+import { fetchResourcesForCourse } from "../services/resourceService";
 
 export default function CoursesDetails() {
     //TODO: byta ut mot anrop
@@ -14,9 +16,24 @@ export default function CoursesDetails() {
         startDate: "",
         endDate: "",
         modules: [],
+        resources: [],
+    };
+
+    const emptyResource = {
+        resourceId: "",
+        createdByTeacherId: "",
+        name: "",
+        description: "",
+        content: "",
+        uri: "",
+        createdAt: "",
+        updatedAt: "",
     };
 
     const [course, setCourse] = useState<CourseResponse>(newCourse);
+    const [resources, setResources] = useState<ResourceResponse[]>([
+        emptyResource,
+    ]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -32,7 +49,7 @@ export default function CoursesDetails() {
                 setError(
                     err instanceof Error
                         ? err.message
-                        : "Failed to fetch module",
+                        : "Failed to fetch course",
                 );
                 console.error("Fetch error:", err);
             } finally {
@@ -41,6 +58,29 @@ export default function CoursesDetails() {
         };
 
         fetchChosenCourse(courseId);
+    }, []);
+
+    // Get resources for course
+    useEffect(() => {
+        const fetchAllResourcesForCourse = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const resourceData = await fetchResourcesForCourse(courseId);
+                setResources(resourceData);
+            } catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to fetch resources",
+                );
+                console.error("Fetch error:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAllResourcesForCourse();
     }, []);
 
     // RENDER
@@ -68,6 +108,16 @@ export default function CoursesDetails() {
                     <p>
                         {course.startDate} - {course.endDate}
                     </p>
+                </div>
+                <div>
+                    <h2 className="font-bold">Course resources: </h2>
+                    {resources.map((resource) => (
+                        <li className="p-3" key={resource.resourceId}>
+                            <a className="underline" href={resource.uri}>
+                                {resource.name}
+                            </a>
+                        </li>
+                    ))}
                 </div>
 
                 {course.modules.map((module) => (
