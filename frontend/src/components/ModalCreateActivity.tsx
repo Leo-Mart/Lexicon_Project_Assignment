@@ -20,34 +20,29 @@ export default function ModalCreateActivity(props: ModalCreateActivityProps) {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
 
-        const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
-            e.preventDefault();
+        const newResourcePayload: ResourceRequest = {
+            name: formData.get("name")!.toString(),
+            description: formData.get("description")!.toString(),
+            content:
+                formData.get("content")?.toString() === ""
+                    ? null
+                    : formData.get("content")?.toString(),
+            uri:
+                formData.get("uri")?.toString() === ""
+                    ? null
+                    : formData.get("uri")?.toString(),
+        };
 
-            const formData = new FormData(e.currentTarget);
-            const newResourcePayload: ResourceRequest = {
-                name: formData.get("name")!.toString(),
-                description: formData.get("description")!.toString(),
-                content:
-                    formData.get("content")?.toString() === ""
-                        ? null
-                        : formData.get("content")?.toString(),
-                uri:
-                    formData.get("uri")?.toString() === ""
-                        ? null
-                        : formData.get("uri")?.toString(),
-            };
-
-            try {
-                console.log(formData);
-                console.log(newResourcePayload);
-                /* await createActivity(formData).then((response) => {
+        try {
+            console.log(formData);
+            console.log(newResourcePayload);
+            /* await createActivity(formData).then((response) => {
                     onSubmit(response);
                 }); */
-                //onClose();
-            } catch (error) {
-                console.error("Error on saving:", error);
-            }
-        };
+            //onClose();
+        } catch (error) {
+            console.error("Error on saving:", error);
+        }
     };
     return (
         <ModalWrapper
@@ -85,25 +80,35 @@ export default function ModalCreateActivity(props: ModalCreateActivityProps) {
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="startDate">Start at</label>
+                        <label htmlFor="startAt">Start at</label>
                         <input
                             className="shadow appearance-none border rounded w-full bg-white p-2"
                             min={today.toLocaleDateString()}
                             type="datetime-local"
-                            id="startDate"
-                            name="startDate"
+                            id="startAt"
+                            name="startAt"
                             required
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="startDate">End at</label>
+                        <label htmlFor="endAt">End at</label>
                         <input
                             className="shadow appearance-none border rounded w-full bg-white p-2"
                             min={today.toLocaleDateString()}
                             type="datetime-local"
-                            id="startDate"
-                            name="startDate"
+                            id="endAt"
+                            name="endAt"
                             required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="deadline">Deadline</label>
+                        <input
+                            className="shadow appearance-none border rounded w-full bg-white p-2"
+                            min={today.toLocaleDateString()}
+                            type="datetime-local"
+                            id="deadline"
+                            name="deadline"
                         />
                     </div>
                     {error && <span className="text-red-700">{error}</span>}
