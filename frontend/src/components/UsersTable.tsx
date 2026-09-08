@@ -1,8 +1,11 @@
+import SortableTh from "./SortableTableHead";
 import type { UserWithCourseResponse } from "../interfaces/user/UserWithCourseResponse";
 import UserTableRow from "./UserTableRow";
 
 interface UsersTableProps {
     users: UserWithCourseResponse[];
+    sortBy: string;
+    onSortChange: (value: string) => void;
     onEdit: (id: string) => void;
     onDelete: (id: string) => void;
     onAssignCourse: (id: string) => void;
@@ -10,6 +13,8 @@ interface UsersTableProps {
 
 export default function UsersTable({
     users,
+    sortBy,
+    onSortChange,
     onEdit,
     onDelete,
     onAssignCourse,
@@ -19,11 +24,36 @@ export default function UsersTable({
             <table className="w-full text-left text-gray-100">
                 <thead className="bg-gray-700">
                     <tr>
-                        <th className="px-4 py-3">Name</th>
-                        <th className="px-4 py-3">Email</th>
-                        <th className="px-4 py-3">Status</th>
-                        <th className="px-4 py-3">Role</th>
-                        <th className="px-4 py-3">Course</th>
+                        <SortableTh
+                            field="name"
+                            label="Name"
+                            sortBy={sortBy}
+                            onSortChange={onSortChange}
+                        />
+                        <SortableTh
+                            field="email"
+                            label="Email"
+                            sortBy={sortBy}
+                            onSortChange={onSortChange}
+                        />
+                        <SortableTh
+                            field="status"
+                            label="Status"
+                            sortBy={sortBy}
+                            onSortChange={onSortChange}
+                        />
+                        <SortableTh
+                            field="role"
+                            label="Role"
+                            sortBy={sortBy}
+                            onSortChange={onSortChange}
+                        />
+                        <SortableTh
+                            field="course"
+                            label="Course"
+                            sortBy={sortBy}
+                            onSortChange={onSortChange}
+                        />
                         <th className="px-4 py-3">Actions</th>
                     </tr>
                 </thead>
