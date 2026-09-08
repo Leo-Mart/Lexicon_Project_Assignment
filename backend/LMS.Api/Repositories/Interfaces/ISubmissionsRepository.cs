@@ -10,6 +10,7 @@ public interface ISubmissionsRepository
 
     Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default);
     Task<List<Submission>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default);
+    Task<List<Submission>> GetByActivityIdAsync(Guid activityId, CancellationToken cancellationToken = default);
     public void Update(Submission submission);
 
 }

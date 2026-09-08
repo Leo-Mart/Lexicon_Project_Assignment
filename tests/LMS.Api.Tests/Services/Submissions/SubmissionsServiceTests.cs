@@ -1,5 +1,6 @@
 using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
+using LMS.Api.DTOs.Activities;
 using LMS.Api.DTOs.Submissions;
 using LMS.Api.Enums.Model;
 using LMS.Api.Mappings;
@@ -15,12 +16,14 @@ namespace LMS.Api.Tests.Services.Submissions;
 public class SubmissionsServiceTests
 {
     private readonly Mock<ISubmissionsRepository> _submissionsRepositoryMock;
+    private readonly Mock<IActivityService> _activityServiceMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly ISubmissionsService _submissionsService;
 
     public SubmissionsServiceTests()
     {
         _submissionsRepositoryMock = new Mock<ISubmissionsRepository>();
+        _activityServiceMock = new Mock<IActivityService>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
 
         // A real mapper, not a mock: the service's job is to map, so a
@@ -32,6 +35,7 @@ public class SubmissionsServiceTests
 
         _submissionsService = new SubmissionsService(
             _submissionsRepositoryMock.Object,
+            _activityServiceMock.Object,
             _unitOfWorkMock.Object,
             mapper
         );
@@ -126,5 +130,60 @@ public class SubmissionsServiceTests
         SubmissionDto? result = await _submissionsService.GetByIdAsync(submissionId);
 
         Assert.Null(result);
+    }
+
+    private static SubmissionsCreateCommand CreateCommand(Guid activityId)
+    {
+        return new SubmissionsCreateCommand
+        {
+            StudentId = Guid.NewGuid(),
+            ActivityId = activityId,
+            Text = "Assignment handed in."
+        };
+    }
+
+    [Fact]
+    public async Task CreateSubmission_BeforeDeadline_ShouldBeSubmitted()
+    {
+        Guid activityId = Guid.NewGuid();
+        SubmissionsCreateCommand command = CreateCommand(activityId);
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Deadline = DateTime.UtcNow.AddDays(1) });
+
+        SubmissionDto result = await _submissionsService.CreateSubmission(command, CancellationToken.None);
+
+        Assert.Equal(SubmissionStatus.Submitted, result.Status);
+    }
+
+    [Fact]
+    public async Task CreateSubmission_AfterDeadline_ShouldBeLate()
+    {
+        Guid activityId = Guid.NewGuid();
+        SubmissionsCreateCommand command = CreateCommand(activityId);
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Deadline = DateTime.UtcNow.AddDays(-1) });
+
+        SubmissionDto result = await _submissionsService.CreateSubmission(command, CancellationToken.None);
+
+        Assert.Equal(SubmissionStatus.Late, result.Status);
+    }
+
+    [Fact]
+    public async Task CreateSubmission_WithNoDeadline_ShouldBeSubmitted()
+    {
+        Guid activityId = Guid.NewGuid();
+        SubmissionsCreateCommand command = CreateCommand(activityId);
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Deadline = null });
+
+        SubmissionDto result = await _submissionsService.CreateSubmission(command, CancellationToken.None);
+
+        Assert.Equal(SubmissionStatus.Submitted, result.Status);
     }
 }
