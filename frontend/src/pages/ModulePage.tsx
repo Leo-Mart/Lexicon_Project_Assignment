@@ -1,7 +1,6 @@
 // src/pages/ModulePage.tsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import Button from "../components/Button";
 import Lecture from "../components/Lecture";
 import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 import ModuleSideView from "../components/ModuleSideView";
@@ -11,76 +10,23 @@ import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import ActivityCard from "../components/ActivityCard";
 import { useAuth } from "../hooks/useAuth";
-import type { EntityFormConfig } from "../components/FormModal";
 import FormModal from "../components/FormModal";
 import { createActivity } from "../services/activityService";
 import { ActivityType } from "../constants/ActivityType";
-
-const createActivityFormConfig: EntityFormConfig<ActivityRequest> = {
-    title: "Create new Activity",
-    fields: [
-        {
-            name: "name",
-            label: "Name",
-            type: "text",
-            required: true,
-            maxLength: 100,
-        },
-        {
-            name: "type",
-            label: "Activity Type",
-            type: "select",
-            required: true,
-            maxLength: 100,
-            options: [
-                {
-                    value: ActivityType.Task.toString(),
-                    label: "Task",
-                },
-                {
-                    value: ActivityType.Lecture.toString(),
-                    label: "Lecture",
-                },
-                {
-                    value: ActivityType.ELearning.toString(),
-                    label: "E-learning",
-                },
-                {
-                    value: ActivityType.Practice.toString(),
-                    label: "Practice",
-                },
-                {
-                    value: ActivityType.Other.toString(),
-                    label: "Other",
-                },
-            ],
-        },
-        {
-            name: "description",
-            label: "Description",
-            type: "textarea",
-            required: true,
-            maxLength: 100,
-        },
-        {
-            name: "startAt",
-            label: "Start Date",
-            type: "datetime-local",
-            required: true,
-        },
-        {
-            name: "endAt",
-            label: "End Date",
-            type: "datetime-local",
-            required: true,
-        },
-        {
-            name: "deadline",
-            label: "Set a deadline",
-            type: "datetime-local",
-        },
-    ],
-};
+import {
+    addResourceToModule,
+    createResource,
+    deleteResource,
+    fetchResourcesForModule,
+    updateResource,
+} from "../services/resourceService";
+import type { ResourceResponse } from "../interfaces/resource/ResourceResponse";
+import ResourceCard from "../components/ResourceCard";
+import {
+    createActivityFormConfig,
+    createResourceFormConfig,
+} from "../types/formSchemas";
+import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
 
 export default function ModulePage() {
     const { id } = useParams<{ id: string }>();
@@ -89,10 +35,14 @@ export default function ModulePage() {
     const [submissionsByActivityId, setSubmissionsByActivityId] = useState<
         Map<string, SubmissionResponse>
     >(new Map());
+    const [moduleResources, setModuleResources] = useState<
+        ResourceResponse[] | null
+    >(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const [showCreateActivityForm, setShowCreateActivityForm] = useState(false);
+    const [showCreateResourceForm, setShowCreateResourceForm] = useState(false);
 
     const { isAuthenticated, role } = useAuth();
 
@@ -125,8 +75,57 @@ export default function ModulePage() {
             }
         };
 
+        const getResourcesForModule = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const resourceData = await fetchResourcesForModule(moduleId);
+                setModuleResources(resourceData);
+            } catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to fetch resources",
+                );
+                console.error("Error fetching resources: ", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         fetchModule();
+        getResourcesForModule();
     }, [moduleId]);
+
+    const handleResourceEdit = async (
+        resourceId: string,
+        payload: ResourceRequest,
+    ) => {
+        await updateResource(resourceId, payload);
+        const updatedResources: ResourceResponse[] = moduleResources!.map(
+            (resource) => {
+                if (resource.resourceId === resourceId) {
+                    resource.name = payload.name;
+                    resource.description = payload.description;
+                    resource.content = payload.content;
+                    resource.uri = payload.uri ?? undefined;
+
+                    return resource;
+                } else {
+                    return resource;
+                }
+            },
+        );
+        setModuleResources(updatedResources);
+    };
+    const handleRemoveResource = async (resourceId: string) => {
+        await deleteResource(resourceId);
+        setModuleResources(
+            moduleResources!.filter(
+                (resource) => resource.resourceId !== resourceId,
+            ),
+        );
+    };
 
     if (loading) return <div>Loading...</div>;
     if (error)
@@ -162,21 +161,65 @@ export default function ModulePage() {
                     lectureTime="13:30"
                     teacher="Michael"
                 />
-                <Button className="row-span-2">Course Material</Button>
                 <div className="row-span-2 rounded-md px-4 py-2 bg-buttons text-text-light">
-                    <div className="flex flex-row justify-between">
-                        <div></div>
-                        <h1 className="text-4xl text-center">Activities</h1>
-                        {isAuthenticated && role === "Teacher" ? (
-                            <button
-                                onClick={() => setShowCreateActivityForm(true)}
-                                className="rounded-md p-2 w-10 bg-buttons border-text-light border-3 hover:cursor-pointer"
-                            >
-                                +
-                            </button>
-                        ) : (
-                            ""
-                        )}
+                    <div className="flex">
+                        <div className="flex w-full">
+                            <h1 className="text-4xl grow text-center">
+                                Module Resources
+                            </h1>
+                            {isAuthenticated && role === "Teacher" ? (
+                                <button
+                                    onClick={() =>
+                                        setShowCreateResourceForm(true)
+                                    }
+                                    className="rounded-md p-2 w-10 bg-buttons border-text-light border hover:cursor-pointer"
+                                >
+                                    +
+                                </button>
+                            ) : (
+                                ""
+                            )}
+                        </div>
+                    </div>
+                    {moduleResources?.length ? (
+                        <div className="mt-5">
+                            <ul className="flex flex-col gap-2">
+                                {moduleResources.map(
+                                    (resource: ResourceResponse) => (
+                                        <ResourceCard
+                                            resource={resource}
+                                            editResource={handleResourceEdit}
+                                            removeResource={
+                                                handleRemoveResource
+                                            }
+                                        />
+                                    ),
+                                )}
+                            </ul>
+                        </div>
+                    ) : (
+                        "Module has no activities"
+                    )}
+                </div>
+                <div className="row-span-2 rounded-md px-4 py-2 bg-buttons text-text-dark dark:text-text-light">
+                    <div className="flex">
+                        <div className="flex w-full ">
+                            <h1 className="text-4xl grow text-center">
+                                Activities
+                            </h1>
+                            {isAuthenticated && role === "Teacher" ? (
+                                <button
+                                    onClick={() =>
+                                        setShowCreateActivityForm(true)
+                                    }
+                                    className="rounded-md p-2 w-10 bg-buttons border-text-light border-3 hover:cursor-pointer"
+                                >
+                                    +
+                                </button>
+                            ) : (
+                                ""
+                            )}
+                        </div>
                     </div>
                     {module.activities?.length ? (
                         <div className="mt-5">
@@ -218,9 +261,30 @@ export default function ModulePage() {
                         type: ActivityType.Task,
                     }}
                     onSave={async (data) => {
-                        await createActivity(data);
+                        const resp = await createActivity(data);
+                        setModule({
+                            ...module,
+                            activities: [...module.activities, resp],
+                        });
                     }}
                     onClose={() => setShowCreateActivityForm(false)}
+                />
+            )}
+            {showCreateResourceForm && (
+                <FormModal
+                    config={createResourceFormConfig}
+                    initialValue={{
+                        name: "",
+                        description: "",
+                        content: "",
+                        uri: undefined,
+                    }}
+                    onSave={async (data) => {
+                        const resp = await createResource(data);
+                        await addResourceToModule(resp.resourceId, moduleId);
+                        setModuleResources([...moduleResources!, resp]);
+                    }}
+                    onClose={() => setShowCreateResourceForm(false)}
                 />
             )}
         </>

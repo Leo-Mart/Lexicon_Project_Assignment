@@ -2,7 +2,7 @@ import { useState } from "react";
 import Button from "./Button";
 
 export type FieldType =
-    "text" | "textarea" | "date" | "datetime-local" | "select";
+    "text" | "textarea" | "date" | "datetime-local" | "select" | "url";
 
 export interface FieldOption {
     value: string;
@@ -52,10 +52,13 @@ export default function FormModal<T extends Record<string, unknown>>({
 
     // Copy every existing field, then overwrite just the one named `name`.
     const setField = (name: string, value: string) => {
+        if (name === "url" && value === "") {
+            setFormData({ ...formData, ["url"]: null });
+        }
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         setSaving(true);
         setError(null);
@@ -114,6 +117,7 @@ export default function FormModal<T extends Record<string, unknown>>({
 
         if (
             field.type === "text" ||
+            field.type === "url" ||
             field.type === "date" ||
             field.type === "datetime-local"
         ) {
