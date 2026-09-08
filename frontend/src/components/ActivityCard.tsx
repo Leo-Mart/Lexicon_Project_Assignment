@@ -10,7 +10,13 @@ import type { SubmissionRequest } from "../interfaces/submission/SubmissionReque
 const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
     title: "Add submission",
     fields: [
-        { name: "text", label: "Submission", type: "textarea", required: true, maxLength: 2000 },
+        {
+            name: "text",
+            label: "Submission",
+            type: "textarea",
+            required: true,
+            maxLength: 2000,
+        },
     ],
 };
 
@@ -64,7 +70,10 @@ export default function ActivityCard({
                             </p>
                         )}
                     </div>
-                    <Button variant="primary" onClick={() => setAddingSubmission(true)}>
+                    <Button
+                        variant="primary"
+                        onClick={() => setAddingSubmission(true)}
+                    >
                         Add submission
                     </Button>
                 </div>
