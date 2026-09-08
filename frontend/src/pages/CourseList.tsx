@@ -118,6 +118,21 @@ export default function CourseList() {
 
     return (
         <>
+            <div className="m-3 flex justify-end">
+                <Button
+                    onClick={() => handleShowCourseModal(newCourse)}
+                    className=""
+                >
+                    Create course
+                </Button>
+                {isCourseModalVisible && (
+                    <CourseModal
+                        selectedCourse={selectedRow}
+                        onClose={handleCloseCourseModal}
+                        onSubmit={handleSubmitCourseModal}
+                    />
+                )}
+            </div>
             <div className="bg-bg dark:bg-bg-dark border rounded m-3">
                 <h1 className="text-3xl font-bold px-3 pb-3 text-center bg-bg-header dark:bg-bg-header-dark text-white dark:text-text-light">
                     Courses
@@ -195,21 +210,6 @@ export default function CourseList() {
                         ))}
                     </tbody>
                 </table>
-            </div>
-            <div className="m-3">
-                <Button
-                    onClick={() => handleShowCourseModal(newCourse)}
-                    className="col-span-2"
-                >
-                    Create course
-                </Button>
-                {isCourseModalVisible && (
-                    <CourseModal
-                        selectedCourse={selectedRow}
-                        onClose={handleCloseCourseModal}
-                        onSubmit={handleSubmitCourseModal}
-                    />
-                )}
             </div>
         </>
     );
