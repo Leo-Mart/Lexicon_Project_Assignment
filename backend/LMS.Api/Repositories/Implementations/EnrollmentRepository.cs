@@ -32,4 +32,9 @@ public class EnrollmentRepository : IEnrollmentRepository
     {
         _context.Enrollments.Update(enrollment);
     }
+
+    public void Delete(Enrollment enrollment)
+    {
+        _context.Enrollments.Remove(enrollment);
+    }
 }
