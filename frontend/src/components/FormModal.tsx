@@ -1,7 +1,8 @@
 import { useState } from "react";
 import Button from "./Button";
 
-export type FieldType = "text" | "textarea" | "date" | "select";
+export type FieldType =
+    "text" | "textarea" | "date" | "datetime-local" | "select";
 
 export interface FieldOption {
     value: string;
@@ -108,7 +109,11 @@ export default function FormModal<T extends Record<string, unknown>>({
             );
         }
 
-        if (field.type === "text" || field.type === "date") {
+        if (
+            field.type === "text" ||
+            field.type === "date" ||
+            field.type === "datetime-local"
+        ) {
             return (
                 <input
                     className={`${inputClass} bg-white`}
@@ -124,7 +129,7 @@ export default function FormModal<T extends Record<string, unknown>>({
     };
 
     return (
-        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center backdrop-blur-xs">
+        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center backdrop-blur-xs z-20">
             <div className="bg-white rounded-md overflow-hidden max-w-md w-full mx-4">
                 <nav className="bg-bg-header text-white flex justify-between px-4 py-2">
                     <h2 className="text-lg">{config.title}</h2>
