@@ -11,14 +11,14 @@ import {
 
 type createForEntity = "course" | "module" | "activity";
 
-type CreateResouceModalProps = {
+type CreateResourceModalProps = {
     open: boolean;
     onClose: () => void;
     entityId: string;
     createFor: createForEntity;
 };
 
-const ModalCreateResource = (props: CreateResouceModalProps) => {
+const ModalCreateResource = (props: CreateResourceModalProps) => {
     const [error, setError] = useState("");
     const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
