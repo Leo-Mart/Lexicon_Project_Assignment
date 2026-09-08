@@ -92,7 +92,7 @@ export default function ActivityCard({
 
     return (
         <div
-            key={activity.activityId}
+            key={activity.name}
             className="w-80% rounded overflow-hidden shadow-lg bg-white m-3"
         >
             <div className="bg-bg-header w-full p-4 grid grid-cols-3 items-center">
@@ -176,7 +176,7 @@ export default function ActivityCard({
             {addingSubmission && (
                 <FormModal
                     config={submissionFormConfig}
-                    initialValue={{ activityId: activity.activityId, text: "" }}
+                    initialValue={{ activityId: "123", text: "" }}
                     onSave={async (data) => {
                         const created = await createSubmission(data);
                         onSubmitted?.(created);

@@ -10,6 +10,77 @@ import { getCurrentUserSubmissions } from "../services/submissionService";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import ActivityCard from "../components/ActivityCard";
+import { useAuth } from "../hooks/useAuth";
+import type { EntityFormConfig } from "../components/FormModal";
+import FormModal from "../components/FormModal";
+import { createActivity } from "../services/activityService";
+import { ActivityType } from "../constants/ActivityType";
+
+const createActivityFormConfig: EntityFormConfig<ActivityRequest> = {
+    title: "Create new Activity",
+    fields: [
+        {
+            name: "name",
+            label: "Name",
+            type: "text",
+            required: true,
+            maxLength: 100,
+        },
+        {
+            name: "type",
+            label: "Activity Type",
+            type: "select",
+            required: true,
+            maxLength: 100,
+            options: [
+                {
+                    value: ActivityType.Task.toString(),
+                    label: "Task",
+                },
+                {
+                    value: ActivityType.Lecture.toString(),
+                    label: "Lecture",
+                },
+                {
+                    value: ActivityType.ELearning.toString(),
+                    label: "E-learning",
+                },
+                {
+                    value: ActivityType.Practice.toString(),
+                    label: "Practice",
+                },
+                {
+                    value: ActivityType.Other.toString(),
+                    label: "Other",
+                },
+            ],
+        },
+        {
+            name: "description",
+            label: "Description",
+            type: "textarea",
+            required: true,
+            maxLength: 100,
+        },
+        {
+            name: "startAt",
+            label: "Start Date",
+            type: "datetime-local",
+            required: true,
+        },
+        {
+            name: "endAt",
+            label: "End Date",
+            type: "datetime-local",
+            required: true,
+        },
+        {
+            name: "deadline",
+            label: "Set a deadline",
+            type: "datetime-local",
+        },
+    ],
+};
 
 export default function ModulePage() {
     const { id } = useParams<{ id: string }>();
@@ -20,6 +91,10 @@ export default function ModulePage() {
     >(new Map());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const [showCreateActivityForm, setShowCreateActivityForm] = useState(false);
+
+    const { isAuthenticated, role } = useAuth();
 
     useEffect(() => {
         const fetchModule = async () => {
@@ -92,16 +167,23 @@ export default function ModulePage() {
                     <div className="flex flex-row justify-between">
                         <div></div>
                         <h1 className="text-4xl text-center">Activities</h1>
-                        <button className="rounded-md p-2 w-10 bg-buttons border-text-light border-3">
-                            +
-                        </button>
+                        {isAuthenticated && role === "Teacher" ? (
+                            <button
+                                onClick={() => setShowCreateActivityForm(true)}
+                                className="rounded-md p-2 w-10 bg-buttons border-text-light border-3 hover:cursor-pointer"
+                            >
+                                +
+                            </button>
+                        ) : (
+                            ""
+                        )}
                     </div>
                     {module.activities?.length ? (
                         <div className="mt-5">
                             {module.activities.map(
                                 (activity: ActivityRequest) => (
                                     <ActivityCard
-                                        key={activity.activityId}
+                                        key={activity.name}
                                         activity={activity}
                                         submission={submissionsByActivityId.get(
                                             activity.activityId,
@@ -123,6 +205,24 @@ export default function ModulePage() {
                     )}
                 </div>
             </div>
+            {showCreateActivityForm && (
+                <FormModal
+                    config={createActivityFormConfig}
+                    initialValue={{
+                        moduleId: moduleId,
+                        name: "",
+                        description: "",
+                        startAt: "",
+                        endAt: "",
+                        deadline: null,
+                        type: ActivityType.Task,
+                    }}
+                    onSave={async (data) => {
+                        await createActivity(data);
+                    }}
+                    onClose={() => setShowCreateActivityForm(false)}
+                />
+            )}
         </>
     );
 }
