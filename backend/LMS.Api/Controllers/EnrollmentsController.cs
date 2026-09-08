@@ -85,4 +85,25 @@ public class EnrollmentsController : ControllerBase
             return BadRequest(exception.Message);
         }
     }
+
+    /// <summary>
+    /// Removes the course assignment from a student.
+    /// </summary>
+    /// <param name="studentId">The ID of the student.</param>
+    /// <param name="cancellationToken">Cancellation token for the request.</param>
+    [HttpDelete("students/{studentId:guid}/course")]
+    [Authorize(Roles = RoleConstants.Teacher)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> RemoveCourse(
+        [FromRoute] Guid studentId,
+        CancellationToken cancellationToken)
+    {
+        await _enrollmentService.RemoveCourseAsync(
+            studentId,
+            cancellationToken);
+
+        return NoContent();
+    }
 }
