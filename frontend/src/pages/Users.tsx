@@ -15,6 +15,10 @@ import UserForm from "../components/UserForm";
 import type { UserCreateRequest } from "../interfaces/user/UserCreateRequest";
 import type { UserUpdateRequest } from "../interfaces/user/UserUpdateRequest";
 import ConfirmDialog from "../components/ConfirmDialog";
+import { fetchCourses } from "../services/courseService";
+import { assignOrChangeCourse } from "../services/enrollmentService";
+import type { CourseResponse } from "../interfaces/course/CourseResponse";
+import AssignCourseForm from "../components/AssignCourseForm";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 20;
@@ -44,6 +48,13 @@ export default function Users() {
         setSortBy(value);
         setPage(DEFAULT_PAGE);
     };
+
+    const [courses, setCourses] = useState<CourseResponse[]>([]);
+
+    const [assigningUser, setAssigningUser] =
+        useState<UserWithCourseResponse | null>(null);
+
+    const [assignCourseError, setAssignCourseError] = useState<string>();
 
     const handleCreateUser = async (values: UserCreateRequest) => {
         try {
@@ -79,6 +90,27 @@ export default function Users() {
         setRefreshKey((current) => current + 1);
     };
 
+    const handleAssignCourse = async (courseId: string) => {
+        if (!assigningUser) {
+            return;
+        }
+
+        try {
+            setAssignCourseError(undefined);
+
+            await assignOrChangeCourse(assigningUser.id, courseId);
+
+            setAssigningUser(null);
+            setRefreshKey((current) => current + 1);
+        } catch (error) {
+            setAssignCourseError(
+                error instanceof Error
+                    ? error.message
+                    : "Could not assign course.",
+            );
+        }
+    };
+
     useEffect(() => {
         const loadUsers = async () => {
             const [sortField, sortDirection = "asc"] = sortBy.split("-");
@@ -99,6 +131,16 @@ export default function Users() {
 
         void loadUsers();
     }, [search, sortBy, page, pageSize, refreshKey]);
+
+    useEffect(() => {
+        const loadCourses = async () => {
+            const data = await fetchCourses();
+
+            setCourses(data);
+        };
+
+        void loadCourses();
+    }, []);
 
     return (
         <div className="p-4">
@@ -126,7 +168,14 @@ export default function Users() {
                         setUserToDelete(user);
                     }
                 }}
-                onAssignCourse={(id) => console.log("Assign course", id)}
+                onAssignCourse={(id) => {
+                    const user = users.find((user) => user.id === id);
+
+                    if (user) {
+                        setAssignCourseError(undefined);
+                        setAssigningUser(user);
+                    }
+                }}
             />
 
             <Pagination
@@ -182,6 +231,23 @@ export default function Users() {
                         setUserToDelete(null);
                     }}
                 />
+            )}
+
+            {assigningUser && (
+                <ModalWrapper
+                    open={true}
+                    onClose={() => setAssigningUser(null)}
+                    title={`Assign course to ${assigningUser.name}`}
+                >
+                    <AssignCourseForm
+                        courses={courses}
+                        onSubmit={(courseId) => {
+                            void handleAssignCourse(courseId);
+                        }}
+                        onCancel={() => setAssigningUser(null)}
+                        submitError={assignCourseError}
+                    />
+                </ModalWrapper>
             )}
         </div>
     );
