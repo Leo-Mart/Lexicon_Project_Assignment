@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import {
     UserStatus,
     type UserRole,
@@ -7,13 +7,15 @@ import {
 import TextInput from "./form/TextInput";
 import SelectInput from "./form/SelectInput";
 import FormActions from "./form/FormActions";
+import type { CourseResponse } from "../interfaces/course/CourseResponse";
 
-interface UserFormValues {
+export interface UserFormValues {
     name: string;
     email: string;
     password: string;
     role: UserRole;
     status: UserStatusType;
+    courseId: string;
 }
 
 interface UserFormProps {
@@ -22,6 +24,7 @@ interface UserFormProps {
     onSubmit: (values: UserFormValues) => void;
     onCancel: () => void;
     submitError?: string;
+    courses?: CourseResponse[];
 }
 
 export default function UserForm({
@@ -30,6 +33,7 @@ export default function UserForm({
     onSubmit,
     onCancel,
     submitError,
+    courses,
 }: UserFormProps) {
     const defaultValues: UserFormValues = {
         name: initialValues?.name ?? "",
@@ -37,11 +41,12 @@ export default function UserForm({
         password: "",
         role: initialValues?.role ?? "Student",
         status: initialValues?.status ?? UserStatus.Active,
+        courseId: initialValues?.courseId ?? "",
     };
 
     const [formData, setFormData] = useState<UserFormValues>(defaultValues);
 
-    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
         onSubmit(formData);
     };
@@ -141,6 +146,27 @@ export default function UserForm({
                             status: Number(
                                 event.target.value,
                             ) as UserStatusType,
+                        })
+                    }
+                />
+            )}
+
+            {mode === "edit" && formData.role === "Student" && (
+                <SelectInput
+                    label="Course"
+                    name="courseId"
+                    value={formData.courseId}
+                    options={[
+                        { value: "", label: "No course selected" },
+                        ...(courses?.map((course) => ({
+                            value: course.courseId,
+                            label: course.name,
+                        })) ?? []),
+                    ]}
+                    onChange={(event) =>
+                        setFormData({
+                            ...formData,
+                            courseId: event.target.value,
                         })
                     }
                 />

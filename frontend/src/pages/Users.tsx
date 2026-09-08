@@ -19,6 +19,7 @@ import { fetchCourses } from "../services/courseService";
 import { assignOrChangeCourse } from "../services/enrollmentService";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import AssignCourseForm from "../components/AssignCourseForm";
+import type { UserFormValues } from "../components/UserForm";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 20;
@@ -73,15 +74,40 @@ export default function Users() {
         }
     };
 
-    const handleUpdateUser = async (values: UserUpdateRequest) => {
+    const handleUpdateUser = async (values: UserFormValues) => {
         if (!editingUser) {
             return;
         }
 
-        await updateUser(editingUser.id, values);
+        try {
+            setUserFormError(undefined);
 
-        setEditingUser(null);
-        setRefreshKey((current) => current + 1);
+            const userUpdate: UserUpdateRequest = {
+                name: values.name,
+                email: values.email,
+                role: values.role,
+                status: values.status,
+            };
+
+            await updateUser(editingUser.id, userUpdate);
+
+            if (
+                values.role === "Student" &&
+                values.courseId &&
+                values.courseId !== editingUser.courseId
+            ) {
+                await assignOrChangeCourse(editingUser.id, values.courseId);
+            }
+
+            setEditingUser(null);
+            setRefreshKey((current) => current + 1);
+        } catch (error) {
+            setUserFormError(
+                error instanceof Error
+                    ? error.message
+                    : "Could not update user.",
+            );
+        }
     };
 
     const handleDeleteUser = async (id: string) => {
@@ -213,9 +239,12 @@ export default function Users() {
                             email: editingUser.email ?? "",
                             role: editingUser.role,
                             status: editingUser.status,
+                            courseId: editingUser.courseId ?? "",
                         }}
+                        courses={courses}
                         onSubmit={handleUpdateUser}
                         onCancel={() => setEditingUser(null)}
+                        submitError={userFormError}
                     />
                 </ModalWrapper>
             )}
