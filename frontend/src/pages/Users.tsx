@@ -16,7 +16,10 @@ import type { UserCreateRequest } from "../interfaces/user/UserCreateRequest";
 import type { UserUpdateRequest } from "../interfaces/user/UserUpdateRequest";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { fetchCourses } from "../services/courseService";
-import { assignOrChangeCourse } from "../services/enrollmentService";
+import {
+    assignOrChangeCourse,
+    removeCourse,
+} from "../services/enrollmentService";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import AssignCourseForm from "../components/AssignCourseForm";
 import type { UserFormValues } from "../components/UserForm";
@@ -93,10 +96,21 @@ export default function Users() {
 
             if (
                 values.role === "Student" &&
-                values.courseId &&
                 values.courseId !== editingUser.courseId
             ) {
-                await assignOrChangeCourse(editingUser.id, values.courseId);
+                if (values.courseId) {
+                    await assignOrChangeCourse(editingUser.id, values.courseId);
+                } else {
+                    await removeCourse(editingUser.id);
+                }
+            }
+
+            if (
+                editingUser.role === "Student" &&
+                values.role === "Teacher" &&
+                editingUser.courseId
+            ) {
+                await removeCourse(editingUser.id);
             }
 
             setEditingUser(null);
