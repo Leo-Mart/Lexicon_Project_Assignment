@@ -1,4 +1,4 @@
-import type { SubmissionStatus } from "../../constants/SubmissionStatus";
+import type { SubmissionReviewStatus } from "../../constants/SubmissionReviewStatus";
 
 export interface SubmissionResponse {
     submissionId: string;
@@ -6,7 +6,8 @@ export interface SubmissionResponse {
     studentId: string;
     text: string;
     submittedAt: string;
-    status: SubmissionStatus;
+    isLate: boolean;
+    reviewStatus: SubmissionReviewStatus | null;
     feedback: string | null;
     feedbackByTeacherId: string | null;
     feedbackAt: string | null;

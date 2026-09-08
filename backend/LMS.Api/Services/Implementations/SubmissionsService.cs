@@ -2,7 +2,6 @@ using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.DTOs.Activities;
 using LMS.Api.DTOs.Submissions;
-using LMS.Api.Enums.Model;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using LMS.Api.Services.Interfaces;
@@ -24,6 +23,7 @@ public class SubmissionsService(
             return null;
         }
         submission.Feedback = setFeedbackCommand.Details.Feedback;
+        submission.ReviewStatus = setFeedbackCommand.Details.ReviewStatus;
         submission.FeedbackByTeacherId = setFeedbackCommand.TeacherId;
         submission.FeedbackAt = DateTime.UtcNow;
         submission.UpdatedAt = DateTime.UtcNow;
@@ -84,11 +84,14 @@ public class SubmissionsService(
             Text = command.Text,
             CreatedAt = DateTime.UtcNow,
             SubmittedAt = submittedAt,
-            Status = isLate ? SubmissionStatus.Late : SubmissionStatus.Submitted,
         };
 
         await _submissionsRepository.CreateAsync(submission, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return _mapper.Map<SubmissionDto>(submission);
+
+        // The submission's own Activity nav isn't loaded here, so set IsLate directly.
+        SubmissionDto dto = _mapper.Map<SubmissionDto>(submission);
+        dto.IsLate = isLate;
+        return dto;
     }
 }

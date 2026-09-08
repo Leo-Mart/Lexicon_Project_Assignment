@@ -39,7 +39,6 @@ public class SubmissionsControllerTests
             StudentId = Guid.NewGuid(),
             Text = "Assignment handed in.",
             SubmittedAt = new DateTime(2026, 10, 1, 14, 30, 0, DateTimeKind.Utc),
-            Status = SubmissionStatus.Submitted,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -186,7 +185,7 @@ public class SubmissionsControllerTests
         SetUser(teacherId);
 
         Guid submissionId = Guid.NewGuid();
-        SubmissionFeedbackDto feedbackDto = new() { Feedback = "Good work." };
+        SubmissionFeedbackDto feedbackDto = new() { Feedback = "Good work.", ReviewStatus = SubmissionReviewStatus.Approved };
         SubmissionDto updated = CreateDto(submissionId);
 
         _submissionsServiceMock
@@ -208,7 +207,7 @@ public class SubmissionsControllerTests
         SetUser(teacherId);
 
         Guid submissionId = Guid.NewGuid();
-        SubmissionFeedbackDto feedbackDto = new() { Feedback = "Good work." };
+        SubmissionFeedbackDto feedbackDto = new() { Feedback = "Good work.", ReviewStatus = SubmissionReviewStatus.Approved };
 
         _submissionsServiceMock
             .Setup(service => service.SetFeedbackAsync(It.IsAny<SetFeedbackCommand>(), It.IsAny<CancellationToken>()))

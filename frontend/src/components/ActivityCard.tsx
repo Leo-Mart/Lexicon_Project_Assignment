@@ -7,7 +7,23 @@ import FormModal, { type EntityFormConfig } from "../components/FormModal";
 import { createSubmission } from "../services/submissionService";
 import type { SubmissionRequest } from "../interfaces/submission/SubmissionRequest";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
-import { SubmissionStatusNames } from "../constants/SubmissionStatus";
+import { SubmissionReviewStatusNames } from "../constants/SubmissionReviewStatus";
+
+// Colors per status text, for the header dot and the "Status: ..." line.
+const statusDotColor: Record<string, string> = {
+    Submitted: "bg-green-400",
+    "Submitted (Late)": "bg-orange-400",
+    Approved: "bg-green-400",
+    "Needs completion": "bg-yellow-400",
+};
+const statusTextColor: Record<string, string> = {
+    Late: "text-red-600",
+    "Submitted (Late)": "text-orange-500",
+    Submitted: "text-green-600",
+    Approved: "text-green-600",
+    "Needs completion": "text-yellow-600",
+    "Not submitted": "text-gray-500",
+};
 
 const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
     title: "Add submission",
@@ -25,18 +41,28 @@ const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
 export default function ActivityCard({
     activity,
     submission,
+    onSubmitted,
 }: {
     activity: ActivityRequest;
     submission?: SubmissionResponse;
+    onSubmitted?: (submission: SubmissionResponse) => void;
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [addingSubmission, setAddingSubmission] = useState(false);
 
-    // No submission row yet: derive a status from the deadline instead.
+    // Nothing to submit before the activity has even started.
+    const hasStarted = new Date() >= new Date(activity.startAt);
+
+    // No submission row yet: derive lateness from the deadline instead.
     const isPastDeadline =
         activity.deadline != null && new Date() > new Date(activity.deadline);
+    const missingAndLate = !submission && isPastDeadline;
     const submissionStatusText = submission
-        ? SubmissionStatusNames[submission.status]
+        ? submission.reviewStatus != null
+            ? SubmissionReviewStatusNames[submission.reviewStatus]
+            : submission.isLate
+              ? "Submitted (Late)"
+              : "Submitted"
         : isPastDeadline
           ? "Late"
           : "Not submitted";
@@ -46,14 +72,22 @@ export default function ActivityCard({
             key={activity.activityId}
             className="w-80% rounded overflow-hidden shadow-lg bg-white m-3"
         >
-            <div className="bg-bg-header w-full p-4 flex flex-row justify-between items-center">
+            <div className="bg-bg-header w-full p-4 grid grid-cols-3 items-center">
                 <h2 className="font-bold text-xl">{activity.name}</h2>
-                <h3 className="font-bold text-l bg-bg-window text-text-dark p-1.5 rounded">
+                <h3 className="font-bold text-l bg-bg-window text-text-dark p-1.5 rounded justify-self-center">
                     {ActivityTypeNames[activity.type]}
                 </h3>
-                <div className="flex flex-row justify-between items-center w-35">
-                    {activity.deadline != null && (
-                        <div className="rotate-45 w-5 h-5 bg-red-400 flex items-center"></div>
+                <div className="flex flex-row justify-end items-center gap-2 justify-self-end">
+                    {hasStarted && missingAndLate && (
+                        <div className="rotate-45 w-5 h-5 bg-red-400"></div>
+                    )}
+                    {hasStarted && submission && (
+                        <div
+                            className={`rounded-full w-5 h-5 ${statusDotColor[submissionStatusText]}`}
+                        ></div>
+                    )}
+                    {hasStarted && !submission && !missingAndLate && (
+                        <div className="rounded-full w-5 h-5 bg-gray-400"></div>
                     )}
                     <button
                         className="border-2 border-bg-header-dark p-1"
@@ -75,18 +109,26 @@ export default function ActivityCard({
                             {ActivityTime(activity.startAt)}-
                             {ActivityTime(activity.endAt)}
                         </p>
-                        {activity.deadline != null && (
-                            <p className="text-sm text-red-600  p-3 pt-0">
-                                {" Deadline "}
-                                {ActivityDate(activity.deadline)} {"  "}
-                                {ActivityTime(activity.deadline)}
-                            </p>
+                        {hasStarted && (
+                            <div className="flex flex-col items-start gap-1 px-3">
+                                <span
+                                    className={`text-base font-bold ${statusTextColor[submissionStatusText]}`}
+                                >
+                                    Status: {submissionStatusText}
+                                </span>
+                                {activity.deadline != null && !submission && (
+                                    <p
+                                        className={`text-sm ${missingAndLate ? "text-red-600" : "text-text-dark"}`}
+                                    >
+                                        {" Deadline "}
+                                        {ActivityDate(activity.deadline)} {"  "}
+                                        {ActivityTime(activity.deadline)}
+                                    </p>
+                                )}
+                            </div>
                         )}
                     </div>
-                    <p className="text-sm text-text-dark p-3 pt-0">
-                        Status: {submissionStatusText}
-                    </p>
-                    {!submission && (
+                    {hasStarted && !submission && (
                         <Button
                             variant="primary"
                             onClick={() => setAddingSubmission(true)}
@@ -101,7 +143,8 @@ export default function ActivityCard({
                     config={submissionFormConfig}
                     initialValue={{ activityId: activity.activityId, text: "" }}
                     onSave={async (data) => {
-                        await createSubmission(data);
+                        const created = await createSubmission(data);
+                        onSubmitted?.(created);
                     }}
                     onClose={() => setAddingSubmission(false)}
                 />

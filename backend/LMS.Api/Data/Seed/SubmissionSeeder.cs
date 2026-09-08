@@ -35,7 +35,7 @@ public static class SubmissionSeeder
                 SubmittedAt = new DateTime(
                     2026, 10, 1, 14, 30, 0, DateTimeKind.Utc
                 ),
-                Status = SubmissionStatus.Submitted,
+                ReviewStatus = SubmissionReviewStatus.Approved,
                 Feedback = "Good work. Clear structure and correct use of endpoints.",
                 FeedbackByTeacherId = UserSeeder.TeacherId,
                 FeedbackAt = new DateTime(
@@ -54,7 +54,6 @@ public static class SubmissionSeeder
                 SubmittedAt = new DateTime(
                     2026, 10, 3, 9, 0, 0, DateTimeKind.Utc
                 ),
-                Status = SubmissionStatus.Late,
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -68,7 +67,7 @@ public static class SubmissionSeeder
                 SubmittedAt = new DateTime(
                     2026, 10, 2, 13, 0, 0, DateTimeKind.Utc
                 ),
-                Status = SubmissionStatus.Submitted,
+                ReviewStatus = SubmissionReviewStatus.Approved,
                 Feedback = "Well structured components.",
                 FeedbackByTeacherId = UserSeeder.TeacherId,
                 FeedbackAt = new DateTime(

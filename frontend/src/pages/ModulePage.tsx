@@ -106,6 +106,15 @@ export default function ModulePage() {
                                         submission={submissionsByActivityId.get(
                                             activity.activityId,
                                         )}
+                                        onSubmitted={(submission) =>
+                                            setSubmissionsByActivityId(
+                                                (prev) =>
+                                                    new Map(prev).set(
+                                                        submission.activityId,
+                                                        submission,
+                                                    ),
+                                            )
+                                        }
                                     />
                                 ),
                             )}
