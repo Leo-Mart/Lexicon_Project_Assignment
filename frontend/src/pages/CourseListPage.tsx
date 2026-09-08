@@ -140,8 +140,8 @@ export default function CourseList() {
                 <table className="w-full text-left">
                     <thead className="bg-bg-window dark:bg-bg-window-dark h-10 border-b border-accent-blue text-text-dark dark:text-text-light">
                         <tr>
-                            {/* <SortableTh
-                                field="Name"
+                            {/*  <SortableTh
+                                field="name"
                                 label="Name"
                                 sortBy={sortBy}
                                 onSortChange={onSortChange}

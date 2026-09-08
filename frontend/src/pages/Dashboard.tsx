@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Button from "../components/Button";
 import Schedule from "../components/Schedule";
-import CourseList from "./CourseList";
+import CourseList from "./CourseListPage";
 import ResourceManagement from "./ResourceManagement";
 import Users from "./Users";
 
