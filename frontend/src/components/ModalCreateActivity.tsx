@@ -20,26 +20,12 @@ export default function ModalCreateActivity(props: ModalCreateActivityProps) {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
 
-        const newResourcePayload: ResourceRequest = {
-            name: formData.get("name")!.toString(),
-            description: formData.get("description")!.toString(),
-            content:
-                formData.get("content")?.toString() === ""
-                    ? null
-                    : formData.get("content")?.toString(),
-            uri:
-                formData.get("uri")?.toString() === ""
-                    ? null
-                    : formData.get("uri")?.toString(),
-        };
-
         try {
             console.log(formData);
-            console.log(newResourcePayload);
-            /* await createActivity(formData).then((response) => {
-                    onSubmit(response);
-                }); */
-            //onClose();
+            await createActivity(formData).then((response) => {
+                onSubmit(response);
+            });
+            props.onClose();
         } catch (error) {
             console.error("Error on saving:", error);
         }
