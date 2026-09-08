@@ -159,59 +159,46 @@ public class SubmissionsControllerTests
     }
 
     [Fact]
-    public async Task CreateSubmission_WithValidData_ShouldReturnNoContent()
+    public async Task CreateSubmission_WithValidData_ShouldReturnOkWithSubmission()
     {
         Guid studentId = Guid.NewGuid();
         SetUser(studentId);
 
         SubmissionCreateDto dto = new() { ActivityId = Guid.NewGuid(), Text = "Assignment handed in." };
+        SubmissionDto created = CreateDto(Guid.NewGuid());
 
         _submissionsServiceMock
             .Setup(service => service.CreateSubmission(
                 It.Is<SubmissionsCreateCommand>(c => c.StudentId == studentId && c.ActivityId == dto.ActivityId && c.Text == dto.Text),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+            .ReturnsAsync(created);
 
-        ActionResult<List<SubmissionDto>> response = await _controller.CreateSubmission(dto, CancellationToken.None);
+        ActionResult<SubmissionDto> response = await _controller.CreateSubmission(dto, CancellationToken.None);
 
-        Assert.IsType<NoContentResult>(response.Result);
+        OkObjectResult result = Assert.IsType<OkObjectResult>(response.Result);
+        Assert.Same(created, result.Value);
     }
 
     [Fact]
-    public async Task CreateSubmission_WhenServiceFails_ShouldReturnNotFound()
-    {
-        Guid studentId = Guid.NewGuid();
-        SetUser(studentId);
-
-        SubmissionCreateDto dto = new() { ActivityId = Guid.NewGuid(), Text = "Assignment handed in." };
-
-        _submissionsServiceMock
-            .Setup(service => service.CreateSubmission(It.IsAny<SubmissionsCreateCommand>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
-
-        ActionResult<List<SubmissionDto>> response = await _controller.CreateSubmission(dto, CancellationToken.None);
-
-        Assert.IsType<NotFoundResult>(response.Result);
-    }
-
-    [Fact]
-    public async Task SetFeedback_WithValidData_ShouldReturnNoContent()
+    public async Task SetFeedback_WithValidData_ShouldReturnOkWithSubmission()
     {
         Guid teacherId = Guid.NewGuid();
         SetUser(teacherId);
 
         Guid submissionId = Guid.NewGuid();
         SubmissionFeedbackDto feedbackDto = new() { Feedback = "Good work." };
+        SubmissionDto updated = CreateDto(submissionId);
 
         _submissionsServiceMock
             .Setup(service => service.SetFeedbackAsync(
                 It.Is<SetFeedbackCommand>(c => c.SubmissionId == submissionId && c.TeacherId == teacherId && c.Details == feedbackDto),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+            .ReturnsAsync(updated);
 
         ActionResult response = await _controller.SetFeedback(submissionId, feedbackDto, CancellationToken.None);
 
-        Assert.IsType<NoContentResult>(response);
+        OkObjectResult result = Assert.IsType<OkObjectResult>(response);
+        Assert.Same(updated, result.Value);
     }
 
     [Fact]
@@ -225,7 +212,7 @@ public class SubmissionsControllerTests
 
         _submissionsServiceMock
             .Setup(service => service.SetFeedbackAsync(It.IsAny<SetFeedbackCommand>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
+            .ReturnsAsync((SubmissionDto?)null);
 
         ActionResult response = await _controller.SetFeedback(submissionId, feedbackDto, CancellationToken.None);
 
