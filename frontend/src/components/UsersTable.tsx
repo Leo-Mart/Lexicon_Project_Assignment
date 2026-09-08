@@ -1,4 +1,4 @@
-import SortableTh from "../constants/SortableTableHead";
+import SortableTh from "./SortableTableHead";
 import type { UserWithCourseResponse } from "../interfaces/user/UserWithCourseResponse";
 import UserTableRow from "./UserTableRow";
 
