@@ -81,10 +81,14 @@ export default function ActivityCard({
         : null;
 
     // Once reviewed, the dot shows the review outcome instead of submitted/late.
-    const headerDotColor =
-        reviewStatusText && reviewStatusText !== "Not reviewed"
-            ? reviewDotColor[reviewStatusText]
-            : statusDotColor[submissionStatusText];
+    const dotIsReviewOutcome =
+        reviewStatusText != null && reviewStatusText !== "Not reviewed";
+    const headerDotColor = dotIsReviewOutcome
+        ? reviewDotColor[reviewStatusText]
+        : statusDotColor[submissionStatusText];
+    const headerDotLabel = dotIsReviewOutcome
+        ? reviewStatusText
+        : submissionStatusText;
 
     return (
         <div
@@ -98,11 +102,19 @@ export default function ActivityCard({
                 </h3>
                 <div className="flex flex-row justify-end items-center gap-2 justify-self-end">
                     {hasStarted && missingAndLate && (
-                        <div className="rotate-45 w-5 h-5 bg-red-400"></div>
+                        <div
+                            className="rotate-45 w-5 h-5 bg-red-400"
+                            title="Late"
+                            aria-label="Late"
+                            role="img"
+                        ></div>
                     )}
                     {hasStarted && !missingAndLate && (
                         <div
                             className={`rounded-full w-5 h-5 ${headerDotColor}`}
+                            title={headerDotLabel}
+                            aria-label={headerDotLabel}
+                            role="img"
                         ></div>
                     )}
                     <button

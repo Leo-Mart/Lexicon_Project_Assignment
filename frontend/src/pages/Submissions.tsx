@@ -48,6 +48,7 @@ const reviewFormConfig: EntityFormConfig<ReviewFormValues> = {
             type: "select",
             required: true,
             options: [
+                { value: "", label: "Select an outcome..." },
                 {
                     value: String(SubmissionReviewStatus.Approved),
                     label: "Approved",
@@ -191,7 +192,11 @@ export default function Submissions() {
     };
 
     if (role !== "Teacher") {
-        return <div className="p-4 text-text-light">Teachers only.</div>;
+        return (
+            <div className="p-4 text-text-dark dark:text-text-light">
+                Teachers only.
+            </div>
+        );
     }
 
     if (loading) return <div className="p-4">Loading...</div>;
@@ -242,10 +247,10 @@ export default function Submissions() {
 
     return (
         <div className="p-4">
-            <h1 className="text-2xl font-bold text-text-light mb-2">
+            <h1 className="text-2xl font-bold text-text-dark dark:text-text-light mb-2">
                 Submissions
             </h1>
-            <p className="text-text-light mb-4">
+            <p className="text-text-dark dark:text-text-light mb-4">
                 {submissions.length} submission
                 {submissions.length === 1 ? "" : "s"} total, {notReviewedCount}{" "}
                 not reviewed
@@ -283,9 +288,15 @@ export default function Submissions() {
             {tab === "submitted" && (
                 <>
                     <div className="flex flex-wrap items-center gap-3 mb-4">
-                        <label className="text-text-light">Sort by</label>
+                        <label
+                            htmlFor="sort-by"
+                            className="text-text-dark dark:text-text-light"
+                        >
+                            Sort by
+                        </label>
                         <select
-                            className="bg-slate-700 text-white border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
+                            id="sort-by"
+                            className="shadow appearance-none border rounded bg-white text-text-dark px-3 py-2"
                             value={sortBy}
                             onChange={(e) => {
                                 setSortBy(e.target.value as SortOption);
@@ -299,11 +310,17 @@ export default function Submissions() {
                             ))}
                         </select>
 
-                        <label className="text-text-light">Student</label>
+                        <label
+                            htmlFor="student-search"
+                            className="text-text-dark dark:text-text-light"
+                        >
+                            Student
+                        </label>
                         <input
+                            id="student-search"
                             type="search"
                             placeholder="Search by name..."
-                            className="bg-slate-700 text-white border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
+                            className="shadow appearance-none border rounded bg-white text-text-dark px-3 py-2"
                             value={search}
                             onChange={(e) => {
                                 setSearch(e.target.value);
@@ -312,9 +329,9 @@ export default function Submissions() {
                         />
                     </div>
 
-                    <div className="overflow-x-auto rounded-lg border border-gray-600">
-                        <table className="w-full text-left text-gray-100">
-                            <thead className="bg-gray-700">
+                    <div className="overflow-x-auto rounded-lg border border-accent-blue">
+                        <table className="w-full text-left text-text-dark dark:text-text-light">
+                            <thead className="bg-bg-window dark:bg-bg-window-dark">
                                 <tr>
                                     <th className="px-4 py-3">Student</th>
                                     <th className="px-4 py-3">Course</th>
@@ -336,7 +353,7 @@ export default function Submissions() {
                                     return (
                                         <tr
                                             key={s.submissionId}
-                                            className="border-t border-gray-700 hover:bg-gray-700/40"
+                                            className="border-t border-accent-blue hover:bg-bg-window/40 dark:hover:bg-bg-window-dark/40"
                                         >
                                             <td className="px-4 py-3">
                                                 {studentName(s)}
@@ -362,19 +379,38 @@ export default function Submissions() {
                                                       ]
                                                     : "Not reviewed"}
                                             </td>
-                                            <td>{s.feedback ?? "-"}</td>
+                                            <td
+                                                className="max-w-xs truncate"
+                                                title={s.feedback ?? undefined}
+                                            >
+                                                {s.feedback ?? "-"}
+                                            </td>
                                             <td>
                                                 <Button
                                                     onClick={() =>
                                                         setReviewing(s)
                                                     }
                                                 >
-                                                    Review
+                                                    {s.reviewStatus != null
+                                                        ? "Edit review"
+                                                        : "Review"}
                                                 </Button>
                                             </td>
                                         </tr>
                                     );
                                 })}
+                                {pageItems.length === 0 && (
+                                    <tr>
+                                        <td
+                                            colSpan={8}
+                                            className="px-4 py-3 text-center"
+                                        >
+                                            {submissions.length === 0
+                                                ? "No submissions yet."
+                                                : "No submissions match your search."}
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -391,9 +427,15 @@ export default function Submissions() {
             {tab === "overdue" && (
                 <>
                     <div className="flex items-center gap-3 mb-4">
-                        <label className="text-text-light">Activity</label>
+                        <label
+                            htmlFor="overdue-activity"
+                            className="text-text-dark dark:text-text-light"
+                        >
+                            Activity
+                        </label>
                         <select
-                            className="bg-slate-700 text-white border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
+                            id="overdue-activity"
+                            className="shadow appearance-none border rounded bg-white text-text-dark px-3 py-2"
                             value={overdueViewActivityId}
                             onChange={(e) =>
                                 setOverdueViewActivityId(e.target.value)
@@ -476,7 +518,7 @@ export default function Submissions() {
                                                 new Date() > new Date(deadline);
                                             return (
                                                 <p className="mb-2">
-                                                    <span className="text-text-light">
+                                                    <span className="text-text-dark dark:text-text-light">
                                                         Deadline:{" "}
                                                     </span>
                                                     {deadline ? (
@@ -484,7 +526,7 @@ export default function Submissions() {
                                                             className={
                                                                 isPast
                                                                     ? "text-red-500 font-bold"
-                                                                    : "text-text-light"
+                                                                    : "text-text-dark dark:text-text-light"
                                                             }
                                                         >
                                                             {ActivityDate(
@@ -498,7 +540,7 @@ export default function Submissions() {
                                                                 : " (not passed yet)"}
                                                         </span>
                                                     ) : (
-                                                        <span className="text-text-light">
+                                                        <span className="text-text-dark dark:text-text-light">
                                                             None - can never be
                                                             overdue
                                                         </span>
@@ -507,7 +549,7 @@ export default function Submissions() {
                                             );
                                         })()}
                                     {rows.length === 0 ? (
-                                        <p className="text-text-light">
+                                        <p className="text-text-dark dark:text-text-light">
                                             Nobody's overdue.
                                         </p>
                                     ) : (
@@ -518,13 +560,13 @@ export default function Submissions() {
                                                     className="mb-4"
                                                 >
                                                     {isAll && (
-                                                        <p className="text-text-light font-bold mb-2">
+                                                        <p className="text-text-dark dark:text-text-light font-bold mb-2">
                                                             {course}
                                                         </p>
                                                     )}
-                                                    <div className="overflow-x-auto rounded-lg border border-gray-600">
-                                                        <table className="w-full text-left text-gray-100">
-                                                            <thead className="bg-gray-700">
+                                                    <div className="overflow-x-auto rounded-lg border border-accent-blue">
+                                                        <table className="w-full text-left text-text-dark dark:text-text-light">
+                                                            <thead className="bg-bg-window dark:bg-bg-window-dark">
                                                                 <tr>
                                                                     <th className="px-4 py-3">
                                                                         Student
@@ -552,7 +594,7 @@ export default function Submissions() {
                                                                         return (
                                                                             <tr
                                                                                 key={`${u.studentId}-${i}`}
-                                                                                className="border-t border-gray-700 hover:bg-gray-700/40"
+                                                                                className="border-t border-accent-blue hover:bg-bg-window/40 dark:hover:bg-bg-window-dark/40"
                                                                             >
                                                                                 <td className="px-4 py-3">
                                                                                     {
@@ -598,9 +640,10 @@ export default function Submissions() {
                     initialValue={{
                         submissionText: reviewing.text,
                         feedback: reviewing.feedback ?? "",
+                        // "" so the teacher has to pick an outcome, not silently keep a default.
                         reviewStatus:
                             reviewing.reviewStatus ??
-                            SubmissionReviewStatus.Approved,
+                            ("" as unknown as SubmissionReviewStatus),
                     }}
                     onSave={handleReview}
                     onClose={() => setReviewing(null)}
