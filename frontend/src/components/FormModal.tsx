@@ -140,7 +140,10 @@ export default function FormModal<T extends Record<string, unknown>>({
                         &#10005;
                     </button>
                 </nav>
-                <form className="bg-bg py-3 px-3" onSubmit={handleSubmit}>
+                <form
+                    className="bg-bg py-3 px-3 text-text-dark"
+                    onSubmit={handleSubmit}
+                >
                     {config.fields.map((field) => (
                         <div className="mb-4" key={field.name}>
                             <label htmlFor={field.name}>{field.label}</label>
