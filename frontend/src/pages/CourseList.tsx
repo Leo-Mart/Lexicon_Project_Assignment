@@ -140,6 +140,12 @@ export default function CourseList() {
                 <table className="w-full text-left">
                     <thead className="bg-bg-window dark:bg-bg-window-dark h-10 border-b border-accent-blue text-text-dark dark:text-text-light">
                         <tr>
+                            {/* <SortableTh
+                                field="Name"
+                                label="Name"
+                                sortBy={sortBy}
+                                onSortChange={onSortChange}
+                            /> */}
                             <th className="p-3 w-2/10">Name</th>
                             <th className="p-3 w-4/10">Description</th>
                             <th className="p-3 w-1/10">Start date</th>
