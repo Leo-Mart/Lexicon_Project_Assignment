@@ -4,10 +4,16 @@ import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import Button from "../components/Button";
 import type { ResourceResponse } from "../interfaces/resource/ResourceResponse";
 import { fetchResourcesForCourse } from "../services/resourceService";
+import { Link, useParams } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { createPortal } from "react-dom";
+import ModalCreateResource from "../components/ModalCreateResource";
+import ModalCreateModule from "../components/ModalCreateModule";
+import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 
 export default function CoursesDetails() {
-    //TODO: byta ut mot anrop
-    const courseId: string = "30000000-0000-0000-0000-000000000002";
+    const { courseId } = useParams<{ courseId: string }>();
+    const { isAuthenticated, role } = useAuth();
 
     const newCourse = {
         courseId: "",
@@ -29,6 +35,9 @@ export default function CoursesDetails() {
         createdAt: "",
         updatedAt: "",
     };
+    const [showCreateResourceModal, setShowCreateResourceModal] =
+        useState(false);
+    const [showCreateModuleModal, setShowCreateModuleModal] = useState(false);
 
     const [course, setCourse] = useState<CourseResponse>(newCourse);
     const [resources, setResources] = useState<ResourceResponse[]>([
@@ -36,6 +45,10 @@ export default function CoursesDetails() {
     ]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
+    const handleUpdateCourseState = (newModule: ModuleResponse) => {
+        setCourse({ ...course, modules: [...course.modules, newModule] });
+    };
 
     // Get CourseDetails
     useEffect(() => {
@@ -57,11 +70,9 @@ export default function CoursesDetails() {
             }
         };
 
-        fetchChosenCourse(courseId);
-    }, []);
-
-    // Get resources for course
-    useEffect(() => {
+        if (courseId === undefined) {
+            return;
+        }
         const fetchAllResourcesForCourse = async () => {
             setLoading(true);
             setError(null);
@@ -80,8 +91,9 @@ export default function CoursesDetails() {
             }
         };
 
+        fetchChosenCourse(courseId);
         fetchAllResourcesForCourse();
-    }, []);
+    }, [courseId]);
 
     // RENDER
     if (loading) return <p>Loading...</p>;
@@ -103,7 +115,7 @@ export default function CoursesDetails() {
                 <h1 className="text-3xl font-bold p-3 bg-buttons text-white">
                     {course.name}
                 </h1>
-                <div className="p-3">
+                <div className="p-3 text-text-dark dark:text-text-light">
                     <h2 className="">{course.description}</h2>
                     <p>
                         {course.startDate} - {course.endDate}
@@ -122,20 +134,62 @@ export default function CoursesDetails() {
 
                 {course.modules.map((module) => (
                     <li className="p-3" key={module.moduleId}>
-                        <Button
-                            onClick={() => alert("goTo(module.moduleId)")}
-                            className="w-1/2"
-                        >
-                            <h2 className="font-extrabold p-2">
-                                {module.name}
-                            </h2>
-                            <p>{module.description}</p>
-                            <p>
-                                {module.startDate} - {module.endDate}
-                            </p>
-                        </Button>
+                        <Link to={`/module/${module.moduleId}`}>
+                            <Button className="w-1/2 hover:cursor-pointer">
+                                <h2 className="font-extrabold p-2">
+                                    {module.name}
+                                </h2>
+                                <p>{module.description}</p>
+                                <p>
+                                    {module.startDate} - {module.endDate}
+                                </p>
+                            </Button>
+                        </Link>
                     </li>
                 ))}
+                {isAuthenticated && role === "Teacher" ? (
+                    <>
+                        <h3 className="text-text-dark dark:text-text-light">
+                            Teacher Control
+                        </h3>
+                        <div className="flex gap-3 justify-center">
+                            <Button
+                                className="hover:cursor-pointer"
+                                onClick={() => setShowCreateResourceModal(true)}
+                            >
+                                Create resource
+                            </Button>
+                            <Button
+                                className="hover:cursor-pointer"
+                                onClick={() => setShowCreateModuleModal(true)}
+                            >
+                                Create new module
+                            </Button>
+                        </div>
+                    </>
+                ) : (
+                    ""
+                )}
+                {showCreateResourceModal &&
+                    createPortal(
+                        <ModalCreateResource
+                            open={showCreateResourceModal}
+                            entityId={course.courseId}
+                            createFor="course"
+                            onClose={() => setShowCreateResourceModal(false)}
+                        />,
+                        document.getElementById("root")!,
+                    )}
+                {showCreateModuleModal &&
+                    createPortal(
+                        <ModalCreateModule
+                            open={showCreateModuleModal}
+                            onClose={() => setShowCreateModuleModal(false)}
+                            handleUpdateState={handleUpdateCourseState}
+                            courseId={course.courseId}
+                        />,
+                        document.getElementById("root")!,
+                    )}
             </div>
         </>
     );
