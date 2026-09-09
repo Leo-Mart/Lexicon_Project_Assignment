@@ -1,5 +1,6 @@
 using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Resources;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
@@ -23,11 +24,20 @@ public class ResourceService : IResourceService
         _mapper = mapper;
     }
 
-    public async Task<List<ResourceDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<ResourceDto>> GetAllAsync(QueryParametersDto query, CancellationToken cancellationToken = default)
     {
-        List<Resource> resources = await _resourceRepository.GetAllAsync(cancellationToken);
+        PagedResponse<Resource> result =
+            await _resourceRepository.GetAllAsync(
+                query,
+                cancellationToken);
 
-        return _mapper.Map<List<ResourceDto>>(resources);
+        return new PagedResponse<ResourceDto>
+        {
+            Items = _mapper.Map<List<ResourceDto>>(result.Items),
+            TotalCount = result.TotalCount,
+            Page = result.Page,
+            PageSize = result.PageSize
+        };
     }
 
     public async Task<ResourceDto?> GetByIdAsync(Guid resourceId, CancellationToken cancellationToken = default)

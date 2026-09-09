@@ -15,9 +15,7 @@ public class ResourceRepository : IResourceRepository
         _context = context;
     }
 
-    public async Task<PagedResponse<Resource>> GetAllAsync(
-    QueryParametersDto query,
-    CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<Resource>> GetAllAsync(QueryParametersDto query, CancellationToken cancellationToken = default)
     {
         IQueryable<Resource> resourcesQuery =
             _context.Resources.AsNoTracking();
