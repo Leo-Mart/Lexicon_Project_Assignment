@@ -125,7 +125,13 @@ export default function Submissions() {
                     fetchAllSubmissions(),
                     fetchActivitys(),
                     fetchUsers(),
-                    fetchCourses(),
+                    fetchCourses({
+                        search: "",
+                        sortBy: "name",
+                        direction: "asc",
+                        page: 1,
+                        pageSize: 200,
+                    }),
                 ]);
 
             setSubmissions(submissionData);
@@ -141,7 +147,7 @@ export default function Submissions() {
             setStudentNameById(new Map(users.map((u) => [u.id, u.name])));
             setCourseNameByModuleId(
                 new Map(
-                    courses.flatMap((c) =>
+                    courses.items.flatMap((c) =>
                         c.modules.map((m) => [m.moduleId, c.name] as const),
                     ),
                 ),
