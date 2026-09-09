@@ -11,7 +11,6 @@ import { createPortal } from "react-dom";
 
 export default function CourseListPage() {
     // STATE
-
     const newCourse = {
         courseId: "",
         name: "",
@@ -30,6 +29,12 @@ export default function CourseListPage() {
         null,
     );
     const [selectedRow, setSelectedRow] = useState<CourseResponse>(newCourse);
+
+    const [sortBy, setSortBy] = useState("name-asc"); // or const DEFAULT_SORT = "name-asc"
+
+    const handleSortChange = (value: string) => {
+        setSortBy(value);
+    };
 
     const handleSubmitCourseModal = (returnData: CourseResponse) => {
         setIsCourseModalVisible(false);
@@ -64,10 +69,12 @@ export default function CourseListPage() {
             setLoading(true);
             setError(null);
             try {
+                const [sortField, sortDirection = "asc"] = sortBy.split("-");
+
                 const courseData = await fetchCourses({
                     search: "",
-                    sortBy: "name",
-                    direction: "asc",
+                    sortBy: sortField,
+                    direction: sortDirection,
                     page: 1,
                     pageSize: 200,
                 });
@@ -85,7 +92,7 @@ export default function CourseListPage() {
         };
 
         fetchAllCourses();
-    }, []);
+    }, [sortBy]);
 
     // DELETE
     async function handleDelete(course: CourseResponse) {
@@ -156,6 +163,8 @@ export default function CourseListPage() {
                 </h1>
                 <CourseTable
                     courses={courses}
+                    sortBy={sortBy}
+                    onSortChange={handleSortChange}
                     onUpdate={handleShowCourseModal}
                     onCreateResource={(course) => setResourceTarget(course)}
                     onDelete={handleDelete}
