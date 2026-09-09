@@ -42,10 +42,13 @@ public class CourseRepository(LMSDbContext context) : ICourseRepository
             .FirstOrDefaultAsync(c => c.CourseId == courseId);
     }
 
-    public async Task<PagedResponse<Course>> GetCoursesAsync(QueryParametersDto query, CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<Course>> GetCoursesAsync(
+        QueryParametersDto query,
+        CancellationToken cancellationToken = default
+    )
     {
-        IQueryable<Course> coursesQuery = _context.Courses
-            .AsNoTracking()
+        IQueryable<Course> coursesQuery = _context
+            .Courses.AsNoTracking()
             .Include(course => course.Modules);
 
         if (!string.IsNullOrWhiteSpace(query.Search))
@@ -53,8 +56,8 @@ public class CourseRepository(LMSDbContext context) : ICourseRepository
             string search = query.Search.Trim();
 
             coursesQuery = coursesQuery.Where(course =>
-                course.Name.Contains(search) ||
-                course.Description.Contains(search));
+                course.Name.Contains(search) || course.Description.Contains(search)
+            );
         }
 
         coursesQuery = query.SortBy.ToLowerInvariant() switch
@@ -69,11 +72,10 @@ public class CourseRepository(LMSDbContext context) : ICourseRepository
 
             _ => query.Direction == "desc"
                 ? coursesQuery.OrderByDescending(course => course.Name)
-                : coursesQuery.OrderBy(course => course.Name)
+                : coursesQuery.OrderBy(course => course.Name),
         };
 
-        int totalCount =
-            await coursesQuery.CountAsync(cancellationToken);
+        int totalCount = await coursesQuery.CountAsync(cancellationToken);
 
         List<Course> courses = await coursesQuery
             .Skip((query.Page - 1) * query.PageSize)
@@ -85,8 +87,16 @@ public class CourseRepository(LMSDbContext context) : ICourseRepository
             Items = courses,
             TotalCount = totalCount,
             Page = query.Page,
-            PageSize = query.PageSize
+            PageSize = query.PageSize,
         };
+    }
+
+    public async Task<IEnumerable<Module>> GetModulesForCourseAsync(Guid courseId)
+    {
+        return await _context
+            .Modules.Include(m => m.Course)
+            .Where(m => m.CourseId == courseId)
+            .ToListAsync();
     }
 
     public async Task<Course> UpdateCourseAsync(Course course)

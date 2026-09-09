@@ -45,7 +45,7 @@ export const fetchResourcesForModule = async (
     const response = await authFetch(`${API_URL}/module/${moduleId}`);
 
     if (!response.ok) {
-        throw new Error(`Failed to fetch resourc: ${response.status}`);
+        throw new Error(`Failed to fetch Resource: ${response.status}`);
     }
 
     return (await response.json()) as ResourceResponse[];

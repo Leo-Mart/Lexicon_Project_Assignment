@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 import ModuleSideViewPart from "./ModuleSideViewPart";
-import { fetchModules } from "../services/moduleService";
+import { fetchModulesForCourse } from "../services/courseService";
 
 export default function ModuleSideView({ module }: { module: ModuleResponse }) {
     const [modules, setModules] = useState<ModuleResponse[]>();
@@ -13,7 +13,7 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
             setLoading(true);
             setError(null);
             try {
-                const moduleData = await fetchModules();
+                const moduleData = await fetchModulesForCourse(module.courseId);
                 setModules(moduleData);
             } catch (err) {
                 setError(
@@ -28,7 +28,7 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
         };
 
         fetchModule();
-    }, []);
+    }, [module.courseId]);
 
     if (loading) return <div>Loading...</div>;
     if (error)
@@ -47,7 +47,8 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
             <div className="flex flex-row absolute mt-1">
                 {isExpanded && (
                     <div className="bg-bg-window h-[calc(100vh-1rem)] w-55 flex flex-col mx-1 z-50">
-                        <div className="border-b-4 border-dotted py-4 text-white">
+                        <div className="border-b-4 border-dotted py-4">
+                            <h3 className="px-2">Current viewing module:</h3>
                             <ModuleSideViewPart module={module} />
                         </div>
 

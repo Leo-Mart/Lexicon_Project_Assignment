@@ -150,7 +150,9 @@ export default function ModulePage() {
                     <p className="text-2xl">End: {module.endDate}</p>
                 </div>
                 <Link className="mt-2" to={`/courses/${module.courseId}`}>
-                    <Button>Back to course</Button>
+                    <Button className="hover:cursor-pointer">
+                        Back to course
+                    </Button>
                 </Link>
             </div>
             <div className="bg-bg-light h-[calc(100vh-12rem)] p-10 grid grid-flow-col grid-rows-3 grid-cols-2 gap-8 m-8">
