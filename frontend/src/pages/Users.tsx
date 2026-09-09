@@ -29,6 +29,8 @@ const DEFAULT_PAGE_SIZE = 20;
 const DEFAULT_SORT = "name-asc";
 
 export default function Users() {
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
     const [users, setUsers] = useState<UserWithCourseResponse[]>([]);
     const [totalCount, setTotalCount] = useState(0);
     const [page, setPage] = useState(DEFAULT_PAGE);
@@ -153,20 +155,32 @@ export default function Users() {
 
     useEffect(() => {
         const loadUsers = async () => {
-            const [sortField, sortDirection = "asc"] = sortBy.split("-");
+            setLoading(true);
+            try {
+                const [sortField, sortDirection = "asc"] = sortBy.split("-");
 
-            const query: QueryParameters = {
-                search,
-                sortBy: sortField,
-                direction: sortDirection,
-                page,
-                pageSize,
-            };
+                const query: QueryParameters = {
+                    search,
+                    sortBy: sortField,
+                    direction: sortDirection,
+                    page,
+                    pageSize,
+                };
 
-            const data = await fetchUsersWithCourse(query);
+                const data = await fetchUsersWithCourse(query);
 
-            setUsers(data.items);
-            setTotalCount(data.totalCount);
+                setUsers(data.items);
+                setTotalCount(data.totalCount);
+            } catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to fetch course",
+                );
+                console.error("Fetch error:", err);
+            } finally {
+                setLoading(false);
+            }
         };
 
         void loadUsers();
@@ -188,6 +202,9 @@ export default function Users() {
         void loadCourses();
     }, []);
 
+    if (error)
+        return <div className="text-red-500 text-4xl">Error: {error}</div>;
+
     return (
         <div className="p-4">
             <UsersToolbar
@@ -201,6 +218,7 @@ export default function Users() {
             <UsersTable
                 users={users}
                 sortBy={sortBy}
+                isLoading={loading}
                 onSortChange={handleSortChange}
                 onEdit={(id) => {
                     const user = users.find((user) => user.id === id);

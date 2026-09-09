@@ -1,3 +1,5 @@
+import Spinner from "./Spinner";
+
 type SortableColumn =
     | "name"
     | "email"
@@ -13,11 +15,13 @@ export default function SortableTh({
     label,
     sortBy,
     onSortChange,
+    isLoading = false,
 }: {
     field: SortableColumn;
     label: string;
     sortBy: string;
     onSortChange: (value: string) => void;
+    isLoading?: boolean;
 }) {
     const [currentField, currentDirection = "asc"] = sortBy.split("-");
     const isActive = currentField === field;
@@ -37,7 +41,11 @@ export default function SortableTh({
                 aria-label={`Sort by ${label}`}
             >
                 {label}
-                {isActive && <span aria-hidden>{isAsc ? "▲" : "▼"}</span>}
+                {isLoading && isActive ? (
+                    <Spinner className="w-4 h-4" />
+                ) : (
+                    isActive && <span aria-hidden>{isAsc ? "▲" : "▼"}</span>
+                )}
             </button>
         </th>
     );

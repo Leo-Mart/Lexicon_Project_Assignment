@@ -63,6 +63,8 @@ export default function CourseListPage() {
         setIsCourseModalVisible(true);
     };
 
+    const isFirstLoad = loading && courses.length === 0;
+
     // READ ALL
     useEffect(() => {
         const fetchAllCourses = async () => {
@@ -115,11 +117,9 @@ export default function CourseListPage() {
         }
     }
 
-    // RENDER
-    if (loading) return <p>Loading...</p>;
-
     if (error)
         return <div className="text-red-500 text-4xl">Error: {error}</div>;
+    if (isFirstLoad) return <p>Loading...</p>;
     if (!courses)
         return (
             <div className="flex flex-col items-center">
@@ -163,6 +163,7 @@ export default function CourseListPage() {
                 <CourseTable
                     courses={courses}
                     sortBy={sortBy}
+                    isLoading={loading}
                     onSortChange={handleSortChange}
                     onUpdate={handleShowCourseModal}
                     onCreateResource={(course) => setResourceTarget(course)}
