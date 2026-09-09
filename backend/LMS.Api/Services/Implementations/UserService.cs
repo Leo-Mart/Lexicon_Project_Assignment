@@ -1,5 +1,6 @@
 using AutoMapper;
 using LMS.Api.Constants;
+using LMS.Api.Data;
 using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Users;
 using LMS.Api.Enums.Model;
@@ -14,11 +15,16 @@ public class UserService : IUserService
 {
     private readonly UserManager<User> _userManager;
     private readonly IMapper _mapper;
+    private readonly LMSDbContext _context;
 
-    public UserService(UserManager<User> userManager, IMapper mapper)
+    public UserService(
+        UserManager<User> userManager,
+        IMapper mapper,
+         LMSDbContext context)
     {
         _userManager = userManager;
         _mapper = mapper;
+        _context = context;
     }
 
     public async Task<List<User>> GetAllAsync()
@@ -190,6 +196,24 @@ public class UserService : IUserService
             "course" => query.Direction == "desc"
                 ? usersQuery.OrderByDescending(user => user.Enrollment!.Course.Name)
                 : usersQuery.OrderBy(user => user.Enrollment!.Course.Name),
+
+            "role" => query.Direction == "desc"
+       ? usersQuery.OrderByDescending(user =>
+           (
+               from userRole in _context.UserRoles
+               join role in _context.Roles
+                   on userRole.RoleId equals role.Id
+               where userRole.UserId == user.Id
+               select role.Name
+           ).FirstOrDefault())
+       : usersQuery.OrderBy(user =>
+           (
+               from userRole in _context.UserRoles
+               join role in _context.Roles
+                   on userRole.RoleId equals role.Id
+               where userRole.UserId == user.Id
+               select role.Name
+           ).FirstOrDefault()),
 
             _ => query.Direction == "desc"
                 ? usersQuery.OrderByDescending(user => user.Name)
