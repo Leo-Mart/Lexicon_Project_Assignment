@@ -16,8 +16,14 @@ export default function Courses() {
             setLoading(true);
             setError(null);
             try {
-                const courseData = await fetchCourses();
-                setCourses(courseData);
+                const courseData = await fetchCourses({
+                    search: "",
+                    sortBy: "name",
+                    direction: "asc",
+                    page: 1,
+                    pageSize: 200,
+                });
+                setCourses(courseData.items);
             } catch (err) {
                 setError(
                     err instanceof Error

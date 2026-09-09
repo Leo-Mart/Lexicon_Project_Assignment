@@ -11,4 +11,5 @@ public interface IEnrollmentRepository
     Task AddAsync(Enrollment enrollment, CancellationToken cancellationToken = default);
 
     void Update(Enrollment enrollment);
+    void Delete(Enrollment enrollment);
 }

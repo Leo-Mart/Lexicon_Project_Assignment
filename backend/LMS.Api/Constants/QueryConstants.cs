@@ -1,6 +1,6 @@
 namespace LMS.Api.Constants;
 
-public static class UserQueryConstants
+public static class QueryConstants
 {
     public const int DefaultPage = 1;
     public const int DefaultPageSize = 20;

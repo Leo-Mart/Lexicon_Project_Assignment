@@ -11,4 +11,6 @@ public interface IEnrollmentService
 
     // Each Enrollment's Student is loaded, so callers get names, not just ids.
     Task<List<Enrollment>> GetEnrollmentsByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default);
+
+    Task RemoveCourseAsync(Guid studentId, CancellationToken cancellationToken = default);
 }

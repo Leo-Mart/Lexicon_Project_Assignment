@@ -100,4 +100,21 @@ public class EnrollmentService : IEnrollmentService
 
         return true;
     }
+
+    public async Task RemoveCourseAsync(Guid studentId, CancellationToken cancellationToken = default)
+    {
+        Enrollment? enrollment =
+            await _enrollmentRepository.GetByStudentIdAsync(
+                studentId,
+                cancellationToken);
+
+        if (enrollment is null)
+        {
+            return;
+        }
+
+        _enrollmentRepository.Delete(enrollment);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
 }
