@@ -54,7 +54,7 @@ export default function CourseTable({
                         isLoading={isLoading}
                         onSortChange={onSortChange}
                     />
-                    <th className="p-3 w-2/10"></th>
+                    <th className="p-3 w-2/10">Edit</th>
                 </tr>
             </thead>
             <tbody className="text-text-dark dark:text-text-light">
@@ -67,7 +67,14 @@ export default function CourseTable({
                                 : "bg-bg dark:bg-bg-dark"
                         }
                     >
-                        <td className="p-3">{course.name}</td>
+                        <td className="p-3">
+                            <Link
+                                className="font-bold underline text-buttons"
+                                to={`/courses/${course.courseId}`}
+                            >
+                                {course.name}
+                            </Link>
+                        </td>
                         <td className="p-3">{course.description}</td>
                         <td className="p-3">{course.startDate}</td>
                         <td className="p-3">{course.endDate}</td>
@@ -75,18 +82,15 @@ export default function CourseTable({
                             <Button onClick={() => onUpdate(course)}>
                                 Update
                             </Button>
+                            <Button onClick={() => onDelete(course)}>
+                                Delete
+                            </Button>
                             <Button
                                 onClick={() => onCreateResource(course)}
                                 className="hover:cursor-pointer mx-2"
                             >
                                 Create Resource
                             </Button>
-                            <Button onClick={() => onDelete(course)}>
-                                Delete
-                            </Button>
-                            <Link to={`/courses/${course.courseId}`}>
-                                <Button>Go to course</Button>
-                            </Link>
                         </td>
                     </tr>
                 ))}
