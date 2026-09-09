@@ -20,6 +20,6 @@ public interface IUserService
     Task<IdentityResult> UpdateUserAsync(Guid userId, UserUpdateDto request);
 
     Task<IdentityResult> UpdateUserStatusAsync(Guid userId, UserStatus status);
-    Task<PagedResponse<UserWithCourseDto>> GetAllWithCourseAsync(UserQueryParametersDto query);
+    Task<PagedResponse<UserWithCourseDto>> GetAllWithCourseAsync(QueryParametersDto query);
     Task<IdentityResult> DeleteUserAsync(Guid userId);
 }

@@ -162,7 +162,7 @@ public class UsersController : ControllerBase
     [HttpGet("with-course")]
     [ProducesResponseType(typeof(PagedResponse<UserWithCourseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PagedResponse<UserWithCourseDto>>> GetUsersWithCourseAsync([FromQuery] UserQueryParametersDto query)
+    public async Task<ActionResult<PagedResponse<UserWithCourseDto>>> GetUsersWithCourseAsync([FromQuery] QueryParametersDto query)
     {
         PagedResponse<UserWithCourseDto> users = await _userService.GetAllWithCourseAsync(query);
 

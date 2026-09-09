@@ -1,4 +1,5 @@
 using LMS.Api.Data;
+using LMS.Api.DTOs.Common;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -41,12 +42,51 @@ public class CourseRepository(LMSDbContext context) : ICourseRepository
             .FirstOrDefaultAsync(c => c.CourseId == courseId);
     }
 
-    public async Task<IEnumerable<Course>> GetCoursesAsync()
+    public async Task<PagedResponse<Course>> GetCoursesAsync(QueryParametersDto query, CancellationToken cancellationToken = default)
     {
-        return await _context.Courses
-        .Include(c => c.Modules)
-        .OrderBy(course => course.StartDate)
-        .ToListAsync();
+        IQueryable<Course> coursesQuery = _context.Courses
+            .AsNoTracking()
+            .Include(course => course.Modules);
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            string search = query.Search.Trim();
+
+            coursesQuery = coursesQuery.Where(course =>
+                course.Name.Contains(search) ||
+                course.Description.Contains(search));
+        }
+
+        coursesQuery = query.SortBy.ToLowerInvariant() switch
+        {
+            "startdate" => query.Direction == "desc"
+                ? coursesQuery.OrderByDescending(course => course.StartDate)
+                : coursesQuery.OrderBy(course => course.StartDate),
+
+            "enddate" => query.Direction == "desc"
+                ? coursesQuery.OrderByDescending(course => course.EndDate)
+                : coursesQuery.OrderBy(course => course.EndDate),
+
+            _ => query.Direction == "desc"
+                ? coursesQuery.OrderByDescending(course => course.Name)
+                : coursesQuery.OrderBy(course => course.Name)
+        };
+
+        int totalCount =
+            await coursesQuery.CountAsync(cancellationToken);
+
+        List<Course> courses = await coursesQuery
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResponse<Course>
+        {
+            Items = courses,
+            TotalCount = totalCount,
+            Page = query.Page,
+            PageSize = query.PageSize
+        };
     }
 
     public async Task<Course> UpdateCourseAsync(Course course)
