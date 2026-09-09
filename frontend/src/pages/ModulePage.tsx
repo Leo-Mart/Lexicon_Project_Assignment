@@ -1,6 +1,6 @@
 // src/pages/ModulePage.tsx
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Lecture from "../components/Lecture";
 import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 import ModuleSideView from "../components/ModuleSideView";
@@ -27,6 +27,7 @@ import {
     createResourceFormConfig,
 } from "../types/formSchemas";
 import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
+import Button from "../components/Button";
 
 export default function ModulePage() {
     const { id } = useParams<{ id: string }>();
@@ -142,18 +143,15 @@ export default function ModulePage() {
     return (
         <>
             <ModuleSideView module={module} />
-            <div className="flex flex-col items-center">
-                <h1 className="text-4xl text-text-dark pt-5">
-                    Current Module: {module.name}
-                </h1>
+            <div className="flex flex-col items-center text-text-dark dark:text-text-light">
+                <h1 className="text-4xl pt-5">Current Module: {module.name}</h1>
                 <div className="flex gap-5 pt-5">
-                    <p className="text-2xl text-text-dark">
-                        Start: {module.startDate}
-                    </p>
-                    <p className="text-2xl text-text-dark">
-                        End: {module.endDate}
-                    </p>
+                    <p className="text-2xl">Start: {module.startDate}</p>
+                    <p className="text-2xl">End: {module.endDate}</p>
                 </div>
+                <Link className="mt-2" to={`/courses/${module.courseId}`}>
+                    <Button>Back to course</Button>
+                </Link>
             </div>
             <div className="bg-bg-light h-[calc(100vh-12rem)] p-10 grid grid-flow-col grid-rows-3 grid-cols-2 gap-8 m-8">
                 <Lecture
