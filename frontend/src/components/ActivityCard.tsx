@@ -6,6 +6,32 @@ import Button from "../components/Button";
 import FormModal, { type EntityFormConfig } from "../components/FormModal";
 import { createSubmission } from "../services/submissionService";
 import type { SubmissionRequest } from "../interfaces/submission/SubmissionRequest";
+import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
+import { SubmissionReviewStatusNames } from "../constants/SubmissionReviewStatus";
+
+// Submitted/late state: drives the header dot and the "Status: ..." line.
+const statusDotColor: Record<string, string> = {
+    "Not submitted": "bg-gray-400",
+    Submitted: "bg-blue-400",
+    "Submitted (Late)": "bg-blue-400",
+};
+const statusTextColor: Record<string, string> = {
+    Late: "text-red-600",
+    "Not submitted": "text-gray-500",
+    Submitted: "text-blue-600",
+    "Submitted (Late)": "text-blue-600",
+};
+
+// Whether it's been reviewed, and the outcome: separate from submitted/late above.
+const reviewTextColor: Record<string, string> = {
+    "Not reviewed": "text-gray-500",
+    Approved: "text-green-600",
+    "Needs completion": "text-yellow-600",
+};
+const reviewDotColor: Record<string, string> = {
+    Approved: "bg-green-400",
+    "Needs completion": "bg-yellow-400",
+};
 
 const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
     title: "Add submission",
@@ -22,25 +48,74 @@ const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
 
 export default function ActivityCard({
     activity,
+    submission,
+    onSubmitted,
 }: {
     activity: ActivityRequest;
+    submission?: SubmissionResponse;
+    onSubmitted?: (submission: SubmissionResponse) => void;
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [addingSubmission, setAddingSubmission] = useState(false);
-    console.log("Deadline ", activity.deadline);
+
+    // Nothing to submit before the activity has even started.
+    const hasStarted = new Date() >= new Date(activity.startAt);
+
+    // No submission row yet: derive lateness from the deadline instead.
+    const isPastDeadline =
+        activity.deadline != null && new Date() > new Date(activity.deadline);
+    const missingAndLate = !submission && isPastDeadline;
+    const submissionStatusText = submission
+        ? submission.submittedLate
+            ? "Submitted (Late)"
+            : "Submitted"
+        : isPastDeadline
+          ? "Late"
+          : "Not submitted";
+
+    // Only meaningful once submitted.
+    const reviewStatusText = submission
+        ? submission.reviewStatus != null
+            ? SubmissionReviewStatusNames[submission.reviewStatus]
+            : "Not reviewed"
+        : null;
+
+    // Once reviewed, the dot shows the review outcome instead of submitted/late.
+    const dotIsReviewOutcome =
+        reviewStatusText != null && reviewStatusText !== "Not reviewed";
+    const headerDotColor = dotIsReviewOutcome
+        ? reviewDotColor[reviewStatusText]
+        : statusDotColor[submissionStatusText];
+    const headerDotLabel = dotIsReviewOutcome
+        ? reviewStatusText
+        : submissionStatusText;
+
     return (
         <div
             key={activity.activityId}
             className="w-80% rounded overflow-hidden shadow-lg bg-white m-3"
         >
-            <div className="bg-bg-header w-full p-4 flex flex-row justify-between items-center">
+            <div className="bg-bg-header w-full p-4 grid grid-cols-3 items-center">
                 <h2 className="font-bold text-xl">{activity.name}</h2>
-                <h3 className="font-bold text-l bg-bg-window text-text-dark p-1.5 rounded">
+                <h3 className="font-bold text-l bg-bg-window text-text-dark p-1.5 rounded justify-self-center">
                     {ActivityTypeNames[activity.type]}
                 </h3>
-                <div className="flex flex-row justify-between items-center w-35">
-                    {activity.deadline != null && (
-                        <div className="rotate-45 w-5 h-5 bg-red-400 flex items-center"></div>
+                <div className="flex flex-row justify-end items-center gap-2 justify-self-end">
+                    {hasStarted && missingAndLate && (
+                        <div
+                            className="rotate-45 w-5 h-5 bg-red-400"
+                            title="Late"
+                            aria-label="Late"
+                            role="img"
+                        ></div>
+                    )}
+                    {hasStarted && !missingAndLate && (
+                        <div
+                            className={`rounded-full w-5 h-5 ${headerDotColor}`}
+                            title={headerDotLabel}
+                            aria-label={headerDotLabel}
+                            role="img"
+                        ></div>
                     )}
                     <button
                         className="border-2 border-bg-header-dark p-1"
@@ -62,20 +137,40 @@ export default function ActivityCard({
                             {ActivityTime(activity.startAt)}-
                             {ActivityTime(activity.endAt)}
                         </p>
-                        {activity.deadline != null && (
-                            <p className="text-sm text-red-600  p-3 pt-0">
-                                {" Deadline "}
-                                {ActivityDate(activity.deadline)} {"  "}
-                                {ActivityTime(activity.deadline)}
-                            </p>
+                        {hasStarted && (
+                            <div className="flex flex-col items-start gap-2 px-3">
+                                <span
+                                    className={`text-base font-bold ${statusTextColor[submissionStatusText]}`}
+                                >
+                                    Status: {submissionStatusText}
+                                </span>
+                                {reviewStatusText && (
+                                    <span
+                                        className={`text-sm font-bold ${reviewTextColor[reviewStatusText]}`}
+                                    >
+                                        Review: {reviewStatusText}
+                                    </span>
+                                )}
+                                {activity.deadline != null && !submission && (
+                                    <p
+                                        className={`text-sm ${missingAndLate ? "text-red-600" : "text-text-dark"}`}
+                                    >
+                                        {" Deadline "}
+                                        {ActivityDate(activity.deadline)} {"  "}
+                                        {ActivityTime(activity.deadline)}
+                                    </p>
+                                )}
+                            </div>
                         )}
                     </div>
-                    <Button
-                        variant="primary"
-                        onClick={() => setAddingSubmission(true)}
-                    >
-                        Add submission
-                    </Button>
+                    {hasStarted && !submission && (
+                        <Button
+                            variant="primary"
+                            onClick={() => setAddingSubmission(true)}
+                        >
+                            Add submission
+                        </Button>
+                    )}
                 </div>
             )}
             {addingSubmission && (
@@ -83,7 +178,8 @@ export default function ActivityCard({
                     config={submissionFormConfig}
                     initialValue={{ activityId: activity.activityId, text: "" }}
                     onSave={async (data) => {
-                        await createSubmission(data);
+                        const created = await createSubmission(data);
+                        onSubmitted?.(created);
                     }}
                     onClose={() => setAddingSubmission(false)}
                 />

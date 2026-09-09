@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Security.Claims;
 using LMS.Api.Constants;
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Submissions;
 using LMS.Api.Models;
 using LMS.Api.Services.Interfaces;
@@ -30,6 +31,26 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
     public async Task<ActionResult<List<SubmissionDto>>> GetAll(CancellationToken cancellationToken)
     {
         List<SubmissionDto> resources = await _submissionsService.GetAllAsync(cancellationToken);
+
+        return Ok(resources);
+    }
+
+    /// <summary>
+    /// Gets a paginated, searchable, sortable page of submissions.
+    /// </summary>
+    /// <param name="query">Search, sort, and paging options.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>One page of submissions.</returns>
+    [HttpGet("paged")]
+    [ProducesResponseType(typeof(PagedResponse<SubmissionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [Authorize(Roles = RoleConstants.Teacher)]
+    public async Task<ActionResult<PagedResponse<SubmissionDto>>> GetPaged(
+        [FromQuery] QueryParametersDto query,
+        CancellationToken cancellationToken)
+    {
+        PagedResponse<SubmissionDto> resources = await _submissionsService.GetPagedAsync(query, cancellationToken);
 
         return Ok(resources);
     }
@@ -187,5 +208,23 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
         }
 
         return Ok(submissions);
+    }
+
+    /// <summary>
+    /// Gets students enrolled in the activity's course who are overdue.
+    /// </summary>
+    /// <param name="activityId">The activity ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    [ProducesResponseType(typeof(List<OverdueSubmissionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [Authorize(Roles = RoleConstants.Teacher)]
+    [HttpGet("activity/{activityId:guid}/overdue")]
+    public async Task<ActionResult<List<OverdueSubmissionDto>>> GetOverdueByActivityIdAsync([FromRoute] Guid activityId, CancellationToken cancellationToken = default)
+    {
+        List<OverdueSubmissionDto> overdue =
+            await _submissionsService.GetOverdueByActivityIdAsync(activityId, cancellationToken);
+
+        return Ok(overdue);
     }
 }

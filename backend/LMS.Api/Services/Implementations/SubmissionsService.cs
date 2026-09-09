@@ -1,8 +1,9 @@
 using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.DTOs.Activities;
+using LMS.Api.DTOs.Common;
+using LMS.Api.DTOs.Module;
 using LMS.Api.DTOs.Submissions;
-using LMS.Api.Enums.Model;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using LMS.Api.Services.Interfaces;
@@ -12,6 +13,8 @@ namespace LMS.Api.Services.Implementations;
 public class SubmissionsService(
         ISubmissionsRepository _submissionsRepository,
         IActivityService _activityService,
+        IModuleService _moduleService,
+        IEnrollmentService _enrollmentService,
         IUnitOfWork _unitOfWork,
         IMapper _mapper) : ISubmissionsService
 {
@@ -24,6 +27,7 @@ public class SubmissionsService(
             return null;
         }
         submission.Feedback = setFeedbackCommand.Details.Feedback;
+        submission.ReviewStatus = setFeedbackCommand.Details.ReviewStatus;
         submission.FeedbackByTeacherId = setFeedbackCommand.TeacherId;
         submission.FeedbackAt = DateTime.UtcNow;
         submission.UpdatedAt = DateTime.UtcNow;
@@ -38,6 +42,19 @@ public class SubmissionsService(
         List<Submission> resources = await _submissionsRepository.GetAllAsync(cancellationToken);
 
         return _mapper.Map<List<SubmissionDto>>(resources);
+    }
+
+    public async Task<PagedResponse<SubmissionDto>> GetPagedAsync(QueryParametersDto query, CancellationToken cancellationToken = default)
+    {
+        PagedResponse<Submission> paged = await _submissionsRepository.GetPagedAsync(query, cancellationToken);
+
+        return new PagedResponse<SubmissionDto>
+        {
+            Items = _mapper.Map<List<SubmissionDto>>(paged.Items),
+            TotalCount = paged.TotalCount,
+            Page = paged.Page,
+            PageSize = paged.PageSize
+        };
     }
 
     public async Task<SubmissionDto?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
@@ -69,6 +86,46 @@ public class SubmissionsService(
         return _mapper.Map<List<SubmissionDto>>(submissionsList);
     }
 
+    // Enrolled students with no submission, past the deadline - not a
+    // Submission, so not a SubmissionDto. No deadline, or not passed yet,
+    // means nobody can be overdue.
+    public async Task<List<OverdueSubmissionDto>> GetOverdueByActivityIdAsync(
+        Guid activityId,
+        CancellationToken cancellationToken = default)
+    {
+        ActivityDto? activity = await _activityService.GetByIdAsync(activityId, cancellationToken);
+        bool isPastDeadline = activity?.Deadline is not null && DateTime.UtcNow > activity.Deadline;
+
+        if (activity is null || !isPastDeadline)
+        {
+            return [];
+        }
+
+        ModuleDto? module = await _moduleService.GetModuleById(activity.ModuleId);
+
+        if (module is null)
+        {
+            return [];
+        }
+
+        List<Enrollment> enrollments =
+            await _enrollmentService.GetEnrollmentsByCourseIdAsync(module.CourseId, cancellationToken);
+
+        List<Submission> submissionsList =
+            await _submissionsRepository.GetByActivityIdAsync(activityId, cancellationToken);
+        HashSet<Guid> submittedStudentIds = submissionsList.Select(s => s.StudentId).ToHashSet();
+
+        return enrollments
+            .Where(enrollment => !submittedStudentIds.Contains(enrollment.StudentId))
+            .Select(enrollment => new OverdueSubmissionDto
+            {
+                ActivityId = activityId,
+                StudentId = enrollment.StudentId,
+                StudentName = enrollment.Student.Name,
+            })
+            .ToList();
+    }
+
     public async Task<SubmissionDto> CreateSubmission(SubmissionsCreateCommand command, CancellationToken cancellationToken)
     {
         DateTime submittedAt = DateTime.UtcNow;
@@ -84,11 +141,14 @@ public class SubmissionsService(
             Text = command.Text,
             CreatedAt = DateTime.UtcNow,
             SubmittedAt = submittedAt,
-            Status = isLate ? SubmissionStatus.Late : SubmissionStatus.Submitted,
         };
 
         await _submissionsRepository.CreateAsync(submission, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return _mapper.Map<SubmissionDto>(submission);
+
+        // The submission's own Activity nav isn't loaded here, so set SubmittedLate directly.
+        SubmissionDto dto = _mapper.Map<SubmissionDto>(submission);
+        dto.SubmittedLate = isLate;
+        return dto;
     }
 }

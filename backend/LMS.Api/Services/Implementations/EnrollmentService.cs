@@ -44,6 +44,11 @@ public class EnrollmentService : IEnrollmentService
         return _mapper.Map<CourseDto>(enrollment.Course);
     }
 
+    public async Task<List<Enrollment>> GetEnrollmentsByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default)
+    {
+        return await _enrollmentRepository.GetByCourseIdAsync(courseId, cancellationToken);
+    }
+
     public async Task<bool> AssignOrChangeCourseAsync(
         Guid studentId,
         Guid courseId,

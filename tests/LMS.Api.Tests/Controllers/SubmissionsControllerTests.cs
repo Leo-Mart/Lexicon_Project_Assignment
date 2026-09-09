@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using LMS.Api.Controllers;
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Submissions;
 using LMS.Api.Enums.Model;
 using LMS.Api.Services.Interfaces;
@@ -39,7 +40,6 @@ public class SubmissionsControllerTests
             StudentId = Guid.NewGuid(),
             Text = "Assignment handed in.",
             SubmittedAt = new DateTime(2026, 10, 1, 14, 30, 0, DateTimeKind.Utc),
-            Status = SubmissionStatus.Submitted,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -82,6 +82,31 @@ public class SubmissionsControllerTests
         List<SubmissionDto> value = Assert.IsType<List<SubmissionDto>>(result.Value);
 
         Assert.Empty(value);
+    }
+
+    [Fact]
+    public async Task GetPaged_WithSubmissions_ShouldReturnOkWithPage()
+    {
+        QueryParametersDto query = new() { Page = 1, PageSize = 10 };
+        PagedResponse<SubmissionDto> page = new()
+        {
+            Items = [CreateDto(Guid.NewGuid()), CreateDto(Guid.NewGuid())],
+            TotalCount = 2,
+            Page = 1,
+            PageSize = 10
+        };
+
+        _submissionsServiceMock
+            .Setup(service => service.GetPagedAsync(query, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(page);
+
+        ActionResult<PagedResponse<SubmissionDto>> response =
+            await _controller.GetPaged(query, CancellationToken.None);
+
+        OkObjectResult result = Assert.IsType<OkObjectResult>(response.Result);
+        PagedResponse<SubmissionDto> value = Assert.IsType<PagedResponse<SubmissionDto>>(result.Value);
+
+        Assert.Same(page, value);
     }
 
     [Fact]
@@ -186,7 +211,7 @@ public class SubmissionsControllerTests
         SetUser(teacherId);
 
         Guid submissionId = Guid.NewGuid();
-        SubmissionFeedbackDto feedbackDto = new() { Feedback = "Good work." };
+        SubmissionFeedbackDto feedbackDto = new() { Feedback = "Good work.", ReviewStatus = SubmissionReviewStatus.Approved };
         SubmissionDto updated = CreateDto(submissionId);
 
         _submissionsServiceMock
@@ -208,7 +233,7 @@ public class SubmissionsControllerTests
         SetUser(teacherId);
 
         Guid submissionId = Guid.NewGuid();
-        SubmissionFeedbackDto feedbackDto = new() { Feedback = "Good work." };
+        SubmissionFeedbackDto feedbackDto = new() { Feedback = "Good work.", ReviewStatus = SubmissionReviewStatus.Approved };
 
         _submissionsServiceMock
             .Setup(service => service.SetFeedbackAsync(It.IsAny<SetFeedbackCommand>(), It.IsAny<CancellationToken>()))

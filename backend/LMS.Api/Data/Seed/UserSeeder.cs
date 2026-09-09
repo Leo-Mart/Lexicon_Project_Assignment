@@ -57,17 +57,35 @@ public static class UserSeeder
             RoleSeeder.StudentRole
         );
 
-        for (int i = 4; i <= 13; i++)
+        // Enough distinct names for 27 more students (30 total with the three above).
+        string[] firstNames =
+        [
+            "Lars", "Karin", "Anders", "Emma", "Oskar", "Lina", "Gustav", "Sara",
+            "Viktor", "Elin", "Fredrik", "Julia", "Henrik", "Ida", "Magnus", "Sofia",
+            "Daniel", "Frida", "Tobias", "Amanda", "Niklas", "Hanna", "Simon", "Alice",
+            "Jonas", "Klara", "Axel"
+        ];
+        string[] lastNames =
+        [
+            "Nilsson", "Persson", "Larsson", "Berg", "Lindqvist", "Olsson", "Gustafsson",
+            "Bergstrom", "Holm", "Sandberg", "Bjork", "Lindberg", "Ekstrom", "Nordin",
+            "Hedlund", "Wallin", "Aberg", "Sjoberg", "Lundgren", "Forsberg", "Akesson",
+            "Dahl", "Falk", "Strom", "Malm", "Widell", "Sundqvist"
+        ];
+
+        for (int i = 0; i < firstNames.Length; i++)
         {
             Guid studentId = Guid.Parse(
-                $"20000000-0000-0000-0000-{i:D12}"
+                $"20000000-0000-0000-0000-{i + 4:D12}"
             );
+            string name = $"{firstNames[i]} {lastNames[i]}";
+            string email = $"{firstNames[i].ToLowerInvariant()}.{lastNames[i].ToLowerInvariant()}@example.com";
 
             await CreateUserAsync(
                 userManager,
                 studentId,
-                $"Student {i}",
-                $"student{i}@example.com",
+                name,
+                email,
                 "Student123!",
                 RoleSeeder.StudentRole
             );

@@ -4,6 +4,7 @@ import Schedule from "../components/Schedule";
 import CourseListPage from "./CourseListPage";
 import ResourceManagement from "./ResourceManagement";
 import Users from "./Users";
+import Submissions from "./Submissions";
 
 const tabs = [
     { label: "Overview" },
@@ -11,6 +12,7 @@ const tabs = [
     { label: "User Management" },
     { label: "Resource Management" },
     { label: "Schedule" },
+    { label: "Submissions" },
 ];
 
 export default function Dashboard() {
@@ -62,6 +64,7 @@ export default function Dashboard() {
                         <Schedule />
                     </div>
                 )}
+                {activeTab === 6 && <Submissions />}
             </div>
         </div>
     );

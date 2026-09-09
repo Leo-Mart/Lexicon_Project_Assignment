@@ -8,6 +8,7 @@ import {
     setFeedback,
 } from "../services/submissionService";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
+import { SubmissionReviewStatus } from "../constants/SubmissionReviewStatus";
 
 // Dev-only page: one button per submissions endpoint, output shown below.
 export default function SubmissionsTest() {
@@ -79,9 +80,19 @@ export default function SubmissionsTest() {
                         const feedback = id
                             ? window.prompt("Feedback text?")
                             : null;
+                        const approved = id
+                            ? window.confirm(
+                                  "Approved? Cancel = needs completion",
+                              )
+                            : false;
                         if (id && feedback)
                             run(`PUT /submissions/${id}/feedback`, () =>
-                                setFeedback(id, { feedback }),
+                                setFeedback(id, {
+                                    feedback,
+                                    reviewStatus: approved
+                                        ? SubmissionReviewStatus.Approved
+                                        : SubmissionReviewStatus.NeedsCompletion,
+                                }),
                             );
                     }}
                 >
@@ -95,7 +106,8 @@ export default function SubmissionsTest() {
                         <tr className="border-b">
                             <th className="pr-4">Id</th>
                             <th className="pr-4">Student</th>
-                            <th className="pr-4">Status</th>
+                            <th className="pr-4">Submitted Late</th>
+                            <th className="pr-4">Review status</th>
                             <th>Feedback</th>
                         </tr>
                     </thead>
@@ -104,7 +116,12 @@ export default function SubmissionsTest() {
                             <tr key={s.submissionId} className="border-b">
                                 <td className="pr-4">{s.submissionId}</td>
                                 <td className="pr-4">{s.studentId}</td>
-                                <td className="pr-4">{s.status}</td>
+                                <td className="pr-4">
+                                    {s.submittedLate ? "Yes" : "No"}
+                                </td>
+                                <td className="pr-4">
+                                    {s.reviewStatus ?? "-"}
+                                </td>
                                 <td>{s.feedback ?? "-"}</td>
                             </tr>
                         ))}

@@ -8,7 +8,7 @@ public class Submission
     public Guid StudentId { get; set; }
     public string Text { get; set; } = string.Empty;
     public DateTime SubmittedAt { get; set; }
-    public SubmissionStatus Status { get; set; }
+    public SubmissionReviewStatus? ReviewStatus { get; set; }
     public string? Feedback { get; set; }
     public Guid? FeedbackByTeacherId { get; set; }
     public DateTime? FeedbackAt { get; set; }

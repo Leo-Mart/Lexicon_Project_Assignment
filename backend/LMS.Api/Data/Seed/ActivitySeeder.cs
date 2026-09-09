@@ -108,9 +108,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "React Component Exercise",
                 Description = "Build a small React application using reusable components.",
-                StartAt = new DateTime(2026, 9, 28, 9, 0, 0, DateTimeKind.Utc),
-                EndAt = new DateTime(2026, 10, 2, 16, 0, 0, DateTimeKind.Utc),
-                Deadline = new DateTime(2026, 10, 2, 16, 0, 0, DateTimeKind.Utc),
+                StartAt = new DateTime(2026, 8, 28, 9, 0, 0, DateTimeKind.Utc),
+                EndAt = new DateTime(2026, 9, 1, 16, 0, 0, DateTimeKind.Utc),
+                Deadline = new DateTime(2026, 9, 1, 16, 0, 0, DateTimeKind.Utc),
                 CreatedAt = now,
                 UpdatedAt = now
             }
