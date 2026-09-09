@@ -7,7 +7,10 @@ export const SubmissionReviewStatus = {
 export type SubmissionReviewStatus =
     (typeof SubmissionReviewStatus)[keyof typeof SubmissionReviewStatus];
 
-export const SubmissionReviewStatusNames: Record<SubmissionReviewStatus, string> = {
+export const SubmissionReviewStatusNames: Record<
+    SubmissionReviewStatus,
+    string
+> = {
     [SubmissionReviewStatus.Approved]: "Approved",
     [SubmissionReviewStatus.NeedsCompletion]: "Needs completion",
 };

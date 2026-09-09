@@ -49,7 +49,9 @@ export const fetchOverdueByActivityId = async (
     );
 
     if (!response.ok) {
-        throw new Error(`Failed to fetch overdue submissions: ${response.status}`);
+        throw new Error(
+            `Failed to fetch overdue submissions: ${response.status}`,
+        );
     }
 
     return (await response.json()) as OverdueSubmission[];

@@ -81,7 +81,9 @@ export default function SubmissionsTest() {
                             ? window.prompt("Feedback text?")
                             : null;
                         const approved = id
-                            ? window.confirm("Approved? Cancel = needs completion")
+                            ? window.confirm(
+                                  "Approved? Cancel = needs completion",
+                              )
                             : false;
                         if (id && feedback)
                             run(`PUT /submissions/${id}/feedback`, () =>
@@ -114,8 +116,12 @@ export default function SubmissionsTest() {
                             <tr key={s.submissionId} className="border-b">
                                 <td className="pr-4">{s.submissionId}</td>
                                 <td className="pr-4">{s.studentId}</td>
-                                <td className="pr-4">{s.submittedLate ? "Yes" : "No"}</td>
-                                <td className="pr-4">{s.reviewStatus ?? "-"}</td>
+                                <td className="pr-4">
+                                    {s.submittedLate ? "Yes" : "No"}
+                                </td>
+                                <td className="pr-4">
+                                    {s.reviewStatus ?? "-"}
+                                </td>
                                 <td>{s.feedback ?? "-"}</td>
                             </tr>
                         ))}
