@@ -30,8 +30,7 @@ import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
 import Button from "../components/Button";
 
 export default function ModulePage() {
-    const { id } = useParams<{ id: string }>();
-    const moduleId = id || "40000000-0000-0000-0000-000000000004";
+    const { moduleId } = useParams<{ moduleId: string }>();
     const [module, setModule] = useState<ModuleResponse | null>(null);
     const [submissionsByActivityId, setSubmissionsByActivityId] = useState<
         Map<string, SubmissionResponse>
@@ -52,6 +51,9 @@ export default function ModulePage() {
             setLoading(true);
             setError(null);
             try {
+                if (moduleId === undefined) {
+                    throw new Error("Could not find Id for module");
+                }
                 const moduleData = await fetchModuleById(moduleId);
                 setModule(moduleData);
 
@@ -80,6 +82,9 @@ export default function ModulePage() {
             setLoading(true);
             setError(null);
             try {
+                if (moduleId === undefined) {
+                    throw new Error("Could not find Id for module");
+                }
                 const resourceData = await fetchResourcesForModule(moduleId);
                 setModuleResources(resourceData);
             } catch (err) {
@@ -212,7 +217,7 @@ export default function ModulePage() {
                                     onClick={() =>
                                         setShowCreateActivityForm(true)
                                     }
-                                    className="rounded-md p-2 w-10 bg-buttons border-text-light border-3 hover:cursor-pointer"
+                                    className="rounded-md p-2 w-10 bg-buttons border-text-light border hover:cursor-pointer"
                                 >
                                     +
                                 </button>
@@ -252,7 +257,7 @@ export default function ModulePage() {
                 <FormModal
                     config={createActivityFormConfig}
                     initialValue={{
-                        moduleId: moduleId,
+                        moduleId: moduleId ?? "",
                         name: "",
                         description: "",
                         startAt: "",
@@ -281,6 +286,9 @@ export default function ModulePage() {
                     }}
                     onSave={async (data) => {
                         const resp = await createResource(data);
+                        if (moduleId === undefined) {
+                            throw new Error("Id not found");
+                        }
                         await addResourceToModule(resp.resourceId, moduleId);
                         setModuleResources([...moduleResources!, resp]);
                     }}

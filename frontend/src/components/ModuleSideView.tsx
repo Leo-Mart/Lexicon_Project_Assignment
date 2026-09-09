@@ -8,8 +8,9 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isExpanded, setIsExpanded] = useState(false);
+
     useEffect(() => {
-        const fetchModule = async () => {
+        const fetchModules = async () => {
             setLoading(true);
             setError(null);
             try {
@@ -27,8 +28,26 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
             }
         };
 
-        fetchModule();
+        const sortModules = () => {};
+
+        fetchModules();
+        sortModules();
     }, [module.courseId]);
+    //
+    const sortedModules = modules?.sort(
+        (a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime(),
+    );
+
+    const pastModules =
+        sortedModules?.filter((m) => new Date(m.endDate) < new Date()) ?? [];
+    const currentModule =
+        sortedModules?.filter(
+            (m) =>
+                new Date() >= new Date(m.startDate) &&
+                new Date() <= new Date(m.endDate),
+        ) ?? [];
+    const upcomingModules =
+        sortedModules?.filter((m) => new Date() < new Date(m.startDate)) ?? [];
 
     if (loading) return <div>Loading...</div>;
     if (error)
@@ -44,23 +63,47 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
 
     return (
         <>
-            <div className="flex flex-row absolute mt-1">
+            <div className="flex flex-row absolute mt-1 h-full">
                 {isExpanded && (
-                    <div className="bg-bg-window h-[calc(100vh-1rem)] w-55 flex flex-col mx-1 z-50">
+                    <div className="bg-bg-window h-full w-55 flex flex-col mx-1 z-50">
                         <div className="border-b-4 border-dotted py-4">
-                            <h3 className="px-2">Current viewing module:</h3>
+                            <h3 className="px-2">Currently viewing module:</h3>
                             <ModuleSideViewPart module={module} />
                         </div>
 
-                        {[...modules]
-                            .sort(
-                                (a, b) =>
-                                    new Date(a.endDate).getTime() -
-                                    new Date(b.endDate).getTime(),
-                            )
-                            .map((m) => (
-                                <ModuleSideViewPart module={m} key={m.name} />
+                        {pastModules.length > 0 ? (
+                            <div className="border-b-4 border-dotted py-4">
+                                <h3 className="px-2">Completed Modules:</h3>
+                                {pastModules &&
+                                    pastModules.map((m) => (
+                                        <ModuleSideViewPart
+                                            module={m}
+                                            key={m.moduleId}
+                                        />
+                                    ))}
+                            </div>
+                        ) : (
+                            ""
+                        )}
+
+                        <div className="border-b-4 border-dotted py-4">
+                            <h3 className="px-2">Current Module:</h3>
+                            {currentModule.map((m) => (
+                                <ModuleSideViewPart
+                                    module={m}
+                                    key={m.moduleId}
+                                />
                             ))}
+                        </div>
+                        <div className="border-b-4 border-dotted py-4">
+                            <h3 className="px-2">Upcoming Modules:</h3>
+                            {upcomingModules.map((m) => (
+                                <ModuleSideViewPart
+                                    module={m}
+                                    key={m.moduleId}
+                                />
+                            ))}
+                        </div>
                     </div>
                 )}
                 <button
