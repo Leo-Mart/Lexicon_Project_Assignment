@@ -16,7 +16,7 @@ const statusDotColor: Record<string, string> = {
     "Submitted (Late)": "bg-blue-400",
 };
 const statusTextColor: Record<string, string> = {
-    Late: "text-red-600",
+    Overdue: "text-red-600",
     "Not submitted": "text-gray-500",
     Submitted: "text-blue-600",
     "Submitted (Late)": "text-blue-600",
@@ -27,10 +27,6 @@ const reviewTextColor: Record<string, string> = {
     "Not reviewed": "text-gray-500",
     Approved: "text-green-600",
     "Needs completion": "text-yellow-600",
-};
-const reviewDotColor: Record<string, string> = {
-    Approved: "bg-green-400",
-    "Needs completion": "bg-yellow-400",
 };
 
 const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
@@ -70,7 +66,7 @@ export default function ActivityCard({
             ? "Submitted (Late)"
             : "Submitted"
         : isPastDeadline
-          ? "Late"
+          ? "Overdue"
           : "Not submitted";
 
     // Only meaningful once submitted.
@@ -83,29 +79,86 @@ export default function ActivityCard({
     // Once reviewed, the dot shows the review outcome instead of submitted/late.
     const dotIsReviewOutcome =
         reviewStatusText != null && reviewStatusText !== "Not reviewed";
-    const headerDotColor = dotIsReviewOutcome
-        ? reviewDotColor[reviewStatusText]
+
+    // Corner badge: graded beats overdue beats "due soon", shown even collapsed.
+    const daysUntilDeadline =
+        activity.deadline != null
+            ? Math.ceil(
+                  (new Date(activity.deadline).getTime() - Date.now()) /
+                      (1000 * 60 * 60 * 24),
+              )
+            : null;
+    let cornerBadge: { text: string; color: string; textColor: string } | null = null;
+    if (dotIsReviewOutcome) {
+        cornerBadge = { text: "Graded", color: "bg-green-500", textColor: "text-white" };
+    } else if (missingAndLate) {
+        cornerBadge = { text: "Overdue", color: "bg-red-500", textColor: "text-white" };
+    } else if (submission) {
+        cornerBadge = { text: "Submitted", color: "bg-blue-400", textColor: "text-white" };
+    } else if (
+        !submission &&
+        daysUntilDeadline != null &&
+        daysUntilDeadline >= 0 &&
+        daysUntilDeadline <= 5
+    ) {
+        cornerBadge = {
+            text:
+                daysUntilDeadline === 0
+                    ? "Due today"
+                    : `Due in ${daysUntilDeadline}d`,
+            color: "bg-bg-warning",
+            textColor: "text-text-dark",
+        };
+    } else if (hasStarted && !submission) {
+        cornerBadge = { text: "Not submitted", color: "bg-gray-400", textColor: "text-white" };
+    }
+
+    // The header dot mirrors the corner badge so both use the same color.
+    const headerDotColor = cornerBadge
+        ? cornerBadge.color
         : statusDotColor[submissionStatusText];
-    const headerDotLabel = dotIsReviewOutcome
-        ? reviewStatusText
-        : submissionStatusText;
+    const headerDotLabel = cornerBadge ? cornerBadge.text : submissionStatusText;
 
     return (
-        <div
-            key={activity.activityId}
-            className="w-80% rounded overflow-hidden shadow-lg bg-white m-3"
-        >
-            <div className="bg-bg-header w-full p-4 grid grid-cols-3 items-center">
-                <h2 className="font-bold text-xl">{activity.name}</h2>
+        <div key={activity.activityId} className="relative w-80% m-3">
+            <div className="rounded overflow-hidden shadow-lg bg-white">
+            <div
+                className="bg-bg-header w-full p-4 grid grid-cols-3 items-center cursor-pointer"
+                role="button"
+                tabIndex={0}
+                aria-expanded={isExpanded}
+                onClick={() => setIsExpanded(!isExpanded)}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        setIsExpanded(!isExpanded);
+                    }
+                }}
+            >
+                <div className="flex flex-row items-center gap-2">
+                    <span
+                        className={`text-xl transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                        aria-hidden="true"
+                    >
+                        ▾
+                    </span>
+                    <h2 className="font-bold text-xl">{activity.name}</h2>
+                </div>
                 <h3 className="font-bold text-l bg-bg-window text-text-dark p-1.5 rounded justify-self-center">
                     {ActivityTypeNames[activity.type]}
                 </h3>
                 <div className="flex flex-row justify-end items-center gap-2 justify-self-end">
+                    {cornerBadge && (
+                        <span
+                            className={`text-xs font-bold px-2 py-1 rounded ${cornerBadge.color} ${cornerBadge.textColor}`}
+                        >
+                            {cornerBadge.text}
+                        </span>
+                    )}
                     {hasStarted && missingAndLate && (
                         <div
                             className="rotate-45 w-5 h-5 bg-red-400"
-                            title="Late"
-                            aria-label="Late"
+                            title="Overdue"
+                            aria-label="Overdue"
                             role="img"
                         ></div>
                     )}
@@ -117,12 +170,6 @@ export default function ActivityCard({
                             role="img"
                         ></div>
                     )}
-                    <button
-                        className="border-2 border-bg-header-dark p-1"
-                        onClick={() => setIsExpanded(!isExpanded)}
-                    >
-                        {isExpanded ? "Show Less" : "Show More"}
-                    </button>
                 </div>
             </div>
             {isExpanded && (
@@ -173,6 +220,7 @@ export default function ActivityCard({
                     )}
                 </div>
             )}
+            </div>
             {addingSubmission && (
                 <FormModal
                     config={submissionFormConfig}

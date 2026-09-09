@@ -222,6 +222,38 @@ public class SubmissionsServiceTests
     }
 
     [Fact]
+    public async Task CreateSubmission_ShouldAgreeWithMappingProfile_WhenActivityIsLoaded()
+    {
+        // CreateSubmission sets SubmittedLate manually since the new submission's
+        // Activity nav isn't loaded; this checks that value against what the
+        // mapping profile would compute once the nav is loaded (e.g. via GetByIdAsync).
+        Guid activityId = Guid.NewGuid();
+        SubmissionsCreateCommand command = CreateCommand(activityId);
+        DateTime deadline = DateTime.UtcNow.AddSeconds(-1);
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Deadline = deadline });
+
+        Submission? createdSubmission = null;
+        _submissionsRepositoryMock
+            .Setup(repository => repository.CreateAsync(It.IsAny<Submission>(), It.IsAny<CancellationToken>()))
+            .Callback<Submission, CancellationToken>((submission, _) => createdSubmission = submission)
+            .Returns(Task.CompletedTask);
+
+        SubmissionDto result = await _submissionsService.CreateSubmission(command, CancellationToken.None);
+
+        createdSubmission!.Activity = new Activity { Deadline = deadline };
+        IMapper mapper = new MapperConfiguration(
+            cfg => cfg.AddProfile<SubmissionsProfile>(),
+            NullLoggerFactory.Instance
+        ).CreateMapper();
+        SubmissionDto mapped = mapper.Map<SubmissionDto>(createdSubmission);
+
+        Assert.Equal(mapped.SubmittedLate, result.SubmittedLate);
+    }
+
+    [Fact]
     public async Task SetFeedbackAsync_WithExistingSubmission_ShouldUpdateFeedbackAndReviewStatus()
     {
         Guid submissionId = Guid.NewGuid();
