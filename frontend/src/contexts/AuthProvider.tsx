@@ -54,7 +54,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (userRole === "Teacher") {
                 nav("/index");
             } else if (userRole === "Student") {
-                nav("/module");
+                // /module needs a moduleId; there's no student landing page yet.
+                nav("/index");
             }
         } catch (error) {
             if (error instanceof Error) {

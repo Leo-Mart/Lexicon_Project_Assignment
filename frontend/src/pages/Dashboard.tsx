@@ -39,6 +39,14 @@ export default function Dashboard() {
                 {activeTab === 1 && (
                     <div className="text-text-light">
                         Maybe some overview fields here?
+                        <div className="mt-3">
+                            <Button
+                                onClick={() => setActiveTab(2)}
+                                className="hover:cursor-pointer"
+                            >
+                                View courses
+                            </Button>
+                        </div>
                     </div>
                 )}
                 {activeTab === 2 && (
