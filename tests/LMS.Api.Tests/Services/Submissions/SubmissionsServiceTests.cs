@@ -4,6 +4,7 @@ using LMS.Api.DTOs.Activities;
 using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Submissions;
 using LMS.Api.Enums.Model;
+using LMS.Api.Exceptions;
 using LMS.Api.Mappings;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
@@ -199,7 +200,7 @@ public class SubmissionsServiceTests
 
         _activityServiceMock
             .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Deadline = DateTime.UtcNow.AddDays(1) });
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Type = ActivityType.Task, Deadline = DateTime.UtcNow.AddDays(1) });
 
         SubmissionDto result = await _submissionsService.CreateSubmission(command, CancellationToken.None);
 
@@ -214,11 +215,28 @@ public class SubmissionsServiceTests
 
         _activityServiceMock
             .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Deadline = DateTime.UtcNow.AddDays(-1) });
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Type = ActivityType.Task, Deadline = DateTime.UtcNow.AddDays(-1) });
 
         SubmissionDto result = await _submissionsService.CreateSubmission(command, CancellationToken.None);
 
         Assert.True(result.SubmittedLate);
+    }
+
+    [Theory]
+    [InlineData(ActivityType.Lecture)]
+    [InlineData(ActivityType.ELearning)]
+    [InlineData(ActivityType.Other)]
+    public async Task CreateSubmission_ForNonSubmittableType_ShouldThrow(ActivityType type)
+    {
+        Guid activityId = Guid.NewGuid();
+        SubmissionsCreateCommand command = CreateCommand(activityId);
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Type = type });
+
+        await Assert.ThrowsAsync<InvalidActivityTypeException>(
+            () => _submissionsService.CreateSubmission(command, CancellationToken.None));
     }
 
     [Fact]
@@ -233,7 +251,7 @@ public class SubmissionsServiceTests
 
         _activityServiceMock
             .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Deadline = deadline });
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Type = ActivityType.Task, Deadline = deadline });
 
         Submission? createdSubmission = null;
         _submissionsRepositoryMock
@@ -288,7 +306,7 @@ public class SubmissionsServiceTests
 
         _activityServiceMock
             .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Deadline = null });
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Type = ActivityType.Task, Deadline = null });
 
         SubmissionDto result = await _submissionsService.CreateSubmission(command, CancellationToken.None);
 

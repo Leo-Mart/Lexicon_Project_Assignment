@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 import { ActivityTime, ActivityDate } from "../constants/ActivityTimeConverter";
-import { ActivityTypeNames } from "../constants/ActivityType";
+import { ActivityType, ActivityTypeNames } from "../constants/ActivityType";
 import Button from "../components/Button";
 import FormModal, { type EntityFormConfig } from "../components/FormModal";
 import { createSubmission } from "../services/submissionService";
@@ -39,6 +39,11 @@ export default function ActivityCard({
     const { role } = useAuth();
     const isStudent = role === "Student";
 
+    // Only hand-in work types take a submission - not lectures/e-learning/other.
+    const isSubmittable =
+        activity.type === ActivityType.Task ||
+        activity.type === ActivityType.Practice;
+
     // Nothing to submit before the activity has even started.
     const hasStarted = new Date() >= new Date(activity.startAt);
 
@@ -71,8 +76,8 @@ export default function ActivityCard({
               )
             : null;
     let cornerBadge: { text: string; color: string; textColor: string } | null = null;
-    if (!isStudent) {
-        // Teachers don't see per-student submission status here.
+    if (!isStudent || !isSubmittable) {
+        // Teachers, and non-submittable activity types, see no badge.
     } else if (reviewStatusText === "Approved") {
         cornerBadge = { text: "Graded", color: "bg-green-500", textColor: "text-white" };
     } else if (reviewStatusText === "Needs completion") {
@@ -157,7 +162,7 @@ export default function ActivityCard({
                             {ActivityTime(activity.startAt)}-
                             {ActivityTime(activity.endAt)}
                         </p>
-                        {isStudent && hasStarted && (
+                        {isStudent && isSubmittable && hasStarted && (
                             <div className="flex flex-col items-start gap-2 px-3">
                                 {activity.deadline != null && !submission && (
                                     <p
@@ -171,7 +176,7 @@ export default function ActivityCard({
                             </div>
                         )}
                     </div>
-                    {isStudent && hasStarted && !submission && (
+                    {isStudent && isSubmittable && hasStarted && !submission && (
                         <Button
                             variant="primary"
                             onClick={() => setAddingSubmission(true)}
