@@ -6,6 +6,7 @@ using LMS.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using LMS.Api.Constants;
 
 namespace LMS.Api.Controllers;
 
@@ -14,7 +15,7 @@ namespace LMS.Api.Controllers;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Roles = "Teacher")]
+[Authorize(Roles = RoleConstants.Teacher)]
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;

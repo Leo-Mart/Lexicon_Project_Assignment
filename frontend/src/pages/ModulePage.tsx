@@ -10,6 +10,7 @@ import { getCurrentUserSubmissions } from "../services/submissionService";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import ActivityCard from "../components/ActivityCard";
+import { useAuth } from "../hooks/useAuth";
 
 export default function ModulePage() {
     const { id } = useParams<{ id: string }>();
@@ -20,6 +21,7 @@ export default function ModulePage() {
     >(new Map());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { role } = useAuth();
 
     useEffect(() => {
         const fetchModule = async () => {
@@ -29,13 +31,18 @@ export default function ModulePage() {
                 const moduleData = await fetchModuleById(moduleId);
                 setModule(moduleData);
 
-                // Only students have submissions; teachers get a 403 here, so ignore failures.
-                try {
+                if (role === "Student") {
                     const submissions = await getCurrentUserSubmissions();
+
                     setSubmissionsByActivityId(
-                        new Map(submissions.map((s) => [s.activityId, s])),
+                        new Map(
+                            submissions.map((submission) => [
+                                submission.activityId,
+                                submission,
+                            ]),
+                        ),
                     );
-                } catch {
+                } else {
                     setSubmissionsByActivityId(new Map());
                 }
             } catch (err) {
@@ -51,7 +58,7 @@ export default function ModulePage() {
         };
 
         fetchModule();
-    }, [moduleId]);
+    }, [moduleId, role]);
 
     if (loading) return <div>Loading...</div>;
     if (error)
