@@ -69,7 +69,7 @@ export default function CourseTable({
                     >
                         <td className="p-3">
                             <Link
-                                className="font-bold underline text-buttons"
+                                className="font-bold underline text-buttons text-lg"
                                 to={`/courses/${course.courseId}`}
                             >
                                 {course.name}
@@ -79,18 +79,22 @@ export default function CourseTable({
                         <td className="p-3">{course.startDate}</td>
                         <td className="p-3">{course.endDate}</td>
                         <td className="p-3">
-                            <Button onClick={() => onUpdate(course)}>
-                                Update
-                            </Button>
-                            <Button onClick={() => onDelete(course)}>
-                                Delete
-                            </Button>
-                            <Button
-                                onClick={() => onCreateResource(course)}
-                                className="hover:cursor-pointer mx-2"
-                            >
-                                Create Resource
-                            </Button>
+                            <div className="flex items-center gap-2 whitespace-nowrap">
+                                <Button onClick={() => onUpdate(course)}>
+                                    Update
+                                </Button>
+                                <Button
+                                    onClick={() => onCreateResource(course)}
+                                >
+                                    Create Resource
+                                </Button>
+                                <Button
+                                    variant="cancel"
+                                    onClick={() => onDelete(course)}
+                                >
+                                    Delete
+                                </Button>
+                            </div>
                         </td>
                     </tr>
                 ))}
