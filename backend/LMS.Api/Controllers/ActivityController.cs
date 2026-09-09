@@ -1,4 +1,3 @@
-
 using LMS.Api.DTOs.Activities;
 using LMS.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +9,6 @@ namespace LMS.Api.Controllers;
 [Tags("Activities")]
 public class ActivityController : ControllerBase
 {
-
     private readonly IActivityService _activityService;
 
     public ActivityController(IActivityService activityService)
@@ -25,7 +23,9 @@ public class ActivityController : ControllerBase
     /// <returns>A list of activities.</returns>
     [HttpGet]
     [ProducesResponseType(typeof(List<ActivityDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<ActivityDto>>> GetAllActivities(CancellationToken cancellationToken)
+    public async Task<ActionResult<List<ActivityDto>>> GetAllActivities(
+        CancellationToken cancellationToken
+    )
     {
         List<ActivityDto> activities = await _activityService.GetAllAsync(cancellationToken);
 
@@ -41,7 +41,10 @@ public class ActivityController : ControllerBase
     [HttpGet("{activityId:guid}")]
     [ProducesResponseType(typeof(ActivityDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ActivityDto?>> GetActivityByIdAsync([FromRoute] Guid activityId, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<ActivityDto?>> GetActivityById(
+        [FromRoute] Guid activityId,
+        CancellationToken cancellationToken = default
+    )
     {
         ActivityDto? activity = await _activityService.GetByIdAsync(activityId, cancellationToken);
 
@@ -60,9 +63,15 @@ public class ActivityController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of activities belonging to the module.</returns>
     [HttpGet("module/{moduleId:guid}")]
-    public async Task<ActionResult<List<ActivityDto>>> GetActivitiesByModuleIdAsync([FromRoute] Guid moduleId, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<List<ActivityDto>>> GetActivitiesByModuleIdAsync(
+        [FromRoute] Guid moduleId,
+        CancellationToken cancellationToken = default
+    )
     {
-        List<ActivityDto> activities = await _activityService.GetByModuleIdAsync(moduleId, cancellationToken);
+        List<ActivityDto> activities = await _activityService.GetByModuleIdAsync(
+            moduleId,
+            cancellationToken
+        );
 
         return Ok(activities);
     }
@@ -75,7 +84,10 @@ public class ActivityController : ControllerBase
     [HttpDelete("{activityId:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteActivityAsync([FromRoute] Guid activityId, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> DeleteActivityAsync(
+        [FromRoute] Guid activityId,
+        CancellationToken cancellationToken = default
+    )
     {
         bool deleted = await _activityService.DeleteAsync(activityId, cancellationToken);
 
@@ -97,7 +109,11 @@ public class ActivityController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateActivityAsyny([FromRoute] Guid activityId, [FromBody] ActivityUpdateDto request, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateActivityAsyny(
+        [FromRoute] Guid activityId,
+        [FromBody] ActivityUpdateDto request,
+        CancellationToken cancellationToken
+    )
     {
         bool updated = await _activityService.UpdateAsync(activityId, request, cancellationToken);
 
@@ -118,15 +134,17 @@ public class ActivityController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(ActivityDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateActivityAsync([FromBody] ActivityCreateDto request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> CreateActivityAsync(
+        [FromBody] ActivityCreateDto request,
+        CancellationToken cancellationToken = default
+    )
     {
         ActivityDto activity = await _activityService.CreateAsync(request, cancellationToken);
 
         return CreatedAtAction(
-            nameof(GetActivityByIdAsync),
+            nameof(GetActivityById),
             new { activityId = activity.ActivityId },
             activity
         );
     }
 }
-

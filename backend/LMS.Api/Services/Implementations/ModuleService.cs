@@ -129,10 +129,7 @@ public class ModuleService(
 
         foreach (Module existingModule in course.Modules)
         {
-            if (
-                excludedModuleId.HasValue
-                && existingModule.ModuleId == excludedModuleId.Value
-            )
+            if (excludedModuleId.HasValue && existingModule.ModuleId == excludedModuleId.Value)
             {
                 continue;
             }
