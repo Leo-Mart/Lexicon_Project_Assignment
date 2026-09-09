@@ -1,5 +1,6 @@
 using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Resources;
 using LMS.Api.Mappings;
 using LMS.Api.Models;
@@ -246,5 +247,62 @@ public class ResourceServiceTests
             unitOfWork => unitOfWork.SaveChangesAsync(It.IsAny<CancellationToken>()),
             Times.Once
         );
+    }
+
+    [Fact]
+    public async Task GetAllAsync_ShouldReturnPagedResources()
+    {
+        QueryParametersDto query = new()
+        {
+            Search = "",
+            SortBy = "name",
+            Direction = "asc",
+            Page = 1,
+            PageSize = 20
+        };
+
+        List<Resource> resources =
+        [
+            new Resource
+        {
+            ResourceId = Guid.NewGuid(),
+            CreatedByTeacherId = Guid.NewGuid(),
+            Name = "Resource A",
+            Description = "Description A"
+        },
+        new Resource
+        {
+            ResourceId = Guid.NewGuid(),
+            CreatedByTeacherId = Guid.NewGuid(),
+            Name = "Resource B",
+            Description = "Description B"
+        }
+        ];
+
+        PagedResponse<Resource> repositoryResult = new()
+        {
+            Items = resources,
+            TotalCount = 2,
+            Page = 1,
+            PageSize = 20
+        };
+
+        _resourceRepositoryMock
+            .Setup(repository =>
+                repository.GetAllAsync(
+                    query,
+                    It.IsAny<CancellationToken>()))
+            .ReturnsAsync(repositoryResult);
+
+        PagedResponse<ResourceDto> result =
+            await _resourceService.GetAllAsync(query);
+
+        Assert.Equal(2, result.Items.Count);
+        Assert.Equal(2, result.TotalCount);
+        Assert.Equal(1, result.Page);
+        Assert.Equal(20, result.PageSize);
+
+        Assert.Equal("Resource A", result.Items[0].Name);
+        Assert.Equal("Resource B", result.Items[1].Name);
     }
 }
