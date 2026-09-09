@@ -6,6 +6,7 @@ import SortableTh from "./SortableTableHead";
 interface CoursesTableProps {
     courses: CourseResponse[];
     sortBy: string;
+    isLoading: boolean;
     onSortChange: (value: string) => void;
     onUpdate: (course: CourseResponse) => void;
     onCreateResource: (course: CourseResponse) => void;
@@ -14,10 +15,11 @@ interface CoursesTableProps {
 
 export default function CourseTable({
     courses,
+    sortBy,
+    isLoading,
     onUpdate,
     onCreateResource,
     onDelete,
-    sortBy,
     onSortChange,
 }: CoursesTableProps) {
     return (
@@ -28,24 +30,28 @@ export default function CourseTable({
                         field="name"
                         label="Name"
                         sortBy={sortBy}
+                        isLoading={isLoading}
                         onSortChange={onSortChange}
                     />
                     <SortableTh
                         field="description"
                         label="Description"
                         sortBy={sortBy}
+                        isLoading={isLoading}
                         onSortChange={onSortChange}
                     />
                     <SortableTh
                         field="startDate"
                         label="Start date"
                         sortBy={sortBy}
+                        isLoading={isLoading}
                         onSortChange={onSortChange}
                     />
                     <SortableTh
                         field="endDate"
                         label="End date"
                         sortBy={sortBy}
+                        isLoading={isLoading}
                         onSortChange={onSortChange}
                     />
                     <th className="p-3 w-2/10"></th>
