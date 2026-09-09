@@ -1,6 +1,7 @@
 using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.DTOs.Activities;
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Module;
 using LMS.Api.DTOs.Submissions;
 using LMS.Api.Models;
@@ -41,6 +42,19 @@ public class SubmissionsService(
         List<Submission> resources = await _submissionsRepository.GetAllAsync(cancellationToken);
 
         return _mapper.Map<List<SubmissionDto>>(resources);
+    }
+
+    public async Task<PagedResponse<SubmissionDto>> GetPagedAsync(QueryParametersDto query, CancellationToken cancellationToken = default)
+    {
+        PagedResponse<Submission> paged = await _submissionsRepository.GetPagedAsync(query, cancellationToken);
+
+        return new PagedResponse<SubmissionDto>
+        {
+            Items = _mapper.Map<List<SubmissionDto>>(paged.Items),
+            TotalCount = paged.TotalCount,
+            Page = paged.Page,
+            PageSize = paged.PageSize
+        };
     }
 
     public async Task<SubmissionDto?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)

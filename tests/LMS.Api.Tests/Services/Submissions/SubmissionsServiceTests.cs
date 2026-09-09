@@ -1,6 +1,7 @@
 using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.DTOs.Activities;
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Submissions;
 using LMS.Api.Enums.Model;
 using LMS.Api.Mappings;
@@ -101,6 +102,33 @@ public class SubmissionsServiceTests
         List<SubmissionDto> result = await _submissionsService.GetAllAsync();
 
         Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_WithSubmissions_ShouldReturnMappedPage()
+    {
+        List<Submission> submissions =
+        [
+            CreateSubmission(Guid.NewGuid()),
+            CreateSubmission(Guid.NewGuid())
+        ];
+        QueryParametersDto query = new() { Page = 1, PageSize = 10 };
+
+        _submissionsRepositoryMock
+            .Setup(repository => repository.GetPagedAsync(query, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PagedResponse<Submission>
+            {
+                Items = submissions,
+                TotalCount = 2,
+                Page = 1,
+                PageSize = 10
+            });
+
+        PagedResponse<SubmissionDto> result = await _submissionsService.GetPagedAsync(query);
+
+        Assert.Equal(2, result.Items.Count);
+        Assert.Equal(2, result.TotalCount);
+        Assert.Equal(submissions[0].SubmissionId, result.Items[0].SubmissionId);
     }
 
     [Fact]

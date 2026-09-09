@@ -4,6 +4,7 @@ import Pagination from "../components/Pagination";
 import FormModal, { type EntityFormConfig } from "../components/FormModal";
 import {
     fetchAllSubmissions,
+    fetchSubmissionsPage,
     fetchOverdueByActivityId,
     setFeedback,
 } from "../services/submissionService";
@@ -104,6 +105,15 @@ export default function Submissions() {
     const [page, setPage] = useState(1);
     const [tab, setTab] = useState<"submitted" | "overdue">("submitted");
 
+    // The Submissions tab's table: one page at a time, searched/sorted on
+    // the server. Separate from `submissions` above, which stays a full
+    // fetch for the overview stats and the Overdue tab.
+    const [pagedSubmissions, setPagedSubmissions] = useState<
+        SubmissionResponse[]
+    >([]);
+    const [totalCount, setTotalCount] = useState(0);
+    const [tableLoading, setTableLoading] = useState(true);
+
     // Per-activity overdue view: a different concept from a submission, so
     // it's its own type/fetch, not a filter over SubmissionResponse[].
     // Fetched eagerly for every activity so the summary bar and the picker's
@@ -159,6 +169,28 @@ export default function Submissions() {
         void load();
     }, [role]);
 
+    useEffect(() => {
+        if (role !== "Teacher") return;
+
+        const loadPage = async () => {
+            setTableLoading(true);
+
+            const data = await fetchSubmissionsPage({
+                search,
+                sortBy,
+                direction: "asc",
+                page,
+                pageSize: PAGE_SIZE,
+            });
+
+            setPagedSubmissions(data.items);
+            setTotalCount(data.totalCount);
+            setTableLoading(false);
+        };
+
+        void loadPage();
+    }, [role, sortBy, search, page]);
+
     // Overdue students for every activity, so the picker can flag which ones
     // need attention and the summary bar/"All activities" need no extra fetch.
     useEffect(() => {
@@ -194,6 +226,11 @@ export default function Submissions() {
                 s.submissionId === updated.submissionId ? updated : s,
             ),
         );
+        setPagedSubmissions((prev) =>
+            prev.map((s) =>
+                s.submissionId === updated.submissionId ? updated : s,
+            ),
+        );
         setReviewing(null);
     };
 
@@ -217,28 +254,6 @@ export default function Submissions() {
         studentNameById.get(s.studentId) ?? s.studentId;
     const submittedCountFor = (activityId: string) =>
         submissions.filter((s) => s.activityId === activityId).length;
-
-    const filtered = submissions.filter((s) =>
-        studentName(s).toLowerCase().includes(search.toLowerCase()),
-    );
-
-    const sorted = [...filtered].sort((a, b) => {
-        switch (sortBy) {
-            case "not-reviewed-first":
-                return (
-                    Number(a.reviewStatus != null) -
-                    Number(b.reviewStatus != null)
-                );
-            case "late-first":
-                return Number(b.submittedLate) - Number(a.submittedLate);
-            case "student":
-                return studentName(a).localeCompare(studentName(b));
-            case "course":
-                return courseName(a).localeCompare(courseName(b));
-        }
-    });
-
-    const pageItems = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
     const totalOverdue = [...overdueByActivity.values()].reduce(
         (sum, list) => sum + list.length,
@@ -278,13 +293,15 @@ export default function Submissions() {
 
             <div className="flex gap-2 mb-4">
                 <Button
-                    variant={tab === "submitted" ? "confirm" : "primary"}
+                    variant="primary"
+                    className={tab === "submitted" ? "bg-accent-blue" : ""}
                     onClick={() => setTab("submitted")}
                 >
                     Submissions
                 </Button>
                 <Button
-                    variant={tab === "overdue" ? "confirm" : "primary"}
+                    variant="primary"
+                    className={tab === "overdue" ? "bg-accent-blue" : ""}
                     onClick={() => setTab("overdue")}
                 >
                     Overdue
@@ -302,7 +319,7 @@ export default function Submissions() {
                         </label>
                         <select
                             id="sort-by"
-                            className="shadow appearance-none border rounded bg-white text-text-dark px-3 py-2"
+                            className="bg-slate-700 text-white border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
                             value={sortBy}
                             onChange={(e) => {
                                 setSortBy(e.target.value as SortOption);
@@ -326,7 +343,7 @@ export default function Submissions() {
                             id="student-search"
                             type="search"
                             placeholder="Search by name..."
-                            className="shadow appearance-none border rounded bg-white text-text-dark px-3 py-2"
+                            className="bg-slate-700 text-white placeholder:text-slate-400 border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
                             value={search}
                             onChange={(e) => {
                                 setSearch(e.target.value);
@@ -352,7 +369,7 @@ export default function Submissions() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {pageItems.map((s) => {
+                                {pagedSubmissions.map((s) => {
                                     const deadline = activityDeadlineById.get(
                                         s.activityId,
                                     );
@@ -405,18 +422,29 @@ export default function Submissions() {
                                         </tr>
                                     );
                                 })}
-                                {pageItems.length === 0 && (
+                                {tableLoading && (
                                     <tr>
                                         <td
                                             colSpan={8}
                                             className="px-4 py-3 text-center"
                                         >
-                                            {submissions.length === 0
-                                                ? "No submissions yet."
-                                                : "No submissions match your search."}
+                                            Loading...
                                         </td>
                                     </tr>
                                 )}
+                                {!tableLoading &&
+                                    pagedSubmissions.length === 0 && (
+                                        <tr>
+                                            <td
+                                                colSpan={8}
+                                                className="px-4 py-3 text-center"
+                                            >
+                                                {submissions.length === 0
+                                                    ? "No submissions yet."
+                                                    : "No submissions match your search."}
+                                            </td>
+                                        </tr>
+                                    )}
                             </tbody>
                         </table>
                     </div>
@@ -424,7 +452,7 @@ export default function Submissions() {
                     <Pagination
                         page={page}
                         pageSize={PAGE_SIZE}
-                        totalCount={sorted.length}
+                        totalCount={totalCount}
                         onPageChange={setPage}
                     />
                 </>
@@ -441,7 +469,7 @@ export default function Submissions() {
                         </label>
                         <select
                             id="overdue-activity"
-                            className="shadow appearance-none border rounded bg-white text-text-dark px-3 py-2"
+                            className="bg-slate-700 text-white border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
                             value={overdueViewActivityId}
                             onChange={(e) =>
                                 setOverdueViewActivityId(e.target.value)
