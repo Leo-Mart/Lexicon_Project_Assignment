@@ -2,17 +2,29 @@ import { authFetch } from "./authService";
 import { API_BASE_URL, HttpMethod, JSON_HEADERS } from "../constants/Constants";
 import type { ResourceResponse } from "../interfaces/resource/ResourceResponse";
 import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
+import type { PagedResponse } from "../interfaces/common/PagedResponse";
+import type { QueryParameters } from "../interfaces/common/QueryParameters";
 
 const API_URL = API_BASE_URL + "/resources";
 
-export const fetchResources = async (): Promise<ResourceResponse[]> => {
-    const response = await authFetch(API_URL);
+export const fetchResources = async (
+    query: QueryParameters,
+): Promise<PagedResponse<ResourceResponse>> => {
+    const params = new URLSearchParams({
+        search: query.search,
+        sortBy: query.sortBy,
+        direction: query.direction,
+        page: query.page.toString(),
+        pageSize: query.pageSize.toString(),
+    });
+
+    const response = await authFetch(`${API_URL}?${params.toString()}`);
 
     if (!response.ok) {
-        throw new Error(`Failed to fetch Resource: ${response.status}`);
+        throw new Error(`Failed to fetch resources: ${response.status}`);
     }
 
-    return (await response.json()) as ResourceResponse[];
+    return (await response.json()) as PagedResponse<ResourceResponse>;
 };
 
 export const fetchResourcesForCourse = async (
