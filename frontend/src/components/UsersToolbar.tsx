@@ -34,6 +34,8 @@ export default function UsersToolbar({
                 <option value="name-desc">Name Z-A</option>
                 <option value="course-asc">Course A-Z</option>
                 <option value="course-desc">Course Z-A</option>
+                <option value="role-asc">Role A-Z</option>
+                <option value="role-desc">Role Z-A</option>
                 <option value="status">Status</option>
             </select>
 
