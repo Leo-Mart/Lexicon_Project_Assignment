@@ -44,6 +44,8 @@ public class UserServiceTests
          .UseInMemoryDatabase(Guid.NewGuid().ToString())
          .Options;
 
+        _context = new LMSDbContext(options);
+
         _userService = new UserService(
             _userManagerMock.Object,
             mapper,
