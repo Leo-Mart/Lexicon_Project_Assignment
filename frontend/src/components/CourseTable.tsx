@@ -54,7 +54,7 @@ export default function CourseTable({
                         isLoading={isLoading}
                         onSortChange={onSortChange}
                     />
-                    <th className="p-3 w-2/10">Edit</th>
+                    <th className="p-3 w-2/10">Interact</th>
                 </tr>
             </thead>
             <tbody className="text-text-dark dark:text-text-light">
