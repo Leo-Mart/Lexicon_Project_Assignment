@@ -250,6 +250,9 @@ public class SubmissionsServiceTests
         ).CreateMapper();
         SubmissionDto mapped = mapper.Map<SubmissionDto>(createdSubmission);
 
+        // The deadline is already past, so both paths must land on true, not
+        // just agree with each other (which they'd also do if both were wrong).
+        Assert.True(result.SubmittedLate);
         Assert.Equal(mapped.SubmittedLate, result.SubmittedLate);
     }
 

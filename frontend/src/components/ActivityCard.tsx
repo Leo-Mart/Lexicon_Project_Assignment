@@ -81,10 +81,6 @@ export default function ActivityCard({
             : "Not reviewed"
         : null;
 
-    // Whether it's been reviewed at all: feeds the corner badge below.
-    const dotIsReviewOutcome =
-        reviewStatusText != null && reviewStatusText !== "Not reviewed";
-
     // Corner badge, shown even collapsed: graded > overdue > submitted >
     // due soon > not submitted.
     const daysUntilDeadline =
@@ -97,14 +93,24 @@ export default function ActivityCard({
     let cornerBadge: { text: string; color: string; textColor: string } | null = null;
     if (!isStudent) {
         // Teachers don't see per-student submission status here.
-    } else if (dotIsReviewOutcome) {
+    } else if (reviewStatusText === "Approved") {
         cornerBadge = { text: "Graded", color: "bg-green-500", textColor: "text-white" };
+    } else if (reviewStatusText === "Needs completion") {
+        cornerBadge = {
+            text: "Needs completion",
+            color: "bg-bg-warning",
+            textColor: "text-text-dark",
+        };
     } else if (missingAndLate) {
         cornerBadge = { text: "Overdue", color: "bg-red-500", textColor: "text-white" };
     } else if (submission) {
-        cornerBadge = { text: "Submitted", color: "bg-blue-400", textColor: "text-white" };
+        cornerBadge = {
+            text: submissionStatusText,
+            color: "bg-blue-400",
+            textColor: "text-white",
+        };
     } else if (
-        !submission &&
+        hasStarted &&
         daysUntilDeadline != null &&
         daysUntilDeadline >= 0 &&
         daysUntilDeadline <= 5
@@ -117,7 +123,7 @@ export default function ActivityCard({
             color: "bg-bg-warning",
             textColor: "text-text-dark",
         };
-    } else if (hasStarted && !submission) {
+    } else if (hasStarted) {
         cornerBadge = { text: "Not submitted", color: "bg-gray-400", textColor: "text-white" };
     }
 
@@ -138,6 +144,7 @@ export default function ActivityCard({
                 onClick={() => setIsExpanded(!isExpanded)}
                 onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
                         setIsExpanded(!isExpanded);
                     }
                 }}
