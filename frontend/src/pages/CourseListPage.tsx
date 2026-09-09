@@ -70,7 +70,7 @@ export default function CourseListPage() {
                 setError(
                     err instanceof Error
                         ? err.message
-                        : "Failed to fetch module",
+                        : "Failed to fetch course",
                 );
                 console.error("Fetch error:", err);
             } finally {
