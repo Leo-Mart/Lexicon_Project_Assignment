@@ -2,6 +2,7 @@ using AutoMapper;
 using LMS.Api.Constants;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.DTOs.Course;
+using LMS.Api.DTOs.Enrollment;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using LMS.Api.Services.Interfaces;
@@ -48,6 +49,14 @@ public class EnrollmentService : IEnrollmentService
     {
         return await _enrollmentRepository.GetByCourseIdAsync(courseId, cancellationToken);
     }
+
+public async Task<List<EnrollmentStudentsDto>> GetStudentEnrollmentsByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default)
+    {
+        List<Enrollment> enrollments = 
+         await _enrollmentRepository.GetByCourseIdAsync(courseId, cancellationToken);
+
+         return _mapper.Map<List<EnrollmentStudentsDto>>(enrollments);
+    }    
 
     public async Task<bool> AssignOrChangeCourseAsync(
         Guid studentId,
