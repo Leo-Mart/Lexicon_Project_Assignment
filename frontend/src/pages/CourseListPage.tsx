@@ -113,7 +113,7 @@ export default function CourseListPage() {
             // Filter the deleted course from state
             setCourses(courses!.filter((c) => c.courseId !== course.courseId));
         } catch (error) {
-            console.error("Fel vid radering:", error);
+            console.error("Error on render:", error);
         }
     }
 
@@ -134,7 +134,7 @@ export default function CourseListPage() {
             <div className="m-3 flex justify-end">
                 <Button
                     onClick={() => handleShowCourseModal(newCourse)}
-                    className=""
+                    className="border-4 border-accent-student"
                 >
                     Create course
                 </Button>
