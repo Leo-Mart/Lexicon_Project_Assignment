@@ -1,10 +1,11 @@
+using LMS.Api.DTOs.Common;
 using LMS.Api.Models;
 
 namespace LMS.Api.Repositories.Interfaces;
 
 public interface IResourceRepository
 {
-    Task<List<Resource>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<PagedResponse<Resource>> GetAllAsync(QueryParametersDto query, CancellationToken cancellationToken = default);
 
     Task<Resource?> GetByIdAsync(Guid resourceId, CancellationToken cancellationToken = default);
 
