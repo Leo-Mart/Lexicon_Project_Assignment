@@ -84,7 +84,7 @@ export default function ActivityCard({
     const daysUntilDeadline =
         activity.deadline != null
             ? Math.ceil(
-                  (new Date(activity.deadline).getTime() - Date.now()) /
+                  (new Date(activity.deadline).getTime() - new Date().getTime()) /
                       (1000 * 60 * 60 * 24),
               )
             : null;
