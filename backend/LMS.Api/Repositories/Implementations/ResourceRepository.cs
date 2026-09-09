@@ -1,4 +1,5 @@
 using LMS.Api.Data;
+using LMS.Api.DTOs.Common;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -14,9 +15,50 @@ public class ResourceRepository : IResourceRepository
         _context = context;
     }
 
-    public async Task<List<Resource>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<Resource>> GetAllAsync(QueryParametersDto query, CancellationToken cancellationToken = default)
     {
-        return await _context.Resources.AsNoTracking().ToListAsync(cancellationToken);
+        IQueryable<Resource> resourcesQuery =
+            _context.Resources.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            string search = query.Search.Trim();
+
+            resourcesQuery = resourcesQuery.Where(resource =>
+                resource.Name.Contains(search) ||
+                resource.Description.Contains(search));
+        }
+
+        resourcesQuery = query.SortBy.ToLowerInvariant() switch
+        {
+            "createdat" => query.Direction == "desc"
+                ? resourcesQuery.OrderByDescending(resource => resource.CreatedAt)
+                : resourcesQuery.OrderBy(resource => resource.CreatedAt),
+
+            "updatedat" => query.Direction == "desc"
+                ? resourcesQuery.OrderByDescending(resource => resource.UpdatedAt)
+                : resourcesQuery.OrderBy(resource => resource.UpdatedAt),
+
+            _ => query.Direction == "desc"
+                ? resourcesQuery.OrderByDescending(resource => resource.Name)
+                : resourcesQuery.OrderBy(resource => resource.Name)
+        };
+
+        int totalCount =
+            await resourcesQuery.CountAsync(cancellationToken);
+
+        List<Resource> resources = await resourcesQuery
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResponse<Resource>
+        {
+            Items = resources,
+            TotalCount = totalCount,
+            Page = query.Page,
+            PageSize = query.PageSize
+        };
     }
 
     public async Task<Resource?> GetByIdAsync(

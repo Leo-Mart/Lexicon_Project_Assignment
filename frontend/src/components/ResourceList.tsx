@@ -8,13 +8,20 @@ const ResourceList = () => {
     const [resources, setResources] = useState<ResourceResponse[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
     useEffect(() => {
         const fetchAllResources = async () => {
             setLoading(true);
             setError(null);
             try {
-                const courseData = await fetchResources();
-                setResources(courseData);
+                const courseData = await fetchResources({
+                    search: "",
+                    sortBy: "name",
+                    direction: "asc",
+                    page: 1,
+                    pageSize: 200,
+                });
+                setResources(courseData.items);
             } catch (err) {
                 setError(
                     err instanceof Error

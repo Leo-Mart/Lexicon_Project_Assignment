@@ -111,7 +111,6 @@ export default function CourseListPage() {
             // Filter the deleted course from state
             setCourses(courses!.filter((c) => c.courseId !== course.courseId));
         } catch (error) {
-            alert(error);
             console.error("Fel vid radering:", error);
         }
     }
