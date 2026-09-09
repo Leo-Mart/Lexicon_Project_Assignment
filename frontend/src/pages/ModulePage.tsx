@@ -105,7 +105,7 @@ export default function ModulePage() {
 
         fetchModule();
         getResourcesForModule();
-    }, [moduleId,role]);
+    }, [moduleId, role]);
 
     const handleResourceEdit = async (
         resourceId: string,
