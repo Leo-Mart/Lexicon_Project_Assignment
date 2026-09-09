@@ -3,11 +3,26 @@ import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 import ModuleSideViewPart from "./ModuleSideViewPart";
 import { fetchModules } from "../services/moduleService";
 
-export default function ModuleSideView({ module }: { module: ModuleResponse }) {
+export default function ModuleSideView({
+    module,
+}: {
+    module?: ModuleResponse;
+}) {
     const [modules, setModules] = useState<ModuleResponse[]>();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isExpanded, setIsExpanded] = useState(false);
+    // Persisted so navigating to another module doesn't reset it.
+    const [isExpanded, setIsExpanded] = useState(
+        () => sessionStorage.getItem("moduleSideViewExpanded") === "true",
+    );
+
+    const toggleExpanded = () => {
+        setIsExpanded((prev) => {
+            const next = !prev;
+            sessionStorage.setItem("moduleSideViewExpanded", String(next));
+            return next;
+        });
+    };
     useEffect(() => {
         const fetchModule = async () => {
             setLoading(true);
@@ -47,9 +62,11 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
             <div className="flex flex-row absolute mt-1">
                 {isExpanded && (
                     <div className="bg-bg-window h-[calc(100vh-1rem)] w-55 flex flex-col mx-1 z-50">
-                        <div className="border-b-4 border-dotted py-4 text-white">
-                            <ModuleSideViewPart module={module} />
-                        </div>
+                        {module && (
+                            <div className="border-b-4 border-dotted py-4 text-white">
+                                <ModuleSideViewPart module={module} />
+                            </div>
+                        )}
 
                         {[...modules]
                             .sort(
@@ -64,7 +81,7 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
                 )}
                 <button
                     className="bg-bg-window rotate-45 w-20 h-20 m-5"
-                    onClick={() => setIsExpanded(!isExpanded)}
+                    onClick={toggleExpanded}
                 >
                     Module Side View
                 </button>

@@ -63,9 +63,23 @@ export const routes = [
         isProtected: false,
     },
     {
+        path: "/submissions-test",
+        displayName: "Submissions test",
+        component: lazy(() => import("../pages/SubmissionsTest")),
+        createHeader: false,
+        isProtected: false,
+    },
+    {
         path: "/users",
         displayName: "Users",
         component: lazy(() => import("../pages/Users")),
+        createHeader: true,
+        isProtected: false,
+    },
+    {
+        path: "/drilldown-demo",
+        displayName: "Drilldown demo",
+        component: lazy(() => import("../pages/DrillDownDemo")),
         createHeader: true,
         isProtected: false,
     },

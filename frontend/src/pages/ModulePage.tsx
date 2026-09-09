@@ -38,33 +38,24 @@ export default function ModulePage() {
         fetchModule();
     }, [moduleId]);
 
-    if (loading) return <div>Loading...</div>;
-    if (error)
-        return <div className="text-red-500 text-4xl">Error: {error}</div>;
-    if (!module)
-        return (
-            <div className="flex flex-col items-center">
-                <h1 className="text-4xl text-text-dark pt-5">
-                    Module not found
-                </h1>
-            </div>
-        );
-
     return (
         <>
-            <ModuleSideView module={module} />
+            <ModuleSideView module={module ?? undefined} />
             <div className="flex flex-col items-center">
                 <h1 className="text-4xl text-text-dark pt-5">
-                    Current Module: {module.name}
+                    Current Module:{" "}
+                    {module?.name ?? (loading ? "Loading..." : "Not found")}
                 </h1>
-                <div className="flex gap-5 pt-5">
-                    <p className="text-2xl text-text-dark">
-                        Start: {module.startDate}
-                    </p>
-                    <p className="text-2xl text-text-dark">
-                        End: {module.endDate}
-                    </p>
-                </div>
+                {module && (
+                    <div className="flex gap-5 pt-5">
+                        <p className="text-2xl text-text-dark">
+                            Start: {module.startDate}
+                        </p>
+                        <p className="text-2xl text-text-dark">
+                            End: {module.endDate}
+                        </p>
+                    </div>
+                )}
             </div>
             <div className="bg-bg-light h-[calc(100vh-12rem)] p-10 grid grid-flow-col grid-rows-3 grid-cols-2 gap-8 m-8">
                 <Lecture
@@ -81,7 +72,13 @@ export default function ModulePage() {
                             +
                         </button>
                     </div>
-                    {module.activities?.length ? (
+                    {loading ? (
+                        "Loading..."
+                    ) : error ? (
+                        `Error: ${error}`
+                    ) : !module ? (
+                        "Module not found"
+                    ) : module.activities?.length ? (
                         <div className="mt-5">
                             {module.activities.map(
                                 (activity: ActivityRequest) => (
