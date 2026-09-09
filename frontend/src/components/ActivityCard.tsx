@@ -8,6 +8,7 @@ import { createSubmission } from "../services/submissionService";
 import type { SubmissionRequest } from "../interfaces/submission/SubmissionRequest";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import { SubmissionReviewStatusNames } from "../constants/SubmissionReviewStatus";
+import { useAuth } from "../hooks/useAuth";
 
 // Submitted/late state: drives the header dot and the "Status: ..." line.
 const statusDotColor: Record<string, string> = {
@@ -54,6 +55,10 @@ export default function ActivityCard({
     const [isExpanded, setIsExpanded] = useState(false);
     const [addingSubmission, setAddingSubmission] = useState(false);
 
+    // Submissions are a student-only concern: teachers get none of this.
+    const { role } = useAuth();
+    const isStudent = role === "Student";
+
     // Nothing to submit before the activity has even started.
     const hasStarted = new Date() >= new Date(activity.startAt);
 
@@ -90,7 +95,9 @@ export default function ActivityCard({
               )
             : null;
     let cornerBadge: { text: string; color: string; textColor: string } | null = null;
-    if (dotIsReviewOutcome) {
+    if (!isStudent) {
+        // Teachers don't see per-student submission status here.
+    } else if (dotIsReviewOutcome) {
         cornerBadge = { text: "Graded", color: "bg-green-500", textColor: "text-white" };
     } else if (missingAndLate) {
         cornerBadge = { text: "Overdue", color: "bg-red-500", textColor: "text-white" };
@@ -155,7 +162,7 @@ export default function ActivityCard({
                             {cornerBadge.text}
                         </span>
                     )}
-                    {hasStarted && missingAndLate && (
+                    {isStudent && hasStarted && missingAndLate && (
                         <div
                             className="rotate-45 w-5 h-5 bg-red-400"
                             title="Overdue"
@@ -163,7 +170,7 @@ export default function ActivityCard({
                             role="img"
                         ></div>
                     )}
-                    {hasStarted && !missingAndLate && (
+                    {isStudent && hasStarted && !missingAndLate && (
                         <div
                             className={`rounded-full w-5 h-5 ${headerDotColor}`}
                             title={headerDotLabel}
@@ -185,7 +192,7 @@ export default function ActivityCard({
                             {ActivityTime(activity.startAt)}-
                             {ActivityTime(activity.endAt)}
                         </p>
-                        {hasStarted && (
+                        {isStudent && hasStarted && (
                             <div className="flex flex-col items-start gap-2 px-3">
                                 <span
                                     className={`text-base font-bold ${statusTextColor[submissionStatusText]}`}
@@ -211,7 +218,7 @@ export default function ActivityCard({
                             </div>
                         )}
                     </div>
-                    {hasStarted && !submission && (
+                    {isStudent && hasStarted && !submission && (
                         <Button
                             variant="primary"
                             onClick={() => setAddingSubmission(true)}
