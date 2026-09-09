@@ -76,11 +76,12 @@ export default function ActivityCard({
             : "Not reviewed"
         : null;
 
-    // Once reviewed, the dot shows the review outcome instead of submitted/late.
+    // Whether it's been reviewed at all: feeds the corner badge below.
     const dotIsReviewOutcome =
         reviewStatusText != null && reviewStatusText !== "Not reviewed";
 
-    // Corner badge: graded beats overdue beats "due soon", shown even collapsed.
+    // Corner badge, shown even collapsed: graded > overdue > submitted >
+    // due soon > not submitted.
     const daysUntilDeadline =
         activity.deadline != null
             ? Math.ceil(
