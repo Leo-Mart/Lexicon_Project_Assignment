@@ -8,6 +8,7 @@ import { deleteCourse } from "../services/courseService";
 import ModalCreateResource from "../components/ModalCreateResource";
 import CourseTable from "../components/CourseTable";
 import { createPortal } from "react-dom";
+import Spinner from "../components/Spinner";
 
 export default function CourseListPage() {
     // STATE
@@ -115,9 +116,6 @@ export default function CourseListPage() {
         }
     }
 
-    // RENDER
-    if (loading) return <p>Loading...</p>;
-
     if (error)
         return <div className="text-red-500 text-4xl">Error: {error}</div>;
     if (!courses)
@@ -132,6 +130,7 @@ export default function CourseListPage() {
     return (
         <>
             <div className="m-3 flex justify-end">
+                {loading && <Spinner />}
                 <Button
                     onClick={() => handleShowCourseModal(newCourse)}
                     className=""
