@@ -33,7 +33,7 @@ export default function SortableTh({
             <button
                 type="button"
                 onClick={handleClick}
-                className="inline-flex items-center gap-1 font-normal cursor-pointer hover:text-slate-300"
+                className="inline-flex items-center gap-1 font-normal cursor-pointer"
                 aria-label={`Sort by ${label}`}
             >
                 {label}

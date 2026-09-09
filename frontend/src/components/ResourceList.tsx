@@ -45,7 +45,11 @@ const ResourceList = () => {
                 </thead>
                 <tbody>
                     {resources.map((resource, index) => (
-                        <ResourceListItem item={resource} index={index} />
+                        <ResourceListItem
+                            item={resource}
+                            index={index}
+                            key={resource.name}
+                        />
                     ))}
                 </tbody>
             </table>

@@ -1,16 +1,15 @@
 import { Link } from "react-router-dom";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import Button from "./Button";
-/* import SortableTh from "./SortableTableHead"; */
+import SortableTh from "./SortableTableHead";
 
 interface CoursesTableProps {
     courses: CourseResponse[];
+    sortBy: string;
+    onSortChange: (value: string) => void;
     onUpdate: (course: CourseResponse) => void;
     onCreateResource: (course: CourseResponse) => void;
     onDelete: (course: CourseResponse) => void;
-    // Ready for when you add sorting:
-    // sortBy: string;
-    // onSortChange: (value: string) => void;
 }
 
 export default function CourseTable({
@@ -18,21 +17,37 @@ export default function CourseTable({
     onUpdate,
     onCreateResource,
     onDelete,
+    sortBy,
+    onSortChange,
 }: CoursesTableProps) {
     return (
         <table className="w-full text-left">
             <thead className="bg-bg-window dark:bg-bg-window-dark h-10 border-b border-accent-blue text-text-dark dark:text-text-light">
                 <tr>
-                    {/*   <SortableTh
+                    <SortableTh
                         field="name"
                         label="Name"
                         sortBy={sortBy}
                         onSortChange={onSortChange}
-                    /> */}
-                    <th className="p-3 w-2/10">Name</th>
-                    <th className="p-3 w-4/10">Description</th>
-                    <th className="p-3 w-1/10">Start date</th>
-                    <th className="p-3 w-1/10">End date</th>
+                    />
+                    <SortableTh
+                        field="description"
+                        label="Description"
+                        sortBy={sortBy}
+                        onSortChange={onSortChange}
+                    />
+                    <SortableTh
+                        field="startDate"
+                        label="Start date"
+                        sortBy={sortBy}
+                        onSortChange={onSortChange}
+                    />
+                    <SortableTh
+                        field="endDate"
+                        label="End date"
+                        sortBy={sortBy}
+                        onSortChange={onSortChange}
+                    />
                     <th className="p-3 w-2/10"></th>
                 </tr>
             </thead>
