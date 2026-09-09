@@ -56,13 +56,18 @@ export default function ModulePage() {
                 const moduleData = await fetchModuleById(moduleId);
                 setModule(moduleData);
 
-                // Only students have submissions; teachers get a 403 here, so ignore failures.
-                try {
+                if (role === "Student") {
                     const submissions = await getCurrentUserSubmissions();
+
                     setSubmissionsByActivityId(
-                        new Map(submissions.map((s) => [s.activityId, s])),
+                        new Map(
+                            submissions.map((submission) => [
+                                submission.activityId,
+                                submission,
+                            ]),
+                        ),
                     );
-                } catch {
+                } else {
                     setSubmissionsByActivityId(new Map());
                 }
             } catch (err) {
@@ -100,7 +105,7 @@ export default function ModulePage() {
 
         fetchModule();
         getResourcesForModule();
-    }, [moduleId]);
+    }, [moduleId,role]);
 
     const handleResourceEdit = async (
         resourceId: string,
