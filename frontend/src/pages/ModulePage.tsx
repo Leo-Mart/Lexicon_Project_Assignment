@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 import ModuleSideView from "../components/ModuleSideView";
 import { fetchModuleById } from "../services/moduleService";
@@ -131,6 +131,10 @@ export default function ModulePage() {
             ),
         );
     };
+
+    // /module with no id (bare route, e.g. a stale bookmark or refresh) has
+    // nothing to show: bounce to the dashboard instead of crashing below.
+    if (moduleId === undefined) return <Navigate to="/index" replace />;
 
     if (loading) return <div>Loading...</div>;
     if (error)
