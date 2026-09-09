@@ -10,12 +10,6 @@ import type { SubmissionResponse } from "../interfaces/submission/SubmissionResp
 import { SubmissionReviewStatusNames } from "../constants/SubmissionReviewStatus";
 import { useAuth } from "../hooks/useAuth";
 
-// Submitted/late state: drives the header dot and the "Status: ..." line.
-const statusDotColor: Record<string, string> = {
-    "Not submitted": "bg-gray-400",
-    Submitted: "bg-blue-400",
-    "Submitted (Late)": "bg-blue-400",
-};
 const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
     title: "Add submission",
     fields: [
@@ -113,12 +107,6 @@ export default function ActivityCard({
         cornerBadge = { text: "Not submitted", color: "bg-gray-400", textColor: "text-white" };
     }
 
-    // The header dot mirrors the corner badge so both use the same color.
-    const headerDotColor = cornerBadge
-        ? cornerBadge.color
-        : statusDotColor[submissionStatusText];
-    const headerDotLabel = cornerBadge ? cornerBadge.text : submissionStatusText;
-
     return (
         <div key={activity.activityId} className="relative w-80% m-3">
             <div className="rounded overflow-hidden shadow-lg bg-white">
@@ -154,22 +142,6 @@ export default function ActivityCard({
                         >
                             {cornerBadge.text}
                         </span>
-                    )}
-                    {isStudent && hasStarted && missingAndLate && (
-                        <div
-                            className="rotate-45 w-5 h-5 bg-red-400"
-                            title="Overdue"
-                            aria-label="Overdue"
-                            role="img"
-                        ></div>
-                    )}
-                    {isStudent && hasStarted && !missingAndLate && (
-                        <div
-                            className={`rounded-full w-5 h-5 ${headerDotColor}`}
-                            title={headerDotLabel}
-                            aria-label={headerDotLabel}
-                            role="img"
-                        ></div>
                     )}
                 </div>
             </div>
