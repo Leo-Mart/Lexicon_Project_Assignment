@@ -107,10 +107,10 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
                     </div>
                 )}
                 <button
-                    className="bg-bg-window rotate-45 w-20 h-20 m-5"
+                    className={`bg-bg-window rotate-45 transition-transform duration-300 ease-in-out w-20 h-20 m-5 ${isExpanded ? "rotate-90" : "rotate-45"}`}
                     onClick={() => setIsExpanded(!isExpanded)}
                 >
-                    Module Side View
+                    <p className="-rotate-45">Module Side View</p>
                 </button>
             </div>
         </>
