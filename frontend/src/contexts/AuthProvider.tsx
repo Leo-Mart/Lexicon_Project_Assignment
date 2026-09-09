@@ -47,10 +47,15 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             await login(loginPayload);
 
             const user = await getCurrentUser();
+            const userRole = user.roles[0] ?? null;
             setName(user.name);
-            setRole(user.roles[0] ?? null);
+            setRole(userRole);
 
-            nav("/index");
+            if (userRole === "Teacher") {
+                nav("/index");
+            } else if (userRole === "Student") {
+                nav("/module");
+            }
         } catch (error) {
             if (error instanceof Error) {
                 setLoginError(error.message);
