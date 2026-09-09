@@ -201,7 +201,7 @@ export default function ModulePage() {
                     </Button>
                 </Link>
             </div>
-            <div className="bg-bg-light h-[calc(100vh-12rem)] p-10 grid grid-flow-col grid-rows-3 grid-cols-2 gap-8 m-8">
+            <div className="bg-bg dark:bg-bg-dark p-10 grid grid-flow-col grid-rows-3 grid-cols-2 gap-8 m-8">
                 {moduleActivities && (
                     <ActivitySchedule activities={moduleActivities} />
                 )}
