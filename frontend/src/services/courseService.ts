@@ -4,6 +4,7 @@ import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import type { CourseRequest } from "../interfaces/course/CourseRequest";
 import type { PagedResponse } from "../interfaces/common/PagedResponse";
 import type { QueryParameters } from "../interfaces/common/QueryParameters";
+import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 
 const API_URL = API_BASE_URL + "/courses";
 
@@ -35,6 +36,20 @@ export const fetchCourse = async (id: string): Promise<CourseResponse> => {
     }
 
     return (await response.json()) as CourseResponse;
+};
+
+export const fetchModulesForCourse = async (
+    courseId: string,
+): Promise<ModuleResponse[]> => {
+    const response = await authFetch(`${API_URL}/${courseId}/get-modules`);
+
+    if (!response.ok) {
+        throw new Error(
+            `Failed to fetch modules for course: ${response.status}`,
+        );
+    }
+
+    return (await response.json()) as ModuleResponse[];
 };
 
 export const deleteCourse = async (id: string): Promise<void> => {

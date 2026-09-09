@@ -29,7 +29,7 @@ export const routes = [
         isProtected: false,
     },
     {
-        path: "/module/:id",
+        path: "/module/:moduleId",
         displayName: "Module",
         component: lazy(() => import("../pages/ModulePage")),
         createHeader: false,

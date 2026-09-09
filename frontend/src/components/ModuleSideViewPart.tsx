@@ -7,7 +7,7 @@ export default function ModuleSideViewPart({
     module: ModuleResponse;
 }) {
     // Parse the end date and check if it's in the past or in the future
-    const dateString: string = "2026-10-01T00:00:00Z";
+    const dateString: string = new Date().toString();
     const isPast = new Date(module.endDate) < new Date(dateString);
     const isFuture = new Date(module.startDate) > new Date(dateString);
 

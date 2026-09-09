@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 import { ActivityTime, ActivityDate } from "../constants/ActivityTimeConverter";
 import { ActivityTypeNames } from "../constants/ActivityType";
 import Button from "../components/Button";
@@ -8,6 +7,7 @@ import { createSubmission } from "../services/submissionService";
 import type { SubmissionRequest } from "../interfaces/submission/SubmissionRequest";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import { SubmissionReviewStatusNames } from "../constants/SubmissionReviewStatus";
+import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
 
 // Submitted/late state: drives the header dot and the "Status: ..." line.
 const statusDotColor: Record<string, string> = {
@@ -51,7 +51,7 @@ export default function ActivityCard({
     submission,
     onSubmitted,
 }: {
-    activity: ActivityRequest;
+    activity: ActivityResponse;
     submission?: SubmissionResponse;
     onSubmitted?: (submission: SubmissionResponse) => void;
 }) {
