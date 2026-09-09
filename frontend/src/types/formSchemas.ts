@@ -21,23 +21,23 @@ export const createActivityFormConfig: EntityFormConfig<ActivityRequest> = {
             maxLength: 100,
             options: [
                 {
-                    value: ActivityType.Task.toString(),
+                    value: ActivityType.Task,
                     label: "Task",
                 },
                 {
-                    value: ActivityType.Lecture.toString(),
+                    value: ActivityType.Lecture,
                     label: "Lecture",
                 },
                 {
-                    value: ActivityType.ELearning.toString(),
+                    value: ActivityType.ELearning,
                     label: "E-learning",
                 },
                 {
-                    value: ActivityType.Practice.toString(),
+                    value: ActivityType.Practice,
                     label: "Practice",
                 },
                 {
-                    value: ActivityType.Other.toString(),
+                    value: ActivityType.Other,
                     label: "Other",
                 },
             ],

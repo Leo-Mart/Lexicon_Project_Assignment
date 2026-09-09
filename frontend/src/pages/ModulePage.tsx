@@ -1,7 +1,5 @@
-// src/pages/ModulePage.tsx
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import Lecture from "../components/Lecture";
 import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 import ModuleSideView from "../components/ModuleSideView";
 import { fetchModuleById } from "../services/moduleService";
@@ -28,6 +26,8 @@ import {
 } from "../types/formSchemas";
 import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
 import Button from "../components/Button";
+import ActivitySchedule from "../components/ActivitySchedule";
+import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
 
 export default function ModulePage() {
     const { moduleId } = useParams<{ moduleId: string }>();
@@ -161,12 +161,8 @@ export default function ModulePage() {
                 </Link>
             </div>
             <div className="bg-bg-light h-[calc(100vh-12rem)] p-10 grid grid-flow-col grid-rows-3 grid-cols-2 gap-8 m-8">
-                <Lecture
-                    lectureName="Dependency Injection"
-                    lectureTime="13:30"
-                    teacher="Michael"
-                />
-                <div className="row-span-2 rounded-md px-4 py-2 bg-buttons text-text-light">
+                <ActivitySchedule activities={module.activities} />
+                <div className="row-span-2 overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-light">
                     <div className="flex">
                         <div className="flex w-full">
                             <h1 className="text-4xl grow text-center">
@@ -206,7 +202,7 @@ export default function ModulePage() {
                         "Module has no activities"
                     )}
                 </div>
-                <div className="row-span-2 rounded-md px-4 py-2 bg-buttons text-text-dark dark:text-text-light">
+                <div className="row-span-2 overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-dark dark:text-text-light">
                     <div className="flex">
                         <div className="flex w-full ">
                             <h1 className="text-4xl grow text-center">
@@ -229,9 +225,9 @@ export default function ModulePage() {
                     {module.activities?.length ? (
                         <div className="mt-5">
                             {module.activities.map(
-                                (activity: ActivityRequest) => (
+                                (activity: ActivityResponse) => (
                                     <ActivityCard
-                                        key={activity.name}
+                                        key={activity.activityId}
                                         activity={activity}
                                         submission={submissionsByActivityId.get(
                                             activity.activityId,
@@ -263,7 +259,7 @@ export default function ModulePage() {
                         startAt: "",
                         endAt: "",
                         deadline: null,
-                        type: ActivityType.Task,
+                        type: ActivityType.Other,
                     }}
                     onSave={async (data) => {
                         const resp = await createActivity(data);

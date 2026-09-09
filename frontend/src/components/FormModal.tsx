@@ -5,7 +5,7 @@ export type FieldType =
     "text" | "textarea" | "date" | "datetime-local" | "select" | "url";
 
 export interface FieldOption {
-    value: string;
+    value: string | number;
     label: string;
 }
 
@@ -51,9 +51,14 @@ export default function FormModal<T extends Record<string, unknown>>({
     const [success, setSuccess] = useState(false);
 
     // Copy every existing field, then overwrite just the one named `name`.
-    const setField = (name: string, value: string) => {
+    const setField = (name: string, value: string, type: FieldType) => {
         if (name === "url" && value === "") {
             setFormData({ ...formData, ["url"]: null });
+            return;
+        }
+        if (type === "select") {
+            setFormData({ ...formData, ["type"]: +value });
+            return;
         }
         setFormData({ ...formData, [name]: value });
     };
@@ -81,7 +86,7 @@ export default function FormModal<T extends Record<string, unknown>>({
             e: React.ChangeEvent<
                 HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
             >,
-        ) => setField(field.name, e.target.value);
+        ) => setField(field.name, e.target.value, field.type);
 
         if (field.type === "textarea") {
             return (
