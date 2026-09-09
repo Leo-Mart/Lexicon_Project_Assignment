@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using LMS.Api.Constants;
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Resources;
 using LMS.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -21,14 +22,22 @@ public class ResourcesController : ControllerBase
     }
 
     /// <summary>
-    /// Gets all resources.
+    /// Gets a paginated list of resources with optional search and sorting.
     /// </summary>
+    /// <param name="query">
+    /// Query parameters for search, sorting, page number, and page size.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancellation token for the request.
+    /// </param>
     [HttpGet]
-    [ProducesResponseType(typeof(List<ResourceDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(
+        typeof(PagedResponse<ResourceDto>),
+        StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<List<ResourceDto>>> GetAll(CancellationToken cancellationToken)
+    public async Task<ActionResult<PagedResponse<ResourceDto>>> GetAll([FromQuery] QueryParametersDto query, CancellationToken cancellationToken)
     {
-        List<ResourceDto> resources = await _resourceService.GetAllAsync(cancellationToken);
+        PagedResponse<ResourceDto> resources = await _resourceService.GetAllAsync(query, cancellationToken);
 
         return Ok(resources);
     }
