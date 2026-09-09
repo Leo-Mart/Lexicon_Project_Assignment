@@ -16,20 +16,6 @@ const statusDotColor: Record<string, string> = {
     Submitted: "bg-blue-400",
     "Submitted (Late)": "bg-blue-400",
 };
-const statusTextColor: Record<string, string> = {
-    Overdue: "text-red-600",
-    "Not submitted": "text-gray-500",
-    Submitted: "text-blue-600",
-    "Submitted (Late)": "text-blue-600",
-};
-
-// Whether it's been reviewed, and the outcome: separate from submitted/late above.
-const reviewTextColor: Record<string, string> = {
-    "Not reviewed": "text-gray-500",
-    Approved: "text-green-600",
-    "Needs completion": "text-yellow-600",
-};
-
 const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
     title: "Add submission",
     fields: [
@@ -201,18 +187,6 @@ export default function ActivityCard({
                         </p>
                         {isStudent && hasStarted && (
                             <div className="flex flex-col items-start gap-2 px-3">
-                                <span
-                                    className={`text-base font-bold ${statusTextColor[submissionStatusText]}`}
-                                >
-                                    Status: {submissionStatusText}
-                                </span>
-                                {reviewStatusText && (
-                                    <span
-                                        className={`text-sm font-bold ${reviewTextColor[reviewStatusText]}`}
-                                    >
-                                        Review: {reviewStatusText}
-                                    </span>
-                                )}
                                 {activity.deadline != null && !submission && (
                                     <p
                                         className={`text-sm ${missingAndLate ? "text-red-600" : "text-text-dark"}`}
