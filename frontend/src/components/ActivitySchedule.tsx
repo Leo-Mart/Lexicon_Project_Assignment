@@ -12,7 +12,10 @@ const ActivitySchedule = ({ activities }: ActivityScheduleProps) => {
         <div className="bg-buttons rounded-md col-span-2 p-2">
             <ol className="items-center sm:flex">
                 {activities?.map((activity) => (
-                    <li className="relative mb-6 sm:mb-0">
+                    <li
+                        key={activity.activityId}
+                        className="relative mb-6 sm:mb-0"
+                    >
                         <div className="flex items-center">
                             <div className="z-10 flex items-center justify-center w-6 h-6 ring-0 ring-buttons sm:ring-8  rounded-md">
                                 <ClipboardCheck />

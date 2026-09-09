@@ -22,7 +22,7 @@ const ResourceCard = ({
     const [showEditResourceForm, setShowEditResourceForm] = useState(false);
     const { isAuthenticated, role } = useAuth();
     return (
-        <li key={resource.resourceId} className="flex w-full">
+        <li className="flex w-full">
             <div className="grow">
                 <h1>{resource.name}</h1>
                 <p>{resource.description}</p>

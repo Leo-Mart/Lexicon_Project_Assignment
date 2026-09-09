@@ -4,7 +4,6 @@ import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 import ModuleSideView from "../components/ModuleSideView";
 import { fetchModuleById } from "../services/moduleService";
 import { getCurrentUserSubmissions } from "../services/submissionService";
-import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import ActivityCard from "../components/ActivityCard";
 import { useAuth } from "../hooks/useAuth";
@@ -156,7 +155,7 @@ export default function ModulePage() {
                 </div>
                 <Link className="mt-2" to={`/courses/${module.courseId}`}>
                     <Button className="hover:cursor-pointer">
-                        Back to course
+                        Back to {module.course.name}
                     </Button>
                 </Link>
             </div>
@@ -188,6 +187,7 @@ export default function ModulePage() {
                                 {moduleResources.map(
                                     (resource: ResourceResponse) => (
                                         <ResourceCard
+                                            key={resource.resourceId}
                                             resource={resource}
                                             editResource={handleResourceEdit}
                                             removeResource={
