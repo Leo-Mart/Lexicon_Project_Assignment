@@ -1,3 +1,4 @@
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Course;
 using LMS.Api.DTOs.Errors;
 using LMS.Api.Exceptions;
@@ -11,23 +12,28 @@ namespace LMS.Api.Controllers;
 public class CourseController(ICourseService courseService) : ControllerBase
 {
     private readonly ICourseService _courseService = courseService;
-
     /// <summary>
-    /// Retrieves a full list of all available courses.
+    /// Gets a paginated list of courses with optional search and sorting.
     /// </summary>
-    /// <returns>The list of courses.</returns>
-    /// <response code="200">Returns the list of courses.</response>
-    /// <response code="404">If the list is not found.</response>
+    /// <param name="query">
+    /// Query parameters for search, sorting, page number, and page size.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancellation token for the request.
+    /// </param>
+    /// <returns>
+    /// A paginated list of courses.
+    /// </returns>
     [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<IEnumerable<CourseDto>>> GetCourses()
+    [ProducesResponseType(
+        typeof(PagedResponse<CourseDto>),
+        StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResponse<CourseDto>>> GetCourses([FromQuery] QueryParametersDto query, CancellationToken cancellationToken = default)
     {
-        var courses = await _courseService.GetAllCourses();
-        if (courses == null)
-        {
-            return NotFound();
-        }
+        PagedResponse<CourseDto> courses =
+            await _courseService.GetAllCourses(
+                query,
+                cancellationToken);
 
         return Ok(courses);
     }
