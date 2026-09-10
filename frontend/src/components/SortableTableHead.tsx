@@ -8,7 +8,14 @@ type SortableColumn =
     | "course"
     | "description"
     | "startDate"
-    | "endDate";
+    | "endDate"
+    | "student"
+    | "activity"
+    | "deadline"
+    | "submitted"
+    | "late"
+    | "review"
+    | "reviewed";
 
 export default function SortableTh({
     field,

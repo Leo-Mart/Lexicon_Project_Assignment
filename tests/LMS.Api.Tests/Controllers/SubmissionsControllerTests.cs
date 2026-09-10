@@ -97,11 +97,11 @@ public class SubmissionsControllerTests
         };
 
         _submissionsServiceMock
-            .Setup(service => service.GetPagedAsync(query, It.IsAny<CancellationToken>()))
+            .Setup(service => service.GetPagedAsync(query, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(page);
 
         ActionResult<PagedResponse<SubmissionDto>> response =
-            await _controller.GetPaged(query, CancellationToken.None);
+            await _controller.GetPaged(query, null, CancellationToken.None);
 
         OkObjectResult result = Assert.IsType<OkObjectResult>(response.Result);
         PagedResponse<SubmissionDto> value = Assert.IsType<PagedResponse<SubmissionDto>>(result.Value);

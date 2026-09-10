@@ -1,5 +1,6 @@
 using LMS.Api.Data;
 using LMS.Api.DTOs.Common;
+using LMS.Api.Enums.Model;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,7 @@ public class SubmissionsRepository(LMSDbContext _context) : ISubmissionsReposito
         return await _context.Submissions.AsNoTracking().Include(submission => submission.Activity).ToListAsync(cancellationToken);
     }
 
-    public async Task<PagedResponse<Submission>> GetPagedAsync(QueryParametersDto query, CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<Submission>> GetPagedAsync(QueryParametersDto query, SubmissionReviewStatus? reviewStatus = null, CancellationToken cancellationToken = default)
     {
         IQueryable<Submission> submissionsQuery = _context.Submissions
             .AsNoTracking()
@@ -30,6 +31,9 @@ public class SubmissionsRepository(LMSDbContext _context) : ISubmissionsReposito
                 submission.Student.Name.Contains(search));
         }
 
+        // Null reviewStatus filters to not-yet-reviewed submissions, same as the model itself.
+        submissionsQuery = submissionsQuery.Where(submission => submission.ReviewStatus == reviewStatus);
+
         submissionsQuery = query.SortBy.ToLowerInvariant() switch
         {
             "student" => query.Direction == "desc"
@@ -40,11 +44,34 @@ public class SubmissionsRepository(LMSDbContext _context) : ISubmissionsReposito
                 ? submissionsQuery.OrderByDescending(submission => submission.Activity.Module.Course.Name)
                 : submissionsQuery.OrderBy(submission => submission.Activity.Module.Course.Name),
 
-            "late-first" => submissionsQuery.OrderByDescending(submission =>
-                submission.Activity.Deadline != null && submission.SubmittedAt > submission.Activity.Deadline),
+            "activity" => query.Direction == "desc"
+                ? submissionsQuery.OrderByDescending(submission => submission.Activity.Name)
+                : submissionsQuery.OrderBy(submission => submission.Activity.Name),
 
-            // Not reviewed first: teachers open this page to find work waiting on them.
-            _ => submissionsQuery.OrderByDescending(submission => submission.ReviewStatus == null)
+            "submitted" => query.Direction == "desc"
+                ? submissionsQuery.OrderByDescending(submission => submission.SubmittedAt)
+                : submissionsQuery.OrderBy(submission => submission.SubmittedAt),
+
+            "deadline" => query.Direction == "desc"
+                ? submissionsQuery.OrderByDescending(submission => submission.Activity.Deadline)
+                : submissionsQuery.OrderBy(submission => submission.Activity.Deadline),
+
+            "late" => query.Direction == "desc"
+                ? submissionsQuery.OrderByDescending(submission =>
+                    submission.Activity.Deadline != null && submission.SubmittedAt > submission.Activity.Deadline)
+                : submissionsQuery.OrderBy(submission =>
+                    submission.Activity.Deadline != null && submission.SubmittedAt > submission.Activity.Deadline),
+
+            "review" => query.Direction == "desc"
+                ? submissionsQuery.OrderByDescending(submission => submission.ReviewStatus)
+                : submissionsQuery.OrderBy(submission => submission.ReviewStatus),
+
+            "reviewed" => query.Direction == "desc"
+                ? submissionsQuery.OrderByDescending(submission => submission.FeedbackAt)
+                : submissionsQuery.OrderBy(submission => submission.FeedbackAt),
+
+            // Not reviewed first by default - teachers open this page to find work waiting on them.
+            _ => submissionsQuery.OrderBy(submission => submission.ReviewStatus)
         };
 
         int totalCount = await submissionsQuery.CountAsync(cancellationToken);
