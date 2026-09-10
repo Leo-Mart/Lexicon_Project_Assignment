@@ -11,6 +11,7 @@ import { AuthContext } from "./AuthContext";
 import Spinner from "../components/Spinner";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser } from "../services/authService";
+import { fetchStudentCourse } from "../services/enrollmentService";
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const token = useSyncExternalStore(
@@ -23,6 +24,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loginError, setLoginError] = useState<string>();
     const [name, setName] = useState<string | null>(null);
     const [role, setRole] = useState<"Teacher" | "Student" | null>(null);
+    const [courseId, setCourseId] = useState<string | null>(null);
 
     useEffect(() => {
         const loadUser = async () => {
@@ -54,7 +56,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (userRole === "Teacher") {
                 nav("/index");
             } else if (userRole === "Student") {
-                nav("/module");
+                const course = await fetchStudentCourse();
+                setCourseId(course.courseId);
+                nav(`/courses/${course.courseId}`);
             }
         } catch (error) {
             if (error instanceof Error) {
@@ -67,6 +71,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         logout();
         setName(null);
         setRole(null);
+        setCourseId(null);
     };
 
     return (
@@ -79,6 +84,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 logoutUser,
                 name,
                 role,
+                courseId,
             }}
         >
             {isLoading ? <Spinner /> : children}
