@@ -1,4 +1,5 @@
 using AutoMapper;
+using LMS.Api.Data;
 using LMS.Api.DTOs.Users;
 using LMS.Api.Enums.Model;
 using LMS.Api.Mappings;
@@ -6,6 +7,7 @@ using LMS.Api.Models;
 using LMS.Api.Services.Implementations;
 using LMS.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -23,6 +25,7 @@ public class UserServiceTests
     // covers the same ground without that.
     private readonly Mock<UserManager<User>> _userManagerMock;
     private readonly IUserService _userService;
+    private readonly LMSDbContext _context;
 
     public UserServiceTests()
     {
@@ -36,7 +39,17 @@ public class UserServiceTests
             NullLoggerFactory.Instance
         ).CreateMapper();
 
-        _userService = new UserService(_userManagerMock.Object, mapper);
+        DbContextOptions<LMSDbContext> options =
+     new DbContextOptionsBuilder<LMSDbContext>()
+         .UseInMemoryDatabase(Guid.NewGuid().ToString())
+         .Options;
+
+        _context = new LMSDbContext(options);
+
+        _userService = new UserService(
+            _userManagerMock.Object,
+            mapper,
+            _context);
     }
 
     [Fact]

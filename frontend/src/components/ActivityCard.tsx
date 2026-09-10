@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 import { ActivityTime, ActivityDate } from "../constants/ActivityTimeConverter";
 import { ActivityTypeNames } from "../constants/ActivityType";
 import Button from "../components/Button";
@@ -8,7 +7,11 @@ import { createSubmission } from "../services/submissionService";
 import type { SubmissionRequest } from "../interfaces/submission/SubmissionRequest";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import { SubmissionReviewStatusNames } from "../constants/SubmissionReviewStatus";
+import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
+import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 import { useAuth } from "../hooks/useAuth";
+import ConfirmDialog from "./ConfirmDialog";
+import { createActivityFormConfig } from "../types/formSchemas";
 
 const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
     title: "Add submission",
@@ -27,16 +30,23 @@ export default function ActivityCard({
     activity,
     submission,
     onSubmitted,
+    editActivity,
+    deleteActivity,
 }: {
-    activity: ActivityRequest;
+    activity: ActivityResponse;
     submission?: SubmissionResponse;
     onSubmitted?: (submission: SubmissionResponse) => void;
+    editActivity: (activityId: string, payload: ActivityRequest) => void;
+    deleteActivity: (activityId: string) => void;
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [addingSubmission, setAddingSubmission] = useState(false);
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+    const [showEditActivityForm, setShowEditActivityForm] = useState(false);
+
+    const { isAuthenticated, role } = useAuth();
 
     // Submissions are a student-only concern: teachers get none of this.
-    const { role } = useAuth();
     const isStudent = role === "Student";
 
     // Nothing to submit before the activity has even started.
@@ -143,6 +153,32 @@ export default function ActivityCard({
                             {cornerBadge.text}
                         </span>
                     )}
+                    {isAuthenticated && role === "Teacher" ? (
+                        <div className="flex gap-1">
+                            <Button
+                                variant="confirm"
+                                onClick={() => setShowEditActivityForm(true)}
+                                className="hover:cursor-pointer"
+                            >
+                                Edit
+                            </Button>
+                            <Button
+                                variant="cancel"
+                                onClick={() => setConfirmDeleteOpen(true)}
+                                className="hover:cursor-pointer"
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    ) : (
+                        ""
+                    )}
+                    <button
+                        className="border-2 border-bg-header-dark p-1"
+                        onClick={() => setIsExpanded(!isExpanded)}
+                    >
+                        {isExpanded ? "Show Less" : "Show More"}
+                    </button>
                 </div>
             </div>
             {isExpanded && (
@@ -191,6 +227,33 @@ export default function ActivityCard({
                         onSubmitted?.(created);
                     }}
                     onClose={() => setAddingSubmission(false)}
+                />
+            )}
+            {confirmDeleteOpen && (
+                <ConfirmDialog
+                    open={confirmDeleteOpen}
+                    title="Delete Activity"
+                    message={`Are you sure you want to delete the activity: ${activity.name}`}
+                    onCancel={() => setConfirmDeleteOpen(false)}
+                    onConfirm={() => deleteActivity(activity.activityId)}
+                />
+            )}
+            {showEditActivityForm && (
+                <FormModal
+                    config={createActivityFormConfig}
+                    initialValue={{
+                        moduleId: activity.moduleId ?? "",
+                        name: activity.name,
+                        description: activity.description,
+                        startAt: activity.startAt,
+                        endAt: activity.endAt,
+                        deadline: activity.deadline,
+                        type: activity.type,
+                    }}
+                    onSave={async (data) =>
+                        editActivity(activity.activityId, data)
+                    }
+                    onClose={() => setShowEditActivityForm(false)}
                 />
             )}
         </div>

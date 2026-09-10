@@ -1,7 +1,7 @@
 import type { ActivityType } from "../../constants/ActivityType";
 
 export interface ActivityRequest {
-    activityId: string;
+    moduleId: string;
     type: ActivityType;
     name: string;
     description: string;
