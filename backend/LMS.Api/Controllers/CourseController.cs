@@ -1,6 +1,7 @@
 using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Course;
 using LMS.Api.DTOs.Errors;
+using LMS.Api.DTOs.Module;
 using LMS.Api.Exceptions;
 using LMS.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -57,6 +58,29 @@ public class CourseController(ICourseService courseService) : ControllerBase
         }
 
         return course;
+    }
+
+    /// <summary>
+    /// Retrieves modules tied to a specific course..
+    /// </summary>
+    /// <param name="courseId">The ID of course whose modules are fetched.</param>
+    /// <returns>A list of modules tied to a course.</returns>
+    /// <response code="200">Returns the requested modules.</response>
+    /// <response code="404">If the course is not found.</response>
+    [HttpGet("{courseId}/get-modules")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IEnumerable<ModuleDto>>> GetModulesForCourse(
+        [FromRoute] Guid courseId
+    )
+    {
+        var modules = await _courseService.GetModulesForCourse(courseId);
+        if (modules == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(modules);
     }
 
     /// <summary>

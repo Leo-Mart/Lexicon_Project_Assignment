@@ -10,6 +10,7 @@ type AuthContext = {
     logoutUser: () => void;
     name: string | null;
     role: UserRole | null;
+    courseId: string | null;
 };
 
 export const AuthContext = createContext<AuthContext | undefined>(undefined);

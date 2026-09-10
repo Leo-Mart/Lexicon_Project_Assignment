@@ -5,6 +5,7 @@ import UserTableRow from "./UserTableRow";
 interface UsersTableProps {
     users: UserWithCourseResponse[];
     sortBy: string;
+    isLoading: boolean;
     onSortChange: (value: string) => void;
     onEdit: (id: string) => void;
     onDelete: (id: string) => void;
@@ -14,6 +15,7 @@ interface UsersTableProps {
 export default function UsersTable({
     users,
     sortBy,
+    isLoading,
     onSortChange,
     onEdit,
     onDelete,
@@ -28,30 +30,35 @@ export default function UsersTable({
                             field="name"
                             label="Name"
                             sortBy={sortBy}
+                            isLoading={isLoading}
                             onSortChange={onSortChange}
                         />
                         <SortableTh
                             field="email"
                             label="Email"
                             sortBy={sortBy}
+                            isLoading={isLoading}
                             onSortChange={onSortChange}
                         />
                         <SortableTh
                             field="status"
                             label="Status"
                             sortBy={sortBy}
+                            isLoading={isLoading}
                             onSortChange={onSortChange}
                         />
                         <SortableTh
                             field="role"
                             label="Role"
                             sortBy={sortBy}
+                            isLoading={isLoading}
                             onSortChange={onSortChange}
                         />
                         <SortableTh
                             field="course"
                             label="Course"
                             sortBy={sortBy}
+                            isLoading={isLoading}
                             onSortChange={onSortChange}
                         />
                         <th className="px-4 py-3">Actions</th>
