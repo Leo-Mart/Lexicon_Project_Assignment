@@ -184,7 +184,7 @@ export default function CoursesDetails() {
                             <>
                                 <ResourceCard
                                     resource={resource}
-                                    removeResource={handleRemoveResource}
+                                    deleteResource={handleRemoveResource}
                                     editResource={handleResourceEdit}
                                 />
                             </>
