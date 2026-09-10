@@ -1,6 +1,7 @@
 import { authFetch } from "./authService";
 import { API_BASE_URL, HttpMethod } from "../constants/Constants";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
+import type { EnrollmentUserResponse } from "../interfaces/enrollment/EnrollmentUserResponse";
 
 const API_URL = API_BASE_URL + "/enrollments";
 
@@ -12,6 +13,18 @@ export const fetchStudentCourse = async (): Promise<CourseResponse> => {
     }
 
     return (await response.json()) as CourseResponse;
+};
+
+export const fetchUsersForCourse = async (
+    courseId: string,
+): Promise<EnrollmentUserResponse[]> => {
+    const response = await authFetch(`${API_URL}/course/${courseId}`);
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch users: ${response.status}`);
+    }
+
+    return (await response.json()) as EnrollmentUserResponse[];
 };
 
 export const assignOrChangeCourse = async (
