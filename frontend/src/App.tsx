@@ -27,17 +27,27 @@ export default function App() {
                                 ),
                             )}
 
-                            <Route element={<ProtectedRoute />}>
-                                {protectedRoutes.map(
-                                    ({ path, component: Component }) => (
+                            {protectedRoutes.map(
+                                ({
+                                    path,
+                                    component: Component,
+                                    allowedRoles,
+                                }) => (
+                                    <Route
+                                        key={path}
+                                        element={
+                                            <ProtectedRoute
+                                                allowedRoles={allowedRoles}
+                                            />
+                                        }
+                                    >
                                         <Route
-                                            key={path}
                                             path={path}
                                             element={<Component />}
                                         />
-                                    ),
-                                )}
-                            </Route>
+                                    </Route>
+                                ),
+                            )}
                         </Routes>
                     </main>
                 </Suspense>
