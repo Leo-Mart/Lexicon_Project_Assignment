@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { ActivityDate, ActivityTime } from "../constants/ActivityTimeConverter";
 import { ActivityTypeNames } from "../constants/ActivityType";
 import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
 import ModalWrapper from "./ModalWrapper";
@@ -15,7 +14,6 @@ import Spinner from "./Spinner";
 import ResourceCard from "./ResourceCard";
 import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
 import { useAuth } from "../hooks/useAuth";
-import Divider from "./Divider";
 import FormModal from "./FormModal";
 import { createResourceFormConfig } from "../types/formSchemas";
 
@@ -93,29 +91,13 @@ const ModalActivityDetails = (props: ModalActivityDetailsProps) => {
         <ModalWrapper
             open={props.open}
             onClose={props.onClose}
-            title="Activity Details"
+            title="Resources for"
+            titleBadge={ActivityTypeNames[props.activity.type]}
+            titleSuffix={props.activity.name}
         >
             <div className="bg-bg py-3 px-3">
-                <div>
-                    <h2 className="font-bold text-2xl">
-                        {props.activity.name}
-                    </h2>
-                    <time className="text-sm text-text-dark  p-3 pt-0">
-                        {ActivityDate(props.activity.startAt)}
-                        {" | "}
-                        {ActivityTime(props.activity.startAt)}-
-                        {ActivityTime(props.activity.endAt)}
-                    </time>
-                    <div className="p-3 font-semibold">
-                        {ActivityTypeNames[props.activity.type]}
-                    </div>
-                </div>
-                <Divider />
-
                 <div className="mt-2">
-                    <div className="flex justify-between">
-                        <h2 className="text-xl">Resources</h2>
-
+                    <div className="flex justify-end">
                         {isAuthenticated && role === "Teacher" ? (
                             <button
                                 onClick={() => setShowCreateResourceForm(true)}
