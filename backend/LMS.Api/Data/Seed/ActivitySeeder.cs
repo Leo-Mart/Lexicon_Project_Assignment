@@ -161,8 +161,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Lecture,
                 Name = "Entity Framework Core Introduction",
                 Description = "Introduction to EF Core, DbContext and migrations.",
-                StartAt = new DateTime(2026, 10, 27, 9, 0, 0, DateTimeKind.Utc),
-                EndAt = new DateTime(2026, 10, 27, 12, 0, 0, DateTimeKind.Utc),
+                StartAt = now.AddDays(-13),
+                EndAt = now.AddDays(-13).AddHours(3),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -215,9 +215,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "React Component Exercise",
                 Description = "Build a small React application using reusable components.",
-                StartAt = new DateTime(2026, 8, 28, 9, 0, 0, DateTimeKind.Utc),
-                EndAt = new DateTime(2026, 9, 1, 16, 0, 0, DateTimeKind.Utc),
-                Deadline = new DateTime(2026, 9, 1, 16, 0, 0, DateTimeKind.Utc),
+                StartAt = now.AddDays(-14),
+                EndAt = now.AddDays(-3),
+                Deadline = now.AddDays(-3),
                 CreatedAt = now,
                 UpdatedAt = now
             }

@@ -28,6 +28,7 @@ public static class ModuleSeeder
         }
 
         DateTime now = DateTime.UtcNow;
+        DateOnly today = DateOnly.FromDateTime(now);
 
         var modules = new List<Module>
         {
@@ -43,14 +44,18 @@ public static class ModuleSeeder
                 UpdatedAt = now
             },
 
+            // Relative to now: its tasks have deadlines both before and
+            // after today, so the module itself must already be in
+            // progress, not a future date that would hide already-graded
+            // work behind a "not started" badge.
             new()
             {
                 ModuleId = AspNetCoreModuleId,
                 CourseId = CourseSeeder.DotNetCourseId,
                 Name = "ASP.NET Core",
                 Description = "Building web APIs with ASP.NET Core.",
-                StartDate = new DateOnly(2026, 9, 21),
-                EndDate = new DateOnly(2026, 10, 23),
+                StartDate = today.AddDays(-18),
+                EndDate = today.AddDays(12),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -61,8 +66,8 @@ public static class ModuleSeeder
                 CourseId = CourseSeeder.DotNetCourseId,
                 Name = "Entity Framework Core",
                 Description = "Database access and persistence with Entity Framework Core.",
-                StartDate = new DateOnly(2026, 10, 26),
-                EndDate = new DateOnly(2026, 11, 27),
+                StartDate = today.AddDays(-14),
+                EndDate = today.AddDays(20),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -79,14 +84,16 @@ public static class ModuleSeeder
                 UpdatedAt = now
             },
 
+            // Finished module: its one task's deadline is already in the
+            // past, so this ends before today instead of a future date.
             new()
             {
                 ModuleId = ReactModuleId,
                 CourseId = CourseSeeder.FrontendCourseId,
                 Name = "React",
                 Description = "Building component-based frontend applications with React.",
-                StartDate = new DateOnly(2026, 9, 21),
-                EndDate = new DateOnly(2026, 10, 23),
+                StartDate = today.AddDays(-18),
+                EndDate = today.AddDays(-1),
                 CreatedAt = now,
                 UpdatedAt = now
             }
