@@ -6,6 +6,7 @@ import SortableTh from "./SortableTableHead";
 interface CoursesTableProps {
     courses: CourseResponse[];
     sortBy: string;
+    isLoading: boolean;
     onSortChange: (value: string) => void;
     onUpdate: (course: CourseResponse) => void;
     onCreateResource: (course: CourseResponse) => void;
@@ -14,10 +15,11 @@ interface CoursesTableProps {
 
 export default function CourseTable({
     courses,
+    sortBy,
+    isLoading,
     onUpdate,
     onCreateResource,
     onDelete,
-    sortBy,
     onSortChange,
 }: CoursesTableProps) {
     return (
@@ -28,27 +30,31 @@ export default function CourseTable({
                         field="name"
                         label="Name"
                         sortBy={sortBy}
+                        isLoading={isLoading}
                         onSortChange={onSortChange}
                     />
                     <SortableTh
                         field="description"
                         label="Description"
                         sortBy={sortBy}
+                        isLoading={isLoading}
                         onSortChange={onSortChange}
                     />
                     <SortableTh
                         field="startDate"
                         label="Start date"
                         sortBy={sortBy}
+                        isLoading={isLoading}
                         onSortChange={onSortChange}
                     />
                     <SortableTh
                         field="endDate"
                         label="End date"
                         sortBy={sortBy}
+                        isLoading={isLoading}
                         onSortChange={onSortChange}
                     />
-                    <th className="p-3 w-2/10"></th>
+                    <th className="p-3 w-2/10">Interact</th>
                 </tr>
             </thead>
             <tbody className="text-text-dark dark:text-text-light">
@@ -61,26 +67,34 @@ export default function CourseTable({
                                 : "bg-bg dark:bg-bg-dark"
                         }
                     >
-                        <td className="p-3">{course.name}</td>
+                        <td className="p-3">
+                            <Link
+                                className="font-bold underline text-buttons text-lg"
+                                to={`/courses/${course.courseId}`}
+                            >
+                                {course.name}
+                            </Link>
+                        </td>
                         <td className="p-3">{course.description}</td>
                         <td className="p-3">{course.startDate}</td>
                         <td className="p-3">{course.endDate}</td>
                         <td className="p-3">
-                            <Button onClick={() => onUpdate(course)}>
-                                Update
-                            </Button>
-                            <Button
-                                onClick={() => onCreateResource(course)}
-                                className="hover:cursor-pointer mx-2"
-                            >
-                                Create Resource
-                            </Button>
-                            <Button onClick={() => onDelete(course)}>
-                                Delete
-                            </Button>
-                            <Link to={`/courses/${course.courseId}`}>
-                                <Button>Go to course</Button>
-                            </Link>
+                            <div className="flex items-center gap-2 whitespace-nowrap">
+                                <Button onClick={() => onUpdate(course)}>
+                                    Update
+                                </Button>
+                                <Button
+                                    onClick={() => onCreateResource(course)}
+                                >
+                                    Create Resource
+                                </Button>
+                                <Button
+                                    variant="cancel"
+                                    onClick={() => onDelete(course)}
+                                >
+                                    Delete
+                                </Button>
+                            </div>
                         </td>
                     </tr>
                 ))}
