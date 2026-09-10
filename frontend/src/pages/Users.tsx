@@ -176,31 +176,31 @@ export default function Users() {
             key: "name",
             field: "name",
             render: (user) => user.name,
-            header: "",
+            header: "Name",
         },
         {
             key: "email",
             field: "email",
             render: (user) => user.email,
-            header: "",
+            header: "Email",
         },
         {
             key: "status",
             field: "status",
             render: (user) => getUserStatusName(user.status),
-            header: "",
+            header: "Status",
         },
         {
             key: "role",
             field: "role",
             render: (user) => <UserBadge role={user.role} />,
-            header: "",
+            header: "Role",
         },
         {
             key: "course",
             field: "course",
             render: (user) => user.courseName ?? "Not assigned",
-            header: "",
+            header: "Course",
         },
         {
             key: "actions",
@@ -217,7 +217,7 @@ export default function Users() {
                     )}
                 </div>
             ),
-            header: "",
+            header: "Actions",
         },
     ];
 
