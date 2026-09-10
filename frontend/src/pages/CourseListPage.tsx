@@ -150,11 +150,17 @@ export default function CourseListPage() {
         <>
             <div className="m-3 flex justify-between">
                 <TableToolbar
+                    tableTitle="Courses"
                     search={search}
                     sortBy={sortBy}
                     sortOptions={COURSES_SORT_OPTIONS}
                     onSearchChange={handleSearchChange}
                     onSortChange={handleSortChange}
+                    addAction={{
+                        label: "Add course",
+                        onAdd: () => handleShowCourseModal(newCourse),
+                    }}
+                    /* addAction={handleShowCourseModal(newCourse)} */
                 />
                 {isCourseModalVisible && (
                     <CourseModal

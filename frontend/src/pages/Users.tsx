@@ -219,6 +219,7 @@ export default function Users() {
     return (
         <div className="p-4">
             <TableToolbar
+                tableTitle="Users"
                 search={search}
                 sortBy={sortBy}
                 sortOptions={USER_SORT_OPTIONS}
