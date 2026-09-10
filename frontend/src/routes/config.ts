@@ -1,11 +1,14 @@
 import { lazy } from "react";
+import type { UserRole } from "../constants/UserConstant";
+const teacherOnly: UserRole[] = ["Teacher"];
 
 export const routes = [
     {
         path: "",
         component: lazy(() => import("../pages/Dashboard")),
         createHeader: false,
-        isProtected: false,
+        isProtected: true,
+        allowedRoles: teacherOnly,
     },
     {
         path: "/index",
@@ -13,7 +16,7 @@ export const routes = [
         component: lazy(() => import("../pages/Dashboard")),
         createHeader: true,
         isProtected: true,
-        allowedRoles: ["Teacher"],
+        allowedRoles: teacherOnly,
     },
     {
         path: "/login",
@@ -42,7 +45,7 @@ export const routes = [
         component: lazy(() => import("../pages/ResourceManagement")),
         createHeader: false,
         isProtected: true,
-        allowedRoles: ["Teacher"],
+        allowedRoles: teacherOnly,
     },
     {
         path: "/module",
@@ -50,7 +53,7 @@ export const routes = [
         component: lazy(() => import("../pages/ModulePage")),
         createHeader: false,
         isProtected: true,
-        allowedRoles: ["Teacher"],
+        allowedRoles: teacherOnly,
     },
     {
         path: "/courselist",
@@ -58,6 +61,7 @@ export const routes = [
         component: lazy(() => import("../pages/CourseListPage")),
         createHeader: false,
         isProtected: true,
+        allowedRoles: teacherOnly,
     },
     {
         path: "/courses/:courseId",
@@ -72,6 +76,6 @@ export const routes = [
         component: lazy(() => import("../pages/Users")),
         createHeader: true,
         isProtected: true,
-        allowedRoles: ["Teacher"],
+        allowedRoles: teacherOnly,
     },
 ];
