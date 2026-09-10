@@ -70,6 +70,56 @@ public class GlobalExceptionHandlerTests
     }
 
     [Fact]
+    public async Task TryHandleAsync_WithInvalidActivityTypeException_ShouldReturnBadRequest()
+    {
+        DefaultHttpContext httpContext = CreateHttpContext();
+
+        InvalidActivityTypeException exception = new(
+            "Activities of type Lecture cannot take submissions.",
+            StatusCodes.Status400BadRequest
+        );
+
+        bool handled = await _exceptionHandler.TryHandleAsync(
+            httpContext,
+            exception,
+            CancellationToken.None
+        );
+
+        ProblemDetails problemDetails = await ReadProblemDetailsAsync(httpContext);
+
+        Assert.True(handled);
+        Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
+        Assert.Equal(StatusCodes.Status400BadRequest, problemDetails.Status);
+        Assert.Equal("Invalid activity type", problemDetails.Title);
+        Assert.Equal(exception.Message, problemDetails.Detail);
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithInvalidSubmissionStateException_ShouldReturnBadRequest()
+    {
+        DefaultHttpContext httpContext = CreateHttpContext();
+
+        InvalidSubmissionStateException exception = new(
+            "Only a submission needing completion can be resubmitted.",
+            StatusCodes.Status400BadRequest
+        );
+
+        bool handled = await _exceptionHandler.TryHandleAsync(
+            httpContext,
+            exception,
+            CancellationToken.None
+        );
+
+        ProblemDetails problemDetails = await ReadProblemDetailsAsync(httpContext);
+
+        Assert.True(handled);
+        Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
+        Assert.Equal(StatusCodes.Status400BadRequest, problemDetails.Status);
+        Assert.Equal("Invalid submission state", problemDetails.Title);
+        Assert.Equal(exception.Message, problemDetails.Detail);
+    }
+
+    [Fact]
     public async Task TryHandleAsync_WithKeyNotFoundException_ShouldReturnNotFound()
     {
         DefaultHttpContext httpContext = CreateHttpContext();

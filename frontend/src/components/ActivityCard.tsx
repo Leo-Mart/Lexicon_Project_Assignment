@@ -3,14 +3,21 @@ import { ActivityTime, ActivityDate } from "../constants/ActivityTimeConverter";
 import { ActivityType, ActivityTypeNames } from "../constants/ActivityType";
 import Button from "../components/Button";
 import FormModal, { type EntityFormConfig } from "../components/FormModal";
-import { createSubmission } from "../services/submissionService";
+import {
+    createSubmission,
+    updateSubmission,
+} from "../services/submissionService";
 import type { SubmissionRequest } from "../interfaces/submission/SubmissionRequest";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
-import { SubmissionReviewStatusNames } from "../constants/SubmissionReviewStatus";
+import {
+    SubmissionReviewStatus,
+    SubmissionReviewStatusNames,
+} from "../constants/SubmissionReviewStatus";
 import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 import { useAuth } from "../hooks/useAuth";
 import ConfirmDialog from "./ConfirmDialog";
+import SubmissionViewModal from "./SubmissionViewModal";
 import { createActivityFormConfig } from "../types/formSchemas";
 
 const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
@@ -24,16 +31,26 @@ const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
             maxLength: 2000,
         },
     ],
+    widthClass: "w-full sm:w-1/2",
+    heightClass: "h-[75vh]",
+};
+
+// Same fields as adding a submission, just a different modal title.
+const resubmitFormConfig: EntityFormConfig<SubmissionRequest> = {
+    ...submissionFormConfig,
+    title: "Resubmit",
 };
 
 export default function ActivityCard({
     activity,
+    courseName,
     submission,
     onSubmitted,
     editActivity,
     deleteActivity,
 }: {
     activity: ActivityResponse;
+    courseName: string;
     submission?: SubmissionResponse;
     onSubmitted?: (submission: SubmissionResponse) => void;
     editActivity: (activityId: string, payload: ActivityRequest) => void;
@@ -41,6 +58,8 @@ export default function ActivityCard({
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [addingSubmission, setAddingSubmission] = useState(false);
+    const [viewingSubmission, setViewingSubmission] = useState(false);
+    const [resubmitting, setResubmitting] = useState(false);
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [showEditActivityForm, setShowEditActivityForm] = useState(false);
 
@@ -68,6 +87,14 @@ export default function ActivityCard({
         : isPastDeadline
           ? "Overdue"
           : "Not submitted";
+
+    // Shown in the Add submission/Resubmit modals so it's clear what the
+    // text being typed is for.
+    const submissionContext = `${courseName} · ${activity.name}${
+        activity.deadline != null
+            ? ` · Deadline: ${ActivityDate(activity.deadline)} ${ActivityTime(activity.deadline)}`
+            : ""
+    }`;
 
     // Only meaningful once submitted.
     const reviewStatusText = submission
@@ -239,18 +266,69 @@ export default function ActivityCard({
                                     Add submission
                                 </Button>
                             )}
+                        {isStudent &&
+                            isSubmittable &&
+                            hasStarted &&
+                            submission && (
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="primary"
+                                        onClick={() =>
+                                            setViewingSubmission(true)
+                                        }
+                                    >
+                                        View submission
+                                    </Button>
+                                    {submission.reviewStatus ===
+                                        SubmissionReviewStatus.NeedsCompletion && (
+                                        <Button
+                                            variant="primary"
+                                            onClick={() =>
+                                                setResubmitting(true)
+                                            }
+                                        >
+                                            Resubmit
+                                        </Button>
+                                    )}
+                                </div>
+                            )}
                     </div>
                 )}
             </div>
             {addingSubmission && (
                 <FormModal
                     config={submissionFormConfig}
+                    context={submissionContext}
                     initialValue={{ activityId: activity.activityId, text: "" }}
                     onSave={async (data) => {
                         const created = await createSubmission(data);
                         onSubmitted?.(created);
                     }}
                     onClose={() => setAddingSubmission(false)}
+                />
+            )}
+            {viewingSubmission && submission && (
+                <SubmissionViewModal
+                    submission={submission}
+                    onClose={() => setViewingSubmission(false)}
+                />
+            )}
+            {resubmitting && submission && (
+                <FormModal
+                    config={resubmitFormConfig}
+                    context={submissionContext}
+                    initialValue={{
+                        activityId: activity.activityId,
+                        text: submission.text,
+                    }}
+                    onSave={async (data) => {
+                        const updated = await updateSubmission(
+                            submission.submissionId,
+                            { text: data.text },
+                        );
+                        onSubmitted?.(updated);
+                    }}
+                    onClose={() => setResubmitting(false)}
                 />
             )}
             {confirmDeleteOpen && (
