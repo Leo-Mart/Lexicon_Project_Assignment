@@ -70,6 +70,12 @@ public class EnrollmentsController : ControllerBase
     public async Task<ActionResult<List<EnrollmentStudentsDto>>> GetCourseUsers([FromRoute] Guid courseId,
         CancellationToken cancellationToken)
     {
+        ActionResult? accessResult = await ValidateCourseAccessAsync(courseId, cancellationToken);
+
+        if (accessResult is not null)
+        {
+            return accessResult;
+        }
 
         List<EnrollmentStudentsDto> users = await _enrollmentService.GetStudentEnrollmentsByCourseIdAsync(courseId, cancellationToken);
 
@@ -129,5 +135,34 @@ public class EnrollmentsController : ControllerBase
             cancellationToken);
 
         return NoContent();
+    }
+
+    private async Task<ActionResult?> ValidateCourseAccessAsync(Guid courseId, CancellationToken cancellationToken)
+    {
+        if (!User.IsInRole(RoleConstants.Student))
+        {
+            return null;
+        }
+
+        string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userIdClaim, out Guid studentId))
+        {
+            return Unauthorized();
+        }
+
+        CourseDto? studentCourse = await _enrollmentService.GetStudentCourseAsync(studentId, cancellationToken);
+
+        if (studentCourse is null)
+        {
+            return NotFound();
+        }
+
+        if (studentCourse.CourseId != courseId)
+        {
+            return Forbid();
+        }
+
+        return null;
     }
 }
