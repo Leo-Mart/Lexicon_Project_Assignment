@@ -38,7 +38,8 @@ public class CourseRepository(LMSDbContext context) : ICourseRepository
     public async Task<Course?> GetCourseByIdAsync(Guid courseId)
     {
         return await _context
-            .Courses.Include(c => c.Modules)
+            .Courses.AsNoTracking()
+            .Include(c => c.Modules)
             .FirstOrDefaultAsync(c => c.CourseId == courseId);
     }
 
@@ -94,7 +95,8 @@ public class CourseRepository(LMSDbContext context) : ICourseRepository
     public async Task<IEnumerable<Module>> GetModulesForCourseAsync(Guid courseId)
     {
         return await _context
-            .Modules.Include(m => m.Course)
+            .Modules.AsNoTracking()
+            .Include(m => m.Course)
             .Where(m => m.CourseId == courseId)
             .ToListAsync();
     }
