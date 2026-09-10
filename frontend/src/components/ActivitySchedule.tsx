@@ -1,7 +1,6 @@
 import { ActivityDate, ActivityTime } from "../constants/ActivityTimeConverter";
 import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
 import { ClipboardCheck } from "lucide-react";
-import Button from "./Button";
 
 interface ActivityScheduleProps {
     activities: ActivityResponse[];
@@ -38,12 +37,6 @@ const ActivitySchedule = ({ activities }: ActivityScheduleProps) => {
                                 <p className="text-body mb-4">
                                     {activity.description}
                                 </p>
-                                <Button
-                                    variant="confirm"
-                                    className="hover:cursor-pointer"
-                                >
-                                    More info
-                                </Button>
                             </div>
                         </div>
                     </li>
