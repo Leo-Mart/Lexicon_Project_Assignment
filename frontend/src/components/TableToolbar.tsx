@@ -1,21 +1,27 @@
 import Button from "./Button";
 import TableSearchBar from "./TableSearchBar";
+import type { SortOption } from "../types/SortOption";
 
-interface UsersToolbarProps {
+interface TableToolbarProps {
     search: string;
     sortBy: string;
+    sortOptions: SortOption[];
     onSearchChange: (value: string) => void;
     onSortChange: (value: string) => void;
-    onAddUser: () => void;
+    addAction?: {
+        label: string;
+        onAdd: () => void;
+    };
 }
 
-export default function UsersToolbar({
+export default function TableToolbar({
     search,
     sortBy,
+    sortOptions,
     onSearchChange,
     onSortChange,
-    onAddUser,
-}: UsersToolbarProps) {
+    addAction,
+}: TableToolbarProps) {
     return (
         <div className="flex items-center gap-3 mb-4 px-2">
             <TableSearchBar search={search} onSearchChange={onSearchChange} />
@@ -25,18 +31,21 @@ export default function UsersToolbar({
                 onChange={(event) => onSortChange(event.target.value)}
                 className="bg-bg-header-dark text-white border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
             >
-                <option value="name-asc">Name A-Z</option>
-                <option value="name-desc">Name Z-A</option>
-                <option value="course-asc">Course A-Z</option>
-                <option value="course-desc">Course Z-A</option>
-                <option value="role-asc">Role A-Z</option>
-                <option value="role-desc">Role Z-A</option>
-                <option value="status">Status</option>
+                {sortOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                        {option.label}
+                    </option>
+                ))}
             </select>
 
-            <Button onClick={onAddUser} className="ml-auto cursor-pointer">
-                Add user
-            </Button>
+            {addAction && (
+                <Button
+                    onClick={addAction.onAdd}
+                    className="ml-auto cursor-pointer"
+                >
+                    {addAction.label}
+                </Button>
+            )}
         </div>
     );
 }

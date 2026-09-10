@@ -7,7 +7,6 @@ import {
     deleteUser,
 } from "../services/userService";
 import UsersTable from "../components/UsersTable";
-import UsersToolbar from "../components/UsersToolbar";
 import type { QueryParameters } from "../interfaces/common/QueryParameters";
 import Pagination from "../components/Pagination";
 import ModalWrapper from "../components/ModalWrapper";
@@ -23,10 +22,22 @@ import {
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import AssignCourseForm from "../components/AssignCourseForm";
 import type { UserFormValues } from "../components/UserForm";
+import type { SortOption } from "../types/SortOption";
+import TableToolbar from "../components/TableToolbar";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 20;
 const DEFAULT_SORT = "name-asc";
+
+const USER_SORT_OPTIONS: SortOption[] = [
+    { value: "name-asc", label: "Name A-Z" },
+    { value: "name-desc", label: "Name Z-A" },
+    { value: "course-asc", label: "Course A-Z" },
+    { value: "course-desc", label: "Course Z-A" },
+    { value: "role-asc", label: "Role A-Z" },
+    { value: "role-desc", label: "Role Z-A" },
+    { value: "status", label: "Status" },
+];
 
 export default function Users() {
     const [loading, setLoading] = useState<boolean>(true);
@@ -207,12 +218,16 @@ export default function Users() {
 
     return (
         <div className="p-4">
-            <UsersToolbar
+            <TableToolbar
                 search={search}
                 sortBy={sortBy}
+                sortOptions={USER_SORT_OPTIONS}
                 onSearchChange={handleSearchChange}
                 onSortChange={handleSortChange}
-                onAddUser={() => setShowUserForm(true)}
+                addAction={{
+                    label: "Add user",
+                    onAdd: () => setShowUserForm(true),
+                }}
             />
 
             <UsersTable
