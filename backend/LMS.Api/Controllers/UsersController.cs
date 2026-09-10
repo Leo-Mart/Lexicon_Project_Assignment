@@ -1,4 +1,5 @@
 using AutoMapper;
+using LMS.Api.Constants;
 using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Users;
 using LMS.Api.Models;
@@ -14,7 +15,7 @@ namespace LMS.Api.Controllers;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Roles = "Teacher")]
+[Authorize(Roles = RoleConstants.Teacher)]
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;

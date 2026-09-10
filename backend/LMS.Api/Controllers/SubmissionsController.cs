@@ -1,5 +1,4 @@
 
-using System.Diagnostics;
 using System.Security.Claims;
 using LMS.Api.Constants;
 using LMS.Api.DTOs.Common;

@@ -26,6 +26,7 @@ export default function App() {
                                     />
                                 ),
                             )}
+
                             <Route element={<ProtectedRoute />}>
                                 {protectedRoutes.map(
                                     ({ path, component: Component }) => (
