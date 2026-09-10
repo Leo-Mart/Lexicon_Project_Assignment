@@ -39,6 +39,22 @@ public static class ResourceSeeder
     public static readonly Guid DockerGuideResourceId =
         Guid.Parse("60000000-0000-0000-0000-000000000011");
 
+    // Resources for the extra ASP.NET Core module tasks.
+    public static readonly Guid JwtGuideResourceId =
+        Guid.Parse("60000000-0000-0000-0000-000000000012");
+
+    public static readonly Guid ModelValidationGuideResourceId =
+        Guid.Parse("60000000-0000-0000-0000-000000000013");
+
+    public static readonly Guid LoggingGuideResourceId =
+        Guid.Parse("60000000-0000-0000-0000-000000000014");
+
+    public static readonly Guid PaginationGuideResourceId =
+        Guid.Parse("60000000-0000-0000-0000-000000000015");
+
+    public static readonly Guid IntegrationTestingGuideResourceId =
+        Guid.Parse("60000000-0000-0000-0000-000000000016");
+
     public static async Task SeedAsync(LMSDbContext context)
     {
         if (await context.Resources.AnyAsync())
@@ -167,6 +183,61 @@ public static class ResourceSeeder
                 Name = "Docker for .NET Guide",
                 Description = "Reference material for containerizing .NET applications.",
                 Uri = "https://learn.microsoft.com/dotnet/core/docker/introduction",
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            new()
+            {
+                ResourceId = JwtGuideResourceId,
+                CreatedByTeacherId = UserSeeder.TeacherId,
+                Name = "JWT Bearer Authentication Guide",
+                Description = "Reference material for issuing and validating JWT bearer tokens.",
+                Uri = "https://learn.microsoft.com/aspnet/core/security/authentication/jwt-authn",
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            new()
+            {
+                ResourceId = ModelValidationGuideResourceId,
+                CreatedByTeacherId = UserSeeder.TeacherId,
+                Name = "Model Validation Guide",
+                Description = "Reference material for validating request models in a Web API.",
+                Uri = "https://learn.microsoft.com/aspnet/core/mvc/models/validation",
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            new()
+            {
+                ResourceId = LoggingGuideResourceId,
+                CreatedByTeacherId = UserSeeder.TeacherId,
+                Name = "Logging in .NET Guide",
+                Description = "Reference material for structured logging with the .NET logging APIs.",
+                Uri = "https://learn.microsoft.com/dotnet/core/extensions/logging",
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            new()
+            {
+                ResourceId = PaginationGuideResourceId,
+                CreatedByTeacherId = UserSeeder.TeacherId,
+                Name = "Pagination Guide",
+                Description = "Study material covering paging strategies for API list endpoints.",
+                Content = "Use skip/take with a page and pageSize query parameter, cap pageSize, and return total count alongside the page of results.",
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            new()
+            {
+                ResourceId = IntegrationTestingGuideResourceId,
+                CreatedByTeacherId = UserSeeder.TeacherId,
+                Name = "Integration Tests in ASP.NET Core Guide",
+                Description = "Reference material for testing a Web API with WebApplicationFactory.",
+                Uri = "https://learn.microsoft.com/aspnet/core/test/integration-tests",
                 CreatedAt = now,
                 UpdatedAt = now
             }

@@ -163,6 +163,56 @@ public static class ResourceRelationSeeder
                 {
                     ActivityId = ActivitySeeder.ReactTaskId,
                     ResourceId = ResourceSeeder.ReactGuideResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.JwtAuthenticationTaskId,
+                    ResourceId = ResourceSeeder.AuthenticationGuideResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.JwtAuthenticationTaskId,
+                    ResourceId = ResourceSeeder.JwtGuideResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.InputValidationTaskId,
+                    ResourceId = ResourceSeeder.ModelValidationGuideResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.InputValidationTaskId,
+                    ResourceId = ResourceSeeder.AspNetDocumentationResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.LoggingTaskId,
+                    ResourceId = ResourceSeeder.LoggingGuideResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.LoggingTaskId,
+                    ResourceId = ResourceSeeder.AspNetDocumentationResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.PaginationTaskId,
+                    ResourceId = ResourceSeeder.PaginationGuideResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.PaginationTaskId,
+                    ResourceId = ResourceSeeder.AspNetDocumentationResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.IntegrationTestsTaskId,
+                    ResourceId = ResourceSeeder.IntegrationTestingGuideResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.IntegrationTestsTaskId,
+                    ResourceId = ResourceSeeder.TestingGuideResourceId
                 }
             ];
 
