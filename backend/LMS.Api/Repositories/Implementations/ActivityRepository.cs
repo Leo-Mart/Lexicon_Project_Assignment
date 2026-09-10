@@ -38,8 +38,8 @@ public class ActivityRepository : IActivityRepository
         return await _context
             .Activities.AsNoTracking()
             .Where(activity => activity.ModuleId == moduleId)
-            .OrderBy(activity => activity.Type)
-            .ThenBy(activity => activity.StartAt)
+            .OrderBy(activity => activity.StartAt)
+            .ThenBy(activity => activity.Type)
             .ToListAsync(cancellationToken);
     }
 

@@ -13,7 +13,7 @@ import {
     deleteActivity,
     updateActivity,
 } from "../services/activityService";
-import { ActivityType } from "../constants/ActivityType";
+import { ActivityType, ActivityTypeNames } from "../constants/ActivityType";
 import {
     addResourceToModule,
     createResource,
@@ -45,6 +45,9 @@ export default function ModulePage() {
     const [moduleActivities, setModuleActivities] = useState<
         ActivityResponse[] | undefined
     >(undefined);
+    const [activityTypeFilter, setActivityTypeFilter] = useState<
+        ActivityType | "all"
+    >("all");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -206,11 +209,11 @@ export default function ModulePage() {
                     </Button>
                 </Link>
             </div>
-            <div className="bg-bg dark:bg-bg-dark p-10 grid grid-flow-col grid-rows-3 grid-cols-2 gap-8 m-8">
+            <div className="bg-bg dark:bg-bg-dark p-10 grid grid-flow-col grid-rows-[auto_1fr_1fr] grid-cols-2 gap-8 m-8">
                 {moduleActivities && (
                     <ActivitySchedule activities={moduleActivities} />
                 )}
-                <div className="row-span-2 overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-light">
+                <div className="row-span-2 max-h-[70vh] overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-light">
                     <div className="flex">
                         <div className="flex w-full">
                             <h1 className="text-4xl grow text-center">
@@ -247,7 +250,7 @@ export default function ModulePage() {
                         "Module has no activities"
                     )}
                 </div>
-                <div className="row-span-2 overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-light dark:text-text-light">
+                <div className="row-span-2 max-h-[70vh] overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-light dark:text-text-light">
                     <div className="flex">
                         <div className="flex w-full ">
                             <h1 className="text-4xl grow text-center">
@@ -268,31 +271,82 @@ export default function ModulePage() {
                         </div>
                     </div>
                     {moduleActivities?.length ? (
-                        <div className="mt-5">
-                            {moduleActivities!.map(
-                                (activity: ActivityResponse) => (
-                                    <ActivityCard
-                                        key={activity.activityId}
-                                        activity={activity}
-                                        courseName={module.course.name}
-                                        editActivity={handleActivityEdit}
-                                        deleteActivity={handleRemoveActivity}
-                                        deleteResource={handleRemoveResource}
-                                        submission={submissionsByActivityId.get(
-                                            activity.activityId,
-                                        )}
-                                        onSubmitted={(submission) =>
-                                            setSubmissionsByActivityId((prev) =>
-                                                new Map(prev).set(
-                                                    submission.activityId,
-                                                    submission,
-                                                ),
-                                            )
-                                        }
-                                    />
-                                ),
-                            )}
-                        </div>
+                        <>
+                            <div className="flex flex-wrap justify-center items-center gap-2 mt-3">
+                                <button
+                                    onClick={() => setActivityTypeFilter("all")}
+                                    className={`font-bold text-l bg-bg-window text-text-dark p-1.5 rounded hover:cursor-pointer ${
+                                        activityTypeFilter === "all"
+                                            ? "ring-2 ring-accent-blue"
+                                            : ""
+                                    }`}
+                                >
+                                    All ({moduleActivities.length})
+                                </button>
+                                {Object.entries(ActivityTypeNames).map(
+                                    ([typeValue, typeName]) => {
+                                        const type = Number(
+                                            typeValue,
+                                        ) as ActivityType;
+                                        const count = moduleActivities.filter(
+                                            (activity) =>
+                                                activity.type === type,
+                                        ).length;
+
+                                        return count > 0 ? (
+                                            <button
+                                                key={type}
+                                                onClick={() =>
+                                                    setActivityTypeFilter(type)
+                                                }
+                                                className={`font-bold text-l bg-bg-window text-text-dark p-1.5 rounded hover:cursor-pointer ${
+                                                    activityTypeFilter === type
+                                                        ? "ring-2 ring-accent-blue"
+                                                        : ""
+                                                }`}
+                                            >
+                                                {typeName} ({count})
+                                            </button>
+                                        ) : null;
+                                    },
+                                )}
+                            </div>
+                            <div className="mt-3">
+                                {moduleActivities
+                                    .filter(
+                                        (activity) =>
+                                            activityTypeFilter === "all" ||
+                                            activity.type ===
+                                                activityTypeFilter,
+                                    )
+                                    .map((activity: ActivityResponse) => (
+                                        <ActivityCard
+                                            key={activity.activityId}
+                                            activity={activity}
+                                            courseName={module.course.name}
+                                            editActivity={handleActivityEdit}
+                                            deleteActivity={
+                                                handleRemoveActivity
+                                            }
+                                            deleteResource={
+                                                handleRemoveResource
+                                            }
+                                            submission={submissionsByActivityId.get(
+                                                activity.activityId,
+                                            )}
+                                            onSubmitted={(submission) =>
+                                                setSubmissionsByActivityId(
+                                                    (prev) =>
+                                                        new Map(prev).set(
+                                                            submission.activityId,
+                                                            submission,
+                                                        ),
+                                                )
+                                            }
+                                        />
+                                    ))}
+                            </div>
+                        </>
                     ) : (
                         "Module has no activities"
                     )}

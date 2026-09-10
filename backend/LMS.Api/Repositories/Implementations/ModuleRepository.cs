@@ -39,7 +39,7 @@ public class ModuleRepository(LMSDbContext context) : IModuleRepository
         return await _context
             .Modules.AsNoTracking()
             .Include(m => m.Course)
-            .Include(m => m.Activities)
+            .Include(m => m.Activities.OrderBy(a => a.StartAt).ThenBy(a => a.Type))
             .FirstOrDefaultAsync((m) => m.ModuleId == moduleId);
     }
 
@@ -48,7 +48,7 @@ public class ModuleRepository(LMSDbContext context) : IModuleRepository
         return await _context
             .Modules.AsNoTracking()
             .Include(m => m.Course)
-            .Include(m => m.Activities)
+            .Include(m => m.Activities.OrderBy(a => a.StartAt).ThenBy(a => a.Type))
             .OrderBy(module => module.StartDate)
             .ToListAsync();
     }

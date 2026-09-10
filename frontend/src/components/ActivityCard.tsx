@@ -82,6 +82,23 @@ export default function ActivityCard({
     // Nothing to submit before the activity has even started.
     const hasStarted = new Date() >= new Date(activity.startAt);
 
+    // Same color scheme as ModuleSideViewPart: past/current/upcoming.
+    // Compared by calendar day, not exact time - a lecture later today is
+    // still "today", not "upcoming".
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startDay = new Date(activity.startAt);
+    startDay.setHours(0, 0, 0, 0);
+    const endDay = new Date(activity.endAt);
+    endDay.setHours(0, 0, 0, 0);
+    const isPastActivity = endDay < today;
+    const isFutureActivity = startDay > today;
+    const dateColor = isPastActivity
+        ? "bg-gray-300 text-gray-600"
+        : isFutureActivity
+          ? "bg-accent-blue text-black"
+          : "bg-btn-confirm text-black";
+
     // No submission row yet: derive lateness from the deadline instead.
     const isPastDeadline =
         activity.deadline != null && new Date() > new Date(activity.deadline);
@@ -196,6 +213,14 @@ export default function ActivityCard({
                         <h2 className="font-bold text-xl">{activity.name}</h2>
                     </div>
                     <div className="flex flex-row justify-end items-center gap-2">
+                        {activity.type === ActivityType.Lecture && (
+                            <span
+                                className={`font-bold text-l p-1.5 rounded ${dateColor}`}
+                            >
+                                {ActivityDate(activity.startAt)}{" "}
+                                {ActivityTime(activity.startAt)}
+                            </span>
+                        )}
                         {cornerBadge && (
                             <span
                                 className={`text-sm font-bold px-3 py-1.5 rounded ${cornerBadge.color} ${cornerBadge.textColor}`}
