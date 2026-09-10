@@ -4,6 +4,8 @@ using LMS.Api.DTOs.Activities;
 using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Module;
 using LMS.Api.DTOs.Submissions;
+using LMS.Api.Enums.Model;
+using LMS.Api.Exceptions;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using LMS.Api.Services.Interfaces;
@@ -130,6 +132,16 @@ public class SubmissionsService(
     {
         DateTime submittedAt = DateTime.UtcNow;
         ActivityDto? activity = await _activityService.GetByIdAsync(command.ActivityId, cancellationToken);
+
+        // Only hand-in work types take a submission - not lectures/e-learning/other.
+        if (activity is not null
+            && activity.Type != ActivityType.Task
+            && activity.Type != ActivityType.Practice)
+        {
+            throw new InvalidActivityTypeException(
+                $"Activities of type {activity.Type} cannot take submissions.",
+                400);
+        }
 
         // No deadline (or no activity found) means it can't be late.
         bool isLate = activity?.Deadline is not null && submittedAt > activity.Deadline;
