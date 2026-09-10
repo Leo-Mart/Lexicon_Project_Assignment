@@ -147,7 +147,11 @@ const ModalActivityDetails = (props: ModalActivityDetailsProps) => {
             {error && <div className="text-red-600">{error}</div>}
             {showCreateResourceForm && (
                 <FormModal
-                    config={createResourceFormConfig}
+                    config={{
+                        ...createResourceFormConfig,
+                        title: `Add resource for ${props.activity.name}`,
+                    }}
+                    titleBadge={ActivityTypeNames[props.activity.type]}
                     initialValue={{
                         name: "",
                         description: "",

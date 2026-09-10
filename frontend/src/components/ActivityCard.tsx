@@ -317,8 +317,12 @@ export default function ActivityCard({
             </div>
             {addingSubmission && (
                 <FormModal
-                    config={submissionFormConfig}
+                    config={{
+                        ...submissionFormConfig,
+                        title: `Add submission for ${activity.name}`,
+                    }}
                     context={submissionContext}
+                    titleBadge={ActivityTypeNames[activity.type]}
                     initialValue={{ activityId: activity.activityId, text: "" }}
                     onSave={async (data) => {
                         const created = await createSubmission(data);
@@ -337,8 +341,12 @@ export default function ActivityCard({
             )}
             {resubmitting && submission && (
                 <FormModal
-                    config={resubmitFormConfig}
+                    config={{
+                        ...resubmitFormConfig,
+                        title: `Resubmit for ${activity.name}`,
+                    }}
                     context={submissionContext}
+                    titleBadge={ActivityTypeNames[activity.type]}
                     initialValue={{
                         activityId: activity.activityId,
                         text: submission.text,

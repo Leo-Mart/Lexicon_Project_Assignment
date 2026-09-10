@@ -40,6 +40,10 @@ interface FormModalProps<T> {
     // What the form applies to (e.g. "Course · Activity"), shown under the
     // title - per call site, not per config, since it's instance data.
     context?: string;
+    // Pill next to the title, e.g. an activity type - same look as the
+    // badge in SubmissionViewModal and ActivityCard, for call sites that
+    // want that consistency.
+    titleBadge?: string;
     onSave: (data: T) => Promise<void>;
     onClose: () => void;
 }
@@ -51,6 +55,7 @@ export default function FormModal<T extends Record<string, unknown>>({
     config,
     initialValue,
     context,
+    titleBadge,
     onSave,
     onClose,
 }: FormModalProps<T>) {
@@ -165,8 +170,15 @@ export default function FormModal<T extends Record<string, unknown>>({
             <div
                 className={`bg-white rounded-md overflow-hidden mx-4 flex flex-col ${config.widthClass ?? "max-w-md w-full"} ${config.heightClass ?? ""}`}
             >
-                <nav className="bg-bg-header text-white flex justify-between px-4 py-2">
-                    <h2 className="text-lg">{config.title}</h2>
+                <nav className="bg-bg-header text-white flex items-center justify-between px-4 py-2">
+                    <h2 className="flex items-center gap-2 text-lg">
+                        {config.title}
+                        {titleBadge && (
+                            <span className="font-bold text-l bg-bg-window text-text-dark p-1.5 rounded">
+                                {titleBadge}
+                            </span>
+                        )}
+                    </h2>
                     <button
                         className="bg-btn-cancel py-1 px-2 hover:brightness-110 rounded-full text-sm"
                         onClick={onClose}
@@ -219,8 +231,8 @@ export default function FormModal<T extends Record<string, unknown>>({
                                 {
                                     String(formData[charCountField.name] ?? "")
                                         .length
-                                }
-                                /{charCountField.maxLength} chars
+                                }{" "}
+                                / {charCountField.maxLength} chars
                             </span>
                         )}
                     </div>
