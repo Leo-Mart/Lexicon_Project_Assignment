@@ -1,5 +1,7 @@
+using LMS.Api.Constants;
 using LMS.Api.DTOs.Activities;
 using LMS.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LMS.Api.Controllers;
@@ -7,6 +9,7 @@ namespace LMS.Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Tags("Activities")]
+[Authorize]
 public class ActivityController : ControllerBase
 {
     private readonly IActivityService _activityService;
@@ -84,6 +87,7 @@ public class ActivityController : ControllerBase
     [HttpDelete("{activityId:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = RoleConstants.Teacher)]
     public async Task<IActionResult> DeleteActivityAsync(
         [FromRoute] Guid activityId,
         CancellationToken cancellationToken = default
@@ -109,6 +113,7 @@ public class ActivityController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = RoleConstants.Teacher)]
     public async Task<IActionResult> UpdateActivityAsyny(
         [FromRoute] Guid activityId,
         [FromBody] ActivityUpdateDto request,
@@ -134,6 +139,7 @@ public class ActivityController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(ActivityDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Authorize(Roles = RoleConstants.Teacher)]
     public async Task<IActionResult> CreateActivityAsync(
         [FromBody] ActivityCreateDto request,
         CancellationToken cancellationToken = default

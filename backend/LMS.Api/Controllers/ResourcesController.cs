@@ -35,6 +35,7 @@ public class ResourcesController : ControllerBase
         typeof(PagedResponse<ResourceDto>),
         StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize(Roles = RoleConstants.Teacher)]
     public async Task<ActionResult<PagedResponse<ResourceDto>>> GetAll([FromQuery] QueryParametersDto query, CancellationToken cancellationToken)
     {
         PagedResponse<ResourceDto> resources = await _resourceService.GetAllAsync(query, cancellationToken);

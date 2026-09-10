@@ -1,15 +1,18 @@
+using LMS.Api.Constants;
 using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Course;
 using LMS.Api.DTOs.Errors;
 using LMS.Api.DTOs.Module;
 using LMS.Api.Exceptions;
 using LMS.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LMS.Api.Controllers;
 
 [Route("api/courses")]
 [ApiController]
+[Authorize]
 public class CourseController(ICourseService courseService) : ControllerBase
 {
     private readonly ICourseService _courseService = courseService;
@@ -29,6 +32,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
     [ProducesResponseType(
         typeof(PagedResponse<CourseDto>),
         StatusCodes.Status200OK)]
+    [Authorize(Roles = RoleConstants.Teacher)]
     public async Task<ActionResult<PagedResponse<CourseDto>>> GetCourses([FromQuery] QueryParametersDto query, CancellationToken cancellationToken = default)
     {
         PagedResponse<CourseDto> courses =
@@ -91,6 +95,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
     /// <response code="201">Successfully created course, and returns the newly created course.</response>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
+    [Authorize(Roles = RoleConstants.Teacher)]
     public async Task<ActionResult<CourseDto>> CreateNewCourse(
         [FromBody] CreateNewCourseDto newCourseDto
     )
@@ -127,6 +132,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
     /// <response code="200">Course was successfully updated and returned.</response>
     [HttpPut("{courseId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(Roles = RoleConstants.Teacher)]
     public async Task<ActionResult<CourseDto>> UpdateCourse(
         [FromRoute] Guid courseId,
         [FromBody] UpdateCourseDto updateCourseDto
@@ -152,6 +158,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
     [HttpDelete("{courseId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = RoleConstants.Teacher)]
     public async Task<IActionResult> DeleteCourse([FromRoute] Guid courseId)
     {
         var deletedCourse = await _courseService.DeleteCourse(courseId);
