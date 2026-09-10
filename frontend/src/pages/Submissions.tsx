@@ -422,15 +422,10 @@ export default function Submissions() {
                                             <td className="px-4 py-3">
                                                 {deadline ? (
                                                     <>
-                                                        {ActivityDate(
-                                                            deadline,
-                                                        )}{" "}
-                                                        {ActivityTime(
-                                                            deadline,
-                                                        )}
-                                                        {daysOverdue(
-                                                            deadline,
-                                                        ) > 0 && (
+                                                        {ActivityDate(deadline)}{" "}
+                                                        {ActivityTime(deadline)}
+                                                        {daysOverdue(deadline) >
+                                                            0 && (
                                                             <div className="text-xs opacity-70">
                                                                 {daysOverdue(
                                                                     deadline,

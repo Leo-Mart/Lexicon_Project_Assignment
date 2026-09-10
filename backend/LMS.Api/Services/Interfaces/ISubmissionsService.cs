@@ -1,5 +1,3 @@
-
-
 using System.Runtime.CompilerServices;
 using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Submissions;
