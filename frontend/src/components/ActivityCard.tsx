@@ -234,10 +234,25 @@ export default function ActivityCard({
                         </p>
                         <div className="flex flex-row justify-between items-center">
                             <p className="text-sm text-text-dark  p-3 pt-0">
-                                {ActivityDate(activity.startAt)}
-                                {" | "}
-                                {ActivityTime(activity.startAt)}-
-                                {ActivityTime(activity.endAt)}
+                                {ActivityDate(activity.startAt) ===
+                                ActivityDate(activity.endAt) ? (
+                                    <>
+                                        Scheduled:{" "}
+                                        {ActivityDate(activity.startAt)}
+                                        {" | "}
+                                        {ActivityTime(activity.startAt)}-
+                                        {ActivityTime(activity.endAt)}
+                                    </>
+                                ) : (
+                                    <>
+                                        Scheduled:{" "}
+                                        {ActivityDate(activity.startAt)}{" "}
+                                        {ActivityTime(activity.startAt)}
+                                        {" - "}
+                                        {ActivityDate(activity.endAt)}{" "}
+                                        {ActivityTime(activity.endAt)}
+                                    </>
+                                )}
                             </p>
                             {isStudent && isSubmittable && hasStarted && (
                                 <div className="flex flex-col items-start gap-2 px-3">
