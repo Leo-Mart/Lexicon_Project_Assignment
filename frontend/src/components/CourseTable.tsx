@@ -24,7 +24,7 @@ export default function CourseTable({
 }: CoursesTableProps) {
     return (
         <table className="w-full text-left">
-            <thead className="bg-bg-window dark:bg-bg-window-dark h-10 border-b border-accent-blue text-text-dark dark:text-text-light">
+            <thead className="bg-bg-header dark:bg-bg-header-dark h-10 border-b border-accent-blue text-text-light dark:text-text-light">
                 <tr>
                     <SortableTh
                         field="name"
