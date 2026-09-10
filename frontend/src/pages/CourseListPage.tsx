@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import "../index.css";
-import Button from "../components/Button";
 import CourseModal from "../components/CourseModal";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import { fetchCourses } from "../services/courseService";
@@ -8,7 +7,19 @@ import { deleteCourse } from "../services/courseService";
 import ModalCreateResource from "../components/ModalCreateResource";
 import CourseTable from "../components/CourseTable";
 import { createPortal } from "react-dom";
-import TableSearchBar from "../components/TableSearchBar";
+import type { SortOption } from "../types/SortOption";
+import TableToolbar from "../components/TableToolbar";
+
+const COURSES_SORT_OPTIONS: SortOption[] = [
+    { value: "name-asc", label: "Name A-Z" },
+    { value: "name-desc", label: "Name Z-A" },
+    { value: "desc-asc", label: "Description A-Z" },
+    { value: "desc-desc", label: "Description Z-A" },
+    { value: "start-asc", label: "Start Date New-Old" },
+    { value: "start-desc", label: "Start Date Old-New" },
+    { value: "end-asc", label: "End Date New-Old" },
+    { value: "end-desc", label: "End Date Old-New" },
+];
 
 export default function CourseListPage() {
     // STATE
@@ -138,16 +149,13 @@ export default function CourseListPage() {
     return (
         <>
             <div className="m-3 flex justify-between">
-                <TableSearchBar
+                <TableToolbar
                     search={search}
+                    sortBy={sortBy}
+                    sortOptions={COURSES_SORT_OPTIONS}
                     onSearchChange={handleSearchChange}
+                    onSortChange={handleSortChange}
                 />
-                <h1 className="text-3xl rounded-lg font-bold px-3 pb-3 text-center bg-bg-header dark:bg-bg-header-dark text-white dark:text-text-light w-50">
-                    Courses
-                </h1>
-                <Button onClick={() => handleShowCourseModal(newCourse)}>
-                    Create course
-                </Button>
                 {isCourseModalVisible && (
                     <CourseModal
                         selectedCourse={selectedRow}
