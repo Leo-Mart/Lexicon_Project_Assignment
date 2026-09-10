@@ -131,7 +131,10 @@ export default function CourseListPage() {
 
     return (
         <>
-            <div className="m-3 flex justify-end">
+            <div className="m-3 flex justify-between">
+                <h1 className="text-3xl font-bold px-3 pb-3 text-center bg-bg-header dark:bg-bg-header-dark text-white dark:text-text-light w-50">
+                    Courses
+                </h1>
                 <Button
                     onClick={() => handleShowCourseModal(newCourse)}
                     className="border-4 border-accent-student"
@@ -157,9 +160,6 @@ export default function CourseListPage() {
                     )}
             </div>
             <div className="bg-bg dark:bg-bg-dark border rounded m-3">
-                <h1 className="text-3xl font-bold px-3 pb-3 text-center bg-bg-header dark:bg-bg-header-dark text-white dark:text-text-light">
-                    Courses
-                </h1>
                 <CourseTable
                     courses={courses}
                     sortBy={sortBy}
