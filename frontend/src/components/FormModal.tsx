@@ -37,6 +37,9 @@ const inputClass = "shadow appearance-none border rounded w-full p-2";
 interface FormModalProps<T> {
     config: EntityFormConfig<T>;
     initialValue: T;
+    // What the form applies to (e.g. "Course · Activity"), shown under the
+    // title - per call site, not per config, since it's instance data.
+    context?: string;
     onSave: (data: T) => Promise<void>;
     onClose: () => void;
 }
@@ -47,6 +50,7 @@ interface FormModalProps<T> {
 export default function FormModal<T extends Record<string, unknown>>({
     config,
     initialValue,
+    context,
     onSave,
     onClose,
 }: FormModalProps<T>) {
@@ -174,6 +178,9 @@ export default function FormModal<T extends Record<string, unknown>>({
                     className={`bg-bg py-3 px-3 text-text-dark ${config.heightClass ? "flex-1 flex flex-col overflow-y-auto min-h-0" : ""}`}
                     onSubmit={handleSubmit}
                 >
+                    {context && (
+                        <p className="text-sm text-text-dark mb-2">{context}</p>
+                    )}
                     {config.fields.map((field) => (
                         <div
                             className={`mb-4 ${config.heightClass && field === charCountField ? "flex-1 flex flex-col min-h-0" : ""}`}
