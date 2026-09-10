@@ -398,8 +398,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Lecture,
                 Name = "Testing ASP.NET Core APIs",
                 Description = "Integration testing a Web API with WebApplicationFactory.",
-                StartAt = LectureStart(now, 2),
-                EndAt = LectureStart(now, 2).AddHours(2),
+                StartAt = LectureStart(now, 1),
+                EndAt = LectureStart(now, 1).AddHours(2),
                 CreatedAt = now,
                 UpdatedAt = now
             },
