@@ -134,6 +134,7 @@ const ModalActivityDetails = (props: ModalActivityDetailsProps) => {
                         <div>
                             {activityResources?.map((resource) => (
                                 <ResourceCard
+                                    key={resource.resourceId}
                                     resource={resource}
                                     editResource={handleResourceEdit}
                                     deleteResource={handleRemoveResource}

@@ -265,7 +265,7 @@ export default function ActivityCard({
                                 className="hover:cursor-pointer"
                                 onClick={() => setShowDetailsModal(true)}
                             >
-                                More info
+                                Resources
                             </Button>
                             <div className="flex gap-2">
                                 {isStudent &&
