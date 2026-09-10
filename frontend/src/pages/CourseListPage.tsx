@@ -1,14 +1,28 @@
 import { useState, useEffect } from "react";
 import "../index.css";
-import Button from "../components/Button";
 import CourseModal from "../components/CourseModal";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import { fetchCourses } from "../services/courseService";
 import { deleteCourse } from "../services/courseService";
 import ModalCreateResource from "../components/ModalCreateResource";
-import CourseTable from "../components/CourseTable";
 import { createPortal } from "react-dom";
-import TableSearchBar from "../components/TableSearchBar";
+import type { SortOption } from "../types/SortOption";
+import TableToolbar from "../components/TableToolbar";
+import DataTable from "../components/DataTable";
+import type { Column } from "../types/Column";
+import { Link } from "react-router-dom";
+import Button from "../components/Button";
+
+const COURSES_SORT_OPTIONS: SortOption[] = [
+    { value: "name-asc", label: "Name A-Z" },
+    { value: "name-desc", label: "Name Z-A" },
+    { value: "description-asc", label: "Description A-Z" },
+    { value: "description-desc", label: "Description Z-A" },
+    { value: "start-asc", label: "Start Date Old-New" },
+    { value: "start-desc", label: "Start Date New-Old" },
+    { value: "end-asc", label: "End Date Old-New" },
+    { value: "end-desc", label: "End Date New-Old" },
+];
 
 export default function CourseListPage() {
     // STATE
@@ -21,7 +35,7 @@ export default function CourseListPage() {
         modules: [],
     };
 
-    const [courses, setCourses] = useState<CourseResponse[]>([newCourse]);
+    const [courses, setCourses] = useState<CourseResponse[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -115,13 +129,68 @@ export default function CourseListPage() {
         }
 
         try {
-            deleteCourse(course.courseId);
+            await deleteCourse(course.courseId);
             // Filter the deleted course from state
             setCourses(courses!.filter((c) => c.courseId !== course.courseId));
         } catch (error) {
             console.error("Error on render:", error);
         }
     }
+
+    const courseColumns: Column<CourseResponse>[] = [
+        {
+            key: "name",
+            field: "name",
+            header: "Name",
+            render: (course) => (
+                <Link
+                    className="font-bold underline text-buttons text-lg"
+                    to={`/courses/${course.courseId}`}
+                >
+                    {course.name}
+                </Link>
+            ),
+        },
+        {
+            key: "description",
+            field: "description",
+            header: "Description",
+            render: (course) => course.description,
+        },
+        {
+            key: "startDate",
+            field: "startDate",
+            header: "Start date",
+            render: (course) => course.startDate,
+        },
+        {
+            key: "endDate",
+            field: "endDate",
+            header: "End date",
+            render: (course) => course.endDate,
+        },
+        {
+            key: "actions",
+            header: "Interact",
+            className: "whitespace-nowrap",
+            render: (course) => (
+                <div className="flex items-center gap-2">
+                    <Button onClick={() => handleShowCourseModal(course)}>
+                        Update
+                    </Button>
+                    <Button onClick={() => setResourceTarget(course)}>
+                        Create Resource
+                    </Button>
+                    <Button
+                        variant="cancel"
+                        onClick={() => handleDelete(course)}
+                    >
+                        Delete
+                    </Button>
+                </div>
+            ),
+        },
+    ];
 
     if (error)
         return <div className="text-red-500 text-4xl">Error: {error}</div>;
@@ -138,16 +207,18 @@ export default function CourseListPage() {
     return (
         <>
             <div className="m-3 flex justify-between">
-                <TableSearchBar
+                <TableToolbar
+                    tableTitle="Courses"
                     search={search}
+                    sortBy={sortBy}
+                    sortOptions={COURSES_SORT_OPTIONS}
                     onSearchChange={handleSearchChange}
+                    onSortChange={handleSortChange}
+                    addAction={{
+                        label: "Add course",
+                        onAdd: () => handleShowCourseModal(newCourse),
+                    }}
                 />
-                <h1 className="text-3xl rounded-lg font-bold px-3 pb-3 text-center bg-bg-header dark:bg-bg-header-dark text-white dark:text-text-light w-50">
-                    Courses
-                </h1>
-                <Button onClick={() => handleShowCourseModal(newCourse)}>
-                    Create course
-                </Button>
                 {isCourseModalVisible && (
                     <CourseModal
                         selectedCourse={selectedRow}
@@ -166,17 +237,14 @@ export default function CourseListPage() {
                         document.getElementById("root")!,
                     )}
             </div>
-            <div className="bg-bg dark:bg-bg-dark border rounded m-3">
-                <CourseTable
-                    courses={courses}
-                    sortBy={sortBy}
-                    isLoading={loading}
-                    onSortChange={handleSortChange}
-                    onUpdate={handleShowCourseModal}
-                    onCreateResource={(course) => setResourceTarget(course)}
-                    onDelete={handleDelete}
-                />
-            </div>
+            <DataTable
+                items={courses}
+                columns={courseColumns}
+                getKey={(course) => course.courseId}
+                sortBy={sortBy}
+                isLoading={loading}
+                onSortChange={handleSortChange}
+            />
         </>
     );
 }

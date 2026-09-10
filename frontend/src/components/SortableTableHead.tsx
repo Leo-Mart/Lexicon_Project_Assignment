@@ -1,22 +1,5 @@
+import type { SortableColumn } from "../types/TableColumns";
 import Spinner from "./Spinner";
-
-type SortableColumn =
-    | "name"
-    | "email"
-    | "status"
-    | "role"
-    | "course"
-    | "description"
-    | "startDate"
-    | "endDate"
-    | "student"
-    | "activity"
-    | "deadline"
-    | "submitted"
-    | "late"
-    | "review"
-    | "reviewed";
-
 export default function SortableTh({
     field,
     label,

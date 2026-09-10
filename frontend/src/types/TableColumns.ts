@@ -1,0 +1,18 @@
+export type SortableColumn =
+    | "name"
+    | "email"
+    | "status"
+    | "role"
+    | "course"
+    | "description"
+    | "startDate"
+    | "endDate"
+    | "student"
+    | "activity"
+    | "deadline"
+    | "submitted"
+    | "late"
+    | "review"
+    | "reviewed"
+    | "url"
+    | "content";
