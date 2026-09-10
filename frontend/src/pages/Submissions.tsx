@@ -174,6 +174,12 @@ export default function Submissions() {
         void load();
     }, [role]);
 
+    // Bumped after a review is saved to force the page below to re-fetch, so
+    // a submission that no longer matches the current tab's filter (e.g.
+    // reviewed while on Not reviewed) drops out instead of lingering until
+    // the next navigation.
+    const [reloadToken, setReloadToken] = useState(0);
+
     useEffect(() => {
         if (role !== "Teacher" || tab === "overdue") return;
 
@@ -204,7 +210,7 @@ export default function Submissions() {
         };
 
         void loadPage();
-    }, [role, tab, sortBy, search, page]);
+    }, [role, tab, sortBy, search, page, reloadToken]);
 
     // Overdue students for every activity, so the picker can flag which ones
     // need attention and the summary bar/"All activities" need no extra fetch.
@@ -256,11 +262,7 @@ export default function Submissions() {
                 s.submissionId === updated.submissionId ? updated : s,
             ),
         );
-        setPagedSubmissions((prev) =>
-            prev.map((s) =>
-                s.submissionId === updated.submissionId ? updated : s,
-            ),
-        );
+        setReloadToken((t) => t + 1);
         setReviewing(null);
     };
 
@@ -405,6 +407,15 @@ export default function Submissions() {
                                         onSortChange={handleSortChange}
                                         isLoading={tableLoading}
                                     />
+                                    {tab !== "not-reviewed" && (
+                                        <SortableTh
+                                            field="reviewed"
+                                            label="Reviewed"
+                                            sortBy={sortBy}
+                                            onSortChange={handleSortChange}
+                                            isLoading={tableLoading}
+                                        />
+                                    )}
                                     <th className="px-4 py-3"></th>
                                 </tr>
                             </thead>
@@ -477,6 +488,13 @@ export default function Submissions() {
                                                     "-"
                                                 )}
                                             </td>
+                                            {tab !== "not-reviewed" && (
+                                                <td className="px-4 py-3">
+                                                    {s.feedbackAt
+                                                        ? `${ActivityDate(s.feedbackAt)} ${ActivityTime(s.feedbackAt)}`
+                                                        : "-"}
+                                                </td>
+                                            )}
                                             <td className="px-4 py-3">
                                                 <Button
                                                     onClick={() =>
@@ -494,7 +512,9 @@ export default function Submissions() {
                                 {tableLoading && (
                                     <tr>
                                         <td
-                                            colSpan={5}
+                                            colSpan={
+                                                tab === "not-reviewed" ? 5 : 6
+                                            }
                                             className="px-4 py-3 text-center"
                                         >
                                             Loading...
@@ -505,7 +525,11 @@ export default function Submissions() {
                                     pagedSubmissions.length === 0 && (
                                         <tr>
                                             <td
-                                                colSpan={5}
+                                                colSpan={
+                                                    tab === "not-reviewed"
+                                                        ? 5
+                                                        : 6
+                                                }
                                                 className="px-4 py-3 text-center"
                                             >
                                                 {submissions.length === 0

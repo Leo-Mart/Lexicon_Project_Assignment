@@ -66,6 +66,10 @@ public class SubmissionsRepository(LMSDbContext _context) : ISubmissionsReposito
                 ? submissionsQuery.OrderByDescending(submission => submission.ReviewStatus)
                 : submissionsQuery.OrderBy(submission => submission.ReviewStatus),
 
+            "reviewed" => query.Direction == "desc"
+                ? submissionsQuery.OrderByDescending(submission => submission.FeedbackAt)
+                : submissionsQuery.OrderBy(submission => submission.FeedbackAt),
+
             // Not reviewed first by default - teachers open this page to find work waiting on them.
             _ => submissionsQuery.OrderBy(submission => submission.ReviewStatus)
         };
