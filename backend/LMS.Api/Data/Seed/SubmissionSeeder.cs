@@ -563,16 +563,17 @@ public static class SubmissionSeeder
         // Fill in most of the remaining enrolled students on each overdue
         // task, reusing one already-written text/feedback pair per task, so
         // the overdue-submissions dashboard isn't dominated by every student
-        // on every task. A handful of students (2, 20, 26, 30, 25, 27, 29)
-        // are deliberately left out everywhere, so some overdue rows remain.
+        // on every task. Nobody stays overdue for weeks on end: tasks due
+        // more than ~3 weeks ago are fully caught up, and only the handful
+        // due in the last couple of weeks still have real stragglers.
         int fillerSeq = 1;
         Submission Filler(
-            Guid activityId, int studentNumber, string text, string feedback,
+            Guid activityId, Guid studentId, string text, string feedback,
             int submittedDaysAgo, int feedbackDaysAgo) => new()
         {
             SubmissionId = Guid.Parse($"71000000-0000-0000-0000-{fillerSeq++:D12}"),
             ActivityId = activityId,
-            StudentId = Student(studentNumber),
+            StudentId = studentId,
             Text = text,
             SubmittedAt = now.AddDays(submittedDaysAgo),
             ReviewStatus = SubmissionReviewStatus.Approved,
@@ -583,60 +584,74 @@ public static class SubmissionSeeder
             UpdatedAt = now
         };
 
-        // Students 4, 6, 8, 10, 12, 14, 16, 18, 22, 24, 28 catch up on most
-        // DotNet tasks; 17, 19, 21, 23 catch up on the React task.
-        int[] commonFill = { 4, 6, 8, 10, 12, 14, 16, 18, 22, 24, 28 };
+        Guid T2 = UserSeeder.StudentTwoId;
         var fillerGroups = new (
-            Guid ActivityId, int[] StudentNumbers, string Text,
+            Guid ActivityId, Guid[] StudentIds, string Text,
             string Feedback, int SubmittedDaysAgo, int FeedbackDaysAgo)[]
         {
+            // Deadline 52 days ago - everyone has caught up by now.
             (ActivitySeeder.GitWorkflowTaskId,
-                new[] { 4, 8, 10, 12, 14, 16, 18, 22, 24, 28 },
+                new[] { T2, Student(4), Student(8), Student(10), Student(12), Student(14), Student(16), Student(18), Student(20), Student(22), Student(24), Student(26), Student(28), Student(30) },
                 "Cloned the starter repo, created a feature branch for each change, and opened a pull request for every one with a short description. Commit messages follow the conventional commits style we went over in class.",
                 "Clean commit history, sensible branch names, and your PR descriptions actually explain the change. This is exactly the workflow we're after.",
                 -54, -51),
-            (ActivitySeeder.SimpleCalculatorTaskId, commonFill,
+            // Deadline 40 days ago - everyone has caught up by now.
+            (ActivitySeeder.SimpleCalculatorTaskId,
+                new[] { T2, Student(4), Student(6), Student(8), Student(10), Student(12), Student(14), Student(16), Student(18), Student(20), Student(22), Student(24), Student(26), Student(28), Student(30) },
                 "Calculator supports add, subtract, multiply and divide. Wrapped the divide operation in a check so dividing by zero prints a message instead of crashing.",
                 "Handles edge cases well, including division by zero. Nice work.",
                 -41, -39),
+            // Deadline 31 days ago - everyone has caught up by now.
             (ActivitySeeder.ClassDesignTaskId,
-                new[] { 6, 8, 10, 12, 14, 16, 18, 22, 24, 28 },
+                new[] { T2, Student(6), Student(8), Student(10), Student(12), Student(14), Student(16), Student(18), Student(20), Student(22), Student(24), Student(26), Student(28), Student(30) },
                 "Created an IShape interface with Area() and Perimeter(), implemented by Circle, Square and Triangle. Each class validates its own inputs in the constructor, e.g. no negative side lengths.",
                 "Well modeled and easy to extend, and I like the constructor validation. Nice work.",
                 -33, -31),
-            (ActivitySeeder.ConsoleCalculatorTaskId, commonFill,
+            // Deadline 24 days ago - everyone has caught up by now.
+            (ActivitySeeder.ConsoleCalculatorTaskId,
+                new[] { T2, Student(4), Student(6), Student(8), Student(10), Student(12), Student(14), Student(16), Student(18), Student(20), Student(22), Student(24), Student(26), Student(28), Student(30) },
                 "Menu-driven console calculator with add, subtract, multiply, divide and a quit option. Runs in a loop so you can do multiple calculations without restarting the program.",
                 "Clean and correct implementation. The menu loop and the arithmetic methods are both easy to follow. Nice work.",
                 -26, -22),
-            (ActivitySeeder.CollectionsExerciseTaskId, commonFill,
+            // Deadline 18 days ago - 1 straggler.
+            (ActivitySeeder.CollectionsExerciseTaskId,
+                new[] { T2, Student(4), Student(6), Student(8), Student(10), Student(12), Student(14), Student(16), Student(18), Student(20), Student(22), Student(24), Student(26), Student(28) },
                 "Used LINQ to filter, sort and group the sample data set - examples with Where, OrderBy, GroupBy and Select in Program.cs, each with a comment explaining what it's doing. Sorry this is late, got stuck on the pagination task first.",
                 "This was late, but the LINQ queries are well done and the code is easy to read. Try to submit on time next round.",
                 -16, -13),
-            (ActivitySeeder.AspNetApiTaskId,
-                new[] { 14, 16, 18, 22, 24, 28 },
-                "Web API with full CRUD support and proper status codes. Wrapped the database calls in try/catch so unexpected errors return a 500 with a message instead of crashing the app.",
-                "Solid implementation overall. The endpoints are well organized and the error handling is thorough. Nice work.",
-                -13, -10),
-            (ActivitySeeder.JwtAuthenticationTaskId, commonFill,
-                "Added JWT bearer authentication - the login endpoint issues a token, and [Authorize] protects the endpoints that need it.",
-                "Works correctly and follows the pattern we went over in class. Nice work.",
-                -7, -4),
-            (ActivitySeeder.InputValidationTaskId, commonFill,
-                "Added data annotations to the request models for required fields and length limits, and the API now returns 400 with the validation errors instead of a 500.",
-                "Validation is thorough and the error responses are clear. Nice work.",
-                -5, -2),
+            // Deadline 9 days ago - 2 stragglers.
             (ActivitySeeder.LoggingTaskId,
-                new[] { 4, 6, 10, 12, 14, 16, 18, 22, 24, 28 },
+                new[] { T2, Student(4), Student(6), Student(10), Student(12), Student(14), Student(16), Student(18), Student(20), Student(22), Student(24), Student(26) },
                 "Injected ILogger<T> into each controller. Logging Information on successful requests, Warning on validation failures, and the global exception handler logs unhandled exceptions at Error level with the stack trace.",
                 "Logging is consistent and covers all the endpoints, and the log levels are used sensibly. Nice work.",
                 -11, -8),
+            // Deadline 8 days ago - 2 stragglers.
+            (ActivitySeeder.AspNetApiTaskId,
+                new[] { Student(14), Student(16), Student(18), Student(20), Student(22), Student(24), Student(26) },
+                "Web API with full CRUD support and proper status codes. Wrapped the database calls in try/catch so unexpected errors return a 500 with a message instead of crashing the app.",
+                "Solid implementation overall. The endpoints are well organized and the error handling is thorough. Nice work.",
+                -13, -10),
+            // Deadline 7 days ago - 3 stragglers.
             (ActivitySeeder.PaginationTaskId,
-                new[] { 4, 8, 10, 12, 14, 16, 18, 22, 24, 28 },
+                new[] { T2, Student(4), Student(8), Student(10), Student(12), Student(14), Student(16), Student(18), Student(20), Student(22), Student(24) },
                 "Added page and pageSize query parameters to the GET list endpoints, defaulting to page 1 with a size of 10 and capped at 50. The response includes the total item count alongside the page of results. Sorry this one's late, got stuck on the total-count header for a while.",
                 "This was late, but the pagination works well, including the edge cases. Try to submit on time next round.",
                 -5, -2),
+            // Deadline 6 days ago - 4 stragglers.
+            (ActivitySeeder.JwtAuthenticationTaskId,
+                new[] { T2, Student(4), Student(6), Student(8), Student(10), Student(12), Student(14), Student(16), Student(18), Student(20), Student(22) },
+                "Added JWT bearer authentication - the login endpoint issues a token, and [Authorize] protects the endpoints that need it.",
+                "Works correctly and follows the pattern we went over in class. Nice work.",
+                -7, -4),
+            // Deadline 4 days ago - 5 stragglers, the most of any DotNet task.
+            (ActivitySeeder.InputValidationTaskId,
+                new[] { T2, Student(4), Student(6), Student(8), Student(10), Student(12), Student(14), Student(16), Student(18), Student(20) },
+                "Added data annotations to the request models for required fields and length limits, and the API now returns 400 with the validation errors instead of a 500.",
+                "Validation is thorough and the error responses are clear. Nice work.",
+                -5, -2),
+            // Deadline 3 days ago - the most recent, so the most stragglers.
             (ActivitySeeder.ReactTaskId,
-                new[] { 17, 19, 21, 23 },
+                new[] { Student(17), Student(19) },
                 "Split the UI into a header, an item list and an item component, each with its own props interface. Used useState for the filter input and useMemo so the filtering doesn't run on every render.",
                 "Great component structure and consistent naming throughout. Nice work.",
                 -7, -4)
@@ -644,10 +659,10 @@ public static class SubmissionSeeder
 
         foreach (var group in fillerGroups)
         {
-            foreach (int studentNumber in group.StudentNumbers)
+            foreach (Guid studentId in group.StudentIds)
             {
                 submissions.Add(Filler(
-                    group.ActivityId, studentNumber, group.Text,
+                    group.ActivityId, studentId, group.Text,
                     group.Feedback, group.SubmittedDaysAgo,
                     group.FeedbackDaysAgo));
             }
