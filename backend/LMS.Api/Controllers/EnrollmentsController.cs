@@ -1,6 +1,9 @@
 using System.Security.Claims;
 using LMS.Api.Constants;
 using LMS.Api.DTOs.Course;
+using LMS.Api.DTOs.Enrollment;
+using LMS.Api.DTOs.Users;
+using LMS.Api.Models;
 using LMS.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -51,6 +54,27 @@ public class EnrollmentsController : ControllerBase
         }
 
         return Ok(course);
+    }
+
+    /// <summary>
+    /// Gets the users assigned to the course.
+    /// </summary>
+    /// <param name="courseId">The course ID.</param>
+    /// <param name="cancellationToken">Cancellation token for the request.</param>
+    /// <returns>The users assigned to the current course.</returns>
+    [HttpGet("course/{courseId:guid}")]
+    [ProducesResponseType(typeof(List<CourseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<List<EnrollmentStudentsDto>>> GetCourseUsers([FromRoute] Guid courseId,
+        CancellationToken cancellationToken)
+    {
+
+        List<EnrollmentStudentsDto> users = await _enrollmentService.GetStudentEnrollmentsByCourseIdAsync(courseId, cancellationToken);
+
+        return Ok(users);
+
     }
 
     /// <summary>

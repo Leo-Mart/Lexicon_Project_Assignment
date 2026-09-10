@@ -16,23 +16,27 @@ public class ActivityRepository : IActivityRepository
 
     public async Task<List<Activity>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.Activities
-            .AsNoTracking()
-            .ToListAsync(cancellationToken);
+        return await _context.Activities.AsNoTracking().ToListAsync(cancellationToken);
     }
 
-    public async Task<Activity?> GetByIdAsync(Guid activityId, CancellationToken cancellationToken = default)
+    public async Task<Activity?> GetByIdAsync(
+        Guid activityId,
+        CancellationToken cancellationToken = default
+    )
     {
-        return await _context.Activities
-            .AsNoTracking()
+        return await _context
+            .Activities.AsNoTracking()
             .OrderBy(activity => activity.StartAt)
             .FirstOrDefaultAsync(activity => activity.ActivityId == activityId, cancellationToken);
     }
 
-    public async Task<List<Activity>> GetByModuleIdAsync(Guid moduleId, CancellationToken cancellationToken = default)
+    public async Task<List<Activity>> GetByModuleIdAsync(
+        Guid moduleId,
+        CancellationToken cancellationToken = default
+    )
     {
-        return await _context.Activities
-            .AsNoTracking()
+        return await _context
+            .Activities.AsNoTracking()
             .Where(activity => activity.ModuleId == moduleId)
             .ToListAsync(cancellationToken);
     }

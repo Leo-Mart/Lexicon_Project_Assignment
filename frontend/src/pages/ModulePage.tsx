@@ -8,7 +8,11 @@ import type { SubmissionResponse } from "../interfaces/submission/SubmissionResp
 import ActivityCard from "../components/ActivityCard";
 import { useAuth } from "../hooks/useAuth";
 import FormModal from "../components/FormModal";
-import { createActivity } from "../services/activityService";
+import {
+    createActivity,
+    deleteActivity,
+    updateActivity,
+} from "../services/activityService";
 import { ActivityType } from "../constants/ActivityType";
 import {
     addResourceToModule,
@@ -27,16 +31,20 @@ import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
 import Button from "../components/Button";
 import ActivitySchedule from "../components/ActivitySchedule";
 import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
+import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 
 export default function ModulePage() {
     const { moduleId } = useParams<{ moduleId: string }>();
-    const [module, setModule] = useState<ModuleResponse | null>(null);
+    const [module, setModule] = useState<ModuleResponse | undefined>(undefined);
     const [submissionsByActivityId, setSubmissionsByActivityId] = useState<
         Map<string, SubmissionResponse>
     >(new Map());
     const [moduleResources, setModuleResources] = useState<
-        ResourceResponse[] | null
-    >(null);
+        ResourceResponse[] | undefined
+    >(undefined);
+    const [moduleActivities, setModuleActivities] = useState<
+        ActivityResponse[] | undefined
+    >(undefined);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -55,6 +63,7 @@ export default function ModulePage() {
                 }
                 const moduleData = await fetchModuleById(moduleId);
                 setModule(moduleData);
+                setModuleActivities(moduleData.activities);
 
                 if (role === "Student") {
                     const submissions = await getCurrentUserSubmissions();
@@ -137,6 +146,39 @@ export default function ModulePage() {
         );
     };
 
+    const handleActivityEdit = async (
+        activityId: string,
+        payload: ActivityRequest,
+    ) => {
+        await updateActivity(activityId, payload);
+        const updateActivities: ActivityResponse[] = moduleActivities!.map(
+            (activity) => {
+                if (activity.activityId === activityId) {
+                    activity.name = payload.name;
+                    activity.description = payload.description;
+                    activity.startAt = payload.startAt;
+                    activity.endAt = payload.endAt;
+                    activity.type = payload.type;
+                    activity.deadline = payload.deadline;
+
+                    return activity;
+                } else {
+                    return activity;
+                }
+            },
+        );
+        setModuleActivities(updateActivities);
+    };
+
+    const handleRemoveActivity = async (activityId: string) => {
+        await deleteActivity(activityId);
+        setModuleActivities(
+            moduleActivities!.filter(
+                (activity) => activity.activityId !== activityId,
+            ),
+        );
+    };
+
     if (loading) return <div>Loading...</div>;
     if (error)
         return <div className="text-red-500 text-4xl">Error: {error}</div>;
@@ -164,8 +206,10 @@ export default function ModulePage() {
                     </Button>
                 </Link>
             </div>
-            <div className="bg-bg-light h-[calc(100vh-12rem)] p-10 grid grid-flow-col grid-rows-3 grid-cols-2 gap-8 m-8">
-                <ActivitySchedule activities={module.activities} />
+            <div className="bg-bg dark:bg-bg-dark p-10 grid grid-flow-col grid-rows-3 grid-cols-2 gap-8 m-8">
+                {moduleActivities && (
+                    <ActivitySchedule activities={moduleActivities} />
+                )}
                 <div className="row-span-2 overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-light">
                     <div className="flex">
                         <div className="flex w-full">
@@ -227,13 +271,15 @@ export default function ModulePage() {
                             )}
                         </div>
                     </div>
-                    {module.activities?.length ? (
+                    {moduleActivities?.length ? (
                         <div className="mt-5">
-                            {module.activities.map(
+                            {moduleActivities!.map(
                                 (activity: ActivityResponse) => (
                                     <ActivityCard
                                         key={activity.activityId}
                                         activity={activity}
+                                        editActivity={handleActivityEdit}
+                                        deleteActivity={handleRemoveActivity}
                                         submission={submissionsByActivityId.get(
                                             activity.activityId,
                                         )}
@@ -267,11 +313,11 @@ export default function ModulePage() {
                         type: ActivityType.Other,
                     }}
                     onSave={async (data) => {
+                        if (moduleActivities === undefined) {
+                            throw new Error("Error loading module activities");
+                        }
                         const resp = await createActivity(data);
-                        setModule({
-                            ...module,
-                            activities: [...module.activities, resp],
-                        });
+                        setModuleActivities([...moduleActivities, resp]);
                     }}
                     onClose={() => setShowCreateActivityForm(false)}
                 />

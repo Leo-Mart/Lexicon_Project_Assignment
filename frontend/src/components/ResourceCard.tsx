@@ -18,7 +18,7 @@ const ResourceCard = ({
     editResource,
     removeResource,
 }: ResourceCardProps) => {
-    const [confirmDelete, setConfirmDeleteOpen] = useState(false);
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [showEditResourceForm, setShowEditResourceForm] = useState(false);
     const { isAuthenticated, role } = useAuth();
     return (
@@ -49,9 +49,9 @@ const ResourceCard = ({
             ) : (
                 ""
             )}
-            {confirmDelete && (
+            {confirmDeleteOpen && (
                 <ConfirmDialog
-                    open={confirmDelete}
+                    open={confirmDeleteOpen}
                     title="Delete Resource"
                     message={`Are you sure you want to delete the resource: ${resource.name}`}
                     onCancel={() => setConfirmDeleteOpen(false)}

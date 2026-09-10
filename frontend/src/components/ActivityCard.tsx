@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ActivityTime, ActivityDate } from "../constants/ActivityTimeConverter";
-import { ActivityTypeNames } from "../constants/ActivityType";
+import { ActivityType, ActivityTypeNames } from "../constants/ActivityType";
 import Button from "../components/Button";
 import FormModal, { type EntityFormConfig } from "../components/FormModal";
 import { createSubmission } from "../services/submissionService";
@@ -8,30 +8,10 @@ import type { SubmissionRequest } from "../interfaces/submission/SubmissionReque
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import { SubmissionReviewStatusNames } from "../constants/SubmissionReviewStatus";
 import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
-
-// Submitted/late state: drives the header dot and the "Status: ..." line.
-const statusDotColor: Record<string, string> = {
-    "Not submitted": "bg-gray-400",
-    Submitted: "bg-blue-400",
-    "Submitted (Late)": "bg-blue-400",
-};
-const statusTextColor: Record<string, string> = {
-    Late: "text-red-600",
-    "Not submitted": "text-gray-500",
-    Submitted: "text-blue-600",
-    "Submitted (Late)": "text-blue-600",
-};
-
-// Whether it's been reviewed, and the outcome: separate from submitted/late above.
-const reviewTextColor: Record<string, string> = {
-    "Not reviewed": "text-gray-500",
-    Approved: "text-green-600",
-    "Needs completion": "text-yellow-600",
-};
-const reviewDotColor: Record<string, string> = {
-    Approved: "bg-green-400",
-    "Needs completion": "bg-yellow-400",
-};
+import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
+import { useAuth } from "../hooks/useAuth";
+import ConfirmDialog from "./ConfirmDialog";
+import { createActivityFormConfig } from "../types/formSchemas";
 
 const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
     title: "Add submission",
@@ -50,13 +30,29 @@ export default function ActivityCard({
     activity,
     submission,
     onSubmitted,
+    editActivity,
+    deleteActivity,
 }: {
     activity: ActivityResponse;
     submission?: SubmissionResponse;
     onSubmitted?: (submission: SubmissionResponse) => void;
+    editActivity: (activityId: string, payload: ActivityRequest) => void;
+    deleteActivity: (activityId: string) => void;
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [addingSubmission, setAddingSubmission] = useState(false);
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+    const [showEditActivityForm, setShowEditActivityForm] = useState(false);
+
+    const { isAuthenticated, role } = useAuth();
+
+    // Submissions are a student-only concern: teachers get none of this.
+    const isStudent = role === "Student";
+
+    // Only hand-in work types take a submission - not lectures/e-learning/other.
+    const isSubmittable =
+        activity.type === ActivityType.Task ||
+        activity.type === ActivityType.Practice;
 
     // Nothing to submit before the activity has even started.
     const hasStarted = new Date() >= new Date(activity.startAt);
@@ -70,7 +66,7 @@ export default function ActivityCard({
             ? "Submitted (Late)"
             : "Submitted"
         : isPastDeadline
-          ? "Late"
+          ? "Overdue"
           : "Not submitted";
 
     // Only meaningful once submitted.
@@ -80,99 +76,178 @@ export default function ActivityCard({
             : "Not reviewed"
         : null;
 
-    // Once reviewed, the dot shows the review outcome instead of submitted/late.
-    const dotIsReviewOutcome =
-        reviewStatusText != null && reviewStatusText !== "Not reviewed";
-    const headerDotColor = dotIsReviewOutcome
-        ? reviewDotColor[reviewStatusText]
-        : statusDotColor[submissionStatusText];
-    const headerDotLabel = dotIsReviewOutcome
-        ? reviewStatusText
-        : submissionStatusText;
+    // Corner badge, shown even collapsed: graded > overdue > submitted >
+    // due soon > not submitted.
+    const daysUntilDeadline =
+        activity.deadline != null
+            ? Math.ceil(
+                  (new Date(activity.deadline).getTime() -
+                      new Date().getTime()) /
+                      (1000 * 60 * 60 * 24),
+              )
+            : null;
+    let cornerBadge: { text: string; color: string; textColor: string } | null =
+        null;
+    if (!isStudent || !isSubmittable) {
+        // Teachers, and non-submittable activity types, see no badge.
+    } else if (reviewStatusText === "Approved") {
+        cornerBadge = {
+            text: "Graded",
+            color: "bg-green-500",
+            textColor: "text-white",
+        };
+    } else if (reviewStatusText === "Needs completion") {
+        cornerBadge = {
+            text: "Needs completion",
+            color: "bg-bg-warning",
+            textColor: "text-text-dark",
+        };
+    } else if (missingAndLate) {
+        cornerBadge = {
+            text: "Overdue",
+            color: "bg-red-500",
+            textColor: "text-white",
+        };
+    } else if (submission) {
+        cornerBadge = {
+            text: submissionStatusText,
+            color: "bg-blue-400",
+            textColor: "text-white",
+        };
+    } else if (
+        hasStarted &&
+        daysUntilDeadline != null &&
+        daysUntilDeadline >= 0 &&
+        daysUntilDeadline <= 5
+    ) {
+        cornerBadge = {
+            text:
+                daysUntilDeadline === 0
+                    ? "Due today"
+                    : `Due in ${daysUntilDeadline}d`,
+            color: "bg-bg-warning",
+            textColor: "text-text-dark",
+        };
+    } else if (hasStarted) {
+        cornerBadge = {
+            text: "Not submitted",
+            color: "bg-gray-400",
+            textColor: "text-white",
+        };
+    }
 
     return (
-        <div
-            key={activity.activityId}
-            className="w-80% rounded overflow-hidden shadow-lg bg-white m-3"
-        >
-            <div className="bg-bg-header w-full p-4 grid grid-cols-3 items-center">
-                <h2 className="font-bold text-xl">{activity.name}</h2>
-                <h3 className="font-bold text-l bg-bg-window text-text-dark p-1.5 rounded justify-self-center">
-                    {ActivityTypeNames[activity.type]}
-                </h3>
-                <div className="flex flex-row justify-end items-center gap-2 justify-self-end">
-                    {hasStarted && missingAndLate && (
-                        <div
-                            className="rotate-45 w-5 h-5 bg-red-400"
-                            title="Late"
-                            aria-label="Late"
-                            role="img"
-                        ></div>
-                    )}
-                    {hasStarted && !missingAndLate && (
-                        <div
-                            className={`rounded-full w-5 h-5 ${headerDotColor}`}
-                            title={headerDotLabel}
-                            aria-label={headerDotLabel}
-                            role="img"
-                        ></div>
-                    )}
-                    <button
-                        className="border-2 border-bg-header-dark p-1"
-                        onClick={() => setIsExpanded(!isExpanded)}
-                    >
-                        {isExpanded ? "Show Less" : "Show More"}
-                    </button>
-                </div>
-            </div>
-            {isExpanded && (
-                <div className="bg-bg-window w-full">
-                    <p className="text-m text-text-dark  p-3">
-                        {activity.description}
-                    </p>
-                    <div className="flex flex-row justify-between items-center">
-                        <p className="text-sm text-text-dark  p-3 pt-0">
-                            {ActivityDate(activity.startAt)}
-                            {" | "}
-                            {ActivityTime(activity.startAt)}-
-                            {ActivityTime(activity.endAt)}
-                        </p>
-                        {hasStarted && (
-                            <div className="flex flex-col items-start gap-2 px-3">
-                                <span
-                                    className={`text-base font-bold ${statusTextColor[submissionStatusText]}`}
-                                >
-                                    Status: {submissionStatusText}
-                                </span>
-                                {reviewStatusText && (
-                                    <span
-                                        className={`text-sm font-bold ${reviewTextColor[reviewStatusText]}`}
-                                    >
-                                        Review: {reviewStatusText}
-                                    </span>
-                                )}
-                                {activity.deadline != null && !submission && (
-                                    <p
-                                        className={`text-sm ${missingAndLate ? "text-red-600" : "text-text-dark"}`}
-                                    >
-                                        {" Deadline "}
-                                        {ActivityDate(activity.deadline)} {"  "}
-                                        {ActivityTime(activity.deadline)}
-                                    </p>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                    {hasStarted && !submission && (
-                        <Button
-                            variant="primary"
-                            onClick={() => setAddingSubmission(true)}
+        <div key={activity.activityId} className="relative w-80% m-3">
+            <div className="rounded overflow-hidden shadow-lg bg-white">
+                <div
+                    className="bg-bg-header w-full p-4 grid grid-cols-3 items-center cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={isExpanded}
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setIsExpanded(!isExpanded);
+                        }
+                    }}
+                >
+                    <div className="flex flex-row items-center gap-2">
+                        <span
+                            className={`text-xl transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                            aria-hidden="true"
                         >
-                            Add submission
-                        </Button>
-                    )}
+                            ▾
+                        </span>
+                        <h2 className="font-bold text-xl">{activity.name}</h2>
+                    </div>
+                    <h3 className="font-bold text-l bg-bg-window text-text-dark p-1.5 rounded justify-self-center">
+                        {ActivityTypeNames[activity.type]}
+                    </h3>
+                    <div className="flex flex-row justify-end items-center gap-2 justify-self-end">
+                        {cornerBadge && (
+                            <span
+                                className={`text-xs font-bold px-2 py-1 rounded ${cornerBadge.color} ${cornerBadge.textColor}`}
+                            >
+                                {cornerBadge.text}
+                            </span>
+                        )}
+                        {isAuthenticated && role === "Teacher" ? (
+                            <div className="flex gap-1">
+                                <Button
+                                    variant="confirm"
+                                    onClick={() =>
+                                        setShowEditActivityForm(true)
+                                    }
+                                    className="hover:cursor-pointer"
+                                >
+                                    Edit
+                                </Button>
+                                <Button
+                                    variant="cancel"
+                                    onClick={() => setConfirmDeleteOpen(true)}
+                                    className="hover:cursor-pointer"
+                                >
+                                    Delete
+                                </Button>
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                        <button
+                            className="border-2 border-bg-header-dark p-1"
+                            onClick={() => setIsExpanded(!isExpanded)}
+                        >
+                            {isExpanded ? "Show Less" : "Show More"}
+                        </button>
+                    </div>
                 </div>
-            )}
+                {isExpanded && (
+                    <div className="bg-bg-window w-full">
+                        <p className="text-m text-text-dark  p-3">
+                            {activity.description}
+                        </p>
+                        <div className="flex flex-row justify-between items-center">
+                            <p className="text-sm text-text-dark  p-3 pt-0">
+                                {ActivityDate(activity.startAt)}
+                                {" | "}
+                                {ActivityTime(activity.startAt)}-
+                                {ActivityTime(activity.endAt)}
+                            </p>
+                            {isStudent && isSubmittable && hasStarted && (
+                                <div className="flex flex-col items-start gap-2 px-3">
+                                    {activity.deadline != null &&
+                                        !submission && (
+                                            <p
+                                                className={`text-sm ${missingAndLate ? "text-red-600" : "text-text-dark"}`}
+                                            >
+                                                {" Deadline "}
+                                                {ActivityDate(
+                                                    activity.deadline,
+                                                )}{" "}
+                                                {"  "}
+                                                {ActivityTime(
+                                                    activity.deadline,
+                                                )}
+                                            </p>
+                                        )}
+                                </div>
+                            )}
+                        </div>
+                        {isStudent &&
+                            isSubmittable &&
+                            hasStarted &&
+                            !submission && (
+                                <Button
+                                    variant="primary"
+                                    onClick={() => setAddingSubmission(true)}
+                                >
+                                    Add submission
+                                </Button>
+                            )}
+                    </div>
+                )}
+            </div>
             {addingSubmission && (
                 <FormModal
                     config={submissionFormConfig}
@@ -182,6 +257,33 @@ export default function ActivityCard({
                         onSubmitted?.(created);
                     }}
                     onClose={() => setAddingSubmission(false)}
+                />
+            )}
+            {confirmDeleteOpen && (
+                <ConfirmDialog
+                    open={confirmDeleteOpen}
+                    title="Delete Activity"
+                    message={`Are you sure you want to delete the activity: ${activity.name}`}
+                    onCancel={() => setConfirmDeleteOpen(false)}
+                    onConfirm={() => deleteActivity(activity.activityId)}
+                />
+            )}
+            {showEditActivityForm && (
+                <FormModal
+                    config={createActivityFormConfig}
+                    initialValue={{
+                        moduleId: activity.moduleId ?? "",
+                        name: activity.name,
+                        description: activity.description,
+                        startAt: activity.startAt,
+                        endAt: activity.endAt,
+                        deadline: activity.deadline,
+                        type: activity.type,
+                    }}
+                    onSave={async (data) =>
+                        editActivity(activity.activityId, data)
+                    }
+                    onClose={() => setShowEditActivityForm(false)}
                 />
             )}
         </div>

@@ -32,8 +32,9 @@ string jwtAudience =
 string frontendUrl = builder.Configuration["Frontend:Url"] ?? "http://localhost:5173";
 
 builder.Services.AddDbContext<LMSDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
