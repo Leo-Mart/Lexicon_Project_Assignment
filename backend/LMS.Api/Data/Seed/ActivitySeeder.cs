@@ -89,6 +89,11 @@ public static class ActivitySeeder
     public static readonly Guid AspNetCoreCodeReviewId =
         Guid.Parse("50000000-0000-0000-0000-000000000025");
 
+    // Lectures start at a realistic 10:30, not whatever time the seeder
+    // happened to run at.
+    private static DateTime LectureStart(DateTime now, int dayOffset) =>
+        now.Date.AddDays(dayOffset).AddHours(10).AddMinutes(30);
+
     // A lecture ahead of each of the topic-specific tasks, not just the one
     // at the very start of the module.
     public static readonly Guid AspNetCoreAuthLectureId =
@@ -287,8 +292,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Lecture,
                 Name = "Introduction to ASP.NET Core",
                 Description = "Introduction to controllers, routing and dependency injection in ASP.NET Core.",
-                StartAt = now.AddDays(-14),
-                EndAt = now.AddDays(-14).AddHours(3),
+                StartAt = LectureStart(now, -14),
+                EndAt = LectureStart(now, -14).AddHours(3),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -302,8 +307,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Lecture,
                 Name = "Routing & Controllers",
                 Description = "Attribute routing, route parameters and organizing endpoints across controllers.",
-                StartAt = now.AddDays(-12),
-                EndAt = now.AddDays(-12).AddHours(2),
+                StartAt = LectureStart(now, -12),
+                EndAt = LectureStart(now, -12).AddHours(2),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -315,8 +320,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Lecture,
                 Name = "Dependency Injection & Configuration",
                 Description = "Service lifetimes, the built-in DI container, and reading configuration and secrets.",
-                StartAt = now.AddDays(-10),
-                EndAt = now.AddDays(-10).AddHours(2),
+                StartAt = LectureStart(now, -10),
+                EndAt = LectureStart(now, -10).AddHours(2),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -328,8 +333,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Lecture,
                 Name = "Authentication & Authorization",
                 Description = "Securing a Web API with JWT bearer tokens and role-based authorization.",
-                StartAt = now.AddDays(-8),
-                EndAt = now.AddDays(-8).AddHours(2),
+                StartAt = LectureStart(now, -8),
+                EndAt = LectureStart(now, -8).AddHours(2),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -341,8 +346,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Lecture,
                 Name = "Middleware & the Request Pipeline",
                 Description = "How a request flows through middleware, and where to hook in custom behavior.",
-                StartAt = now.AddDays(-6),
-                EndAt = now.AddDays(-6).AddHours(2),
+                StartAt = LectureStart(now, -6),
+                EndAt = LectureStart(now, -6).AddHours(2),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -354,8 +359,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Lecture,
                 Name = "Input Validation & Model Binding",
                 Description = "Validating incoming request models with data annotations and returning clear errors.",
-                StartAt = now.AddDays(-4),
-                EndAt = now.AddDays(-4).AddHours(2),
+                StartAt = LectureStart(now, -4),
+                EndAt = LectureStart(now, -4).AddHours(2),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -367,8 +372,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Lecture,
                 Name = "Structured Logging",
                 Description = "Using ILogger, log levels, and structured logging for a Web API.",
-                StartAt = now.AddDays(-2),
-                EndAt = now.AddDays(-2).AddHours(2),
+                StartAt = LectureStart(now, -2),
+                EndAt = LectureStart(now, -2).AddHours(2),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -380,8 +385,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Lecture,
                 Name = "Pagination & Filtering Large Result Sets",
                 Description = "Paging list endpoints with page/pageSize query parameters and a total count.",
-                StartAt = now.AddDays(0),
-                EndAt = now.AddDays(0).AddHours(2),
+                StartAt = LectureStart(now, 0),
+                EndAt = LectureStart(now, 0).AddHours(2),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -393,8 +398,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Lecture,
                 Name = "Testing ASP.NET Core APIs",
                 Description = "Integration testing a Web API with WebApplicationFactory.",
-                StartAt = now.AddDays(2),
-                EndAt = now.AddDays(2).AddHours(2),
+                StartAt = LectureStart(now, 2),
+                EndAt = LectureStart(now, 2).AddHours(2),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -406,8 +411,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Lecture,
                 Name = "Error Handling & Problem Details",
                 Description = "Centralized exception handling and returning RFC 7807 Problem Details responses.",
-                StartAt = now.AddDays(4),
-                EndAt = now.AddDays(4).AddHours(2),
+                StartAt = LectureStart(now, 4),
+                EndAt = LectureStart(now, 4).AddHours(2),
                 CreatedAt = now,
                 UpdatedAt = now
             },
