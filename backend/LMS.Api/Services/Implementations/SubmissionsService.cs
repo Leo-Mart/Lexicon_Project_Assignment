@@ -163,4 +163,36 @@ public class SubmissionsService(
         dto.SubmittedLate = isLate;
         return dto;
     }
+
+    public async Task<SubmissionDto?> UpdateSubmission(SubmissionsUpdateCommand command, CancellationToken cancellationToken)
+    {
+        Submission? submission = await _submissionsRepository.GetByIdAsync(command.SubmissionId, cancellationToken);
+        if (submission is null)
+        {
+            return null;
+        }
+
+        // Only resubmittable while a teacher has flagged it as needing completion.
+        if (submission.ReviewStatus != SubmissionReviewStatus.NeedsCompletion)
+        {
+            throw new InvalidSubmissionStateException(
+                "Only a submission needing completion can be resubmitted.",
+                400);
+        }
+
+        submission.Text = command.Text;
+        submission.SubmittedAt = DateTime.UtcNow;
+        submission.UpdatedAt = DateTime.UtcNow;
+
+        // A fresh submission clears the old review - the teacher hasn't seen this version yet.
+        submission.ReviewStatus = null;
+        submission.Feedback = null;
+        submission.FeedbackByTeacherId = null;
+        submission.FeedbackAt = null;
+
+        _submissionsRepository.Update(submission);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return _mapper.Map<SubmissionDto>(submission);
+    }
 }

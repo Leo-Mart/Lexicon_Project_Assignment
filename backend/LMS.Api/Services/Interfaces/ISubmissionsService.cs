@@ -15,4 +15,5 @@ public interface ISubmissionsService
     Task<List<OverdueSubmissionDto>> GetOverdueByActivityIdAsync(Guid activityId, CancellationToken cancellationToken = default);
     Task<SubmissionDto?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default);
     Task<SubmissionDto> CreateSubmission(SubmissionsCreateCommand command, CancellationToken cancellationToken);
+    Task<SubmissionDto?> UpdateSubmission(SubmissionsUpdateCommand command, CancellationToken cancellationToken);
 }
