@@ -19,6 +19,8 @@ import { useAuth } from "../hooks/useAuth";
 import ConfirmDialog from "./ConfirmDialog";
 import SubmissionViewModal from "./SubmissionViewModal";
 import { createActivityFormConfig } from "../types/formSchemas";
+import { createPortal } from "react-dom";
+import ModalActivityDetails from "./ModalActivityDetails";
 
 const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
     title: "Add submission",
@@ -55,6 +57,7 @@ export default function ActivityCard({
     onSubmitted?: (submission: SubmissionResponse) => void;
     editActivity: (activityId: string, payload: ActivityRequest) => void;
     deleteActivity: (activityId: string) => void;
+    deleteResource: (resourceId: string) => void;
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [addingSubmission, setAddingSubmission] = useState(false);
@@ -62,6 +65,7 @@ export default function ActivityCard({
     const [resubmitting, setResubmitting] = useState(false);
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [showEditActivityForm, setShowEditActivityForm] = useState(false);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
 
     const { isAuthenticated, role } = useAuth();
 
@@ -292,6 +296,13 @@ export default function ActivityCard({
                                     )}
                                 </div>
                             )}
+                        <Button
+                            variant="confirm"
+                            className="m-2 hover:cursor-pointer"
+                            onClick={() => setShowDetailsModal(true)}
+                        >
+                            More info
+                        </Button>
                     </div>
                 )}
             </div>
@@ -331,6 +342,15 @@ export default function ActivityCard({
                     onClose={() => setResubmitting(false)}
                 />
             )}
+            {showDetailsModal &&
+                createPortal(
+                    <ModalActivityDetails
+                        open={showDetailsModal}
+                        activity={activity}
+                        onClose={() => setShowDetailsModal(false)}
+                    />,
+                    document.body!,
+                )}
             {confirmDeleteOpen && (
                 <ConfirmDialog
                     open={confirmDeleteOpen}

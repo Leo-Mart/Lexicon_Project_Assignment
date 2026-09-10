@@ -15,7 +15,7 @@ const ModalWrapper = (props: ModalProps) => {
                 <div className="fixed inset-0 z-40 backdrop-blur-xs transition-opacity"></div>
             )}
             <dialog
-                className={`fixed top-1/2 left-1/2 -translate-x-1/2 z-50 flex w-full max-w-md flex-col bg-bg rounded-lg ${props.open ? "-translate-y-1/2" : "top-0"}`}
+                className={`fixed top-1/2 left-1/2 -translate-x-1/2 z-50 flex w-full max-w-xl flex-col bg-bg rounded-lg ${props.open ? "-translate-y-1/2" : "top-0"}`}
             >
                 <nav className="bg-bg-header dark:bg-bg-header-dark text-text-light rounded-t-md flex justify-between px-4 py-2">
                     <h2 className="text-lg text-text-light">{props.title}</h2>

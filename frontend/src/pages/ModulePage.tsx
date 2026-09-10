@@ -238,7 +238,7 @@ export default function ModulePage() {
                                         key={resource.resourceId}
                                         resource={resource}
                                         editResource={handleResourceEdit}
-                                        removeResource={handleRemoveResource}
+                                        deleteResource={handleRemoveResource}
                                     />
                                 ),
                             )}
@@ -247,7 +247,7 @@ export default function ModulePage() {
                         "Module has no activities"
                     )}
                 </div>
-                <div className="row-span-2 overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-dark dark:text-text-light">
+                <div className="row-span-2 overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-light dark:text-text-light">
                     <div className="flex">
                         <div className="flex w-full ">
                             <h1 className="text-4xl grow text-center">
@@ -277,6 +277,7 @@ export default function ModulePage() {
                                         courseName={module.course.name}
                                         editActivity={handleActivityEdit}
                                         deleteActivity={handleRemoveActivity}
+                                        deleteResource={handleRemoveResource}
                                         submission={submissionsByActivityId.get(
                                             activity.activityId,
                                         )}
