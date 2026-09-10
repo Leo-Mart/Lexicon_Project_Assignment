@@ -104,6 +104,24 @@ export const createSubmission = async (
     return (await response.json()) as SubmissionResponse;
 };
 
+//  [HttpPut("{submissionId:guid}")]
+export const updateSubmission = async (
+    submissionId: string,
+    data: { text: string },
+): Promise<SubmissionResponse> => {
+    const response = await authFetch(`${API_URL}/${submissionId}`, {
+        method: HttpMethod.PUT,
+        headers: JSON_HEADERS,
+        body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Could not update the submission: ${response.status}`);
+    }
+
+    return (await response.json()) as SubmissionResponse;
+};
+
 //  [HttpPut("{submissionId:guid}/feedback")]
 export const setFeedback = async (
     submissionId: string,

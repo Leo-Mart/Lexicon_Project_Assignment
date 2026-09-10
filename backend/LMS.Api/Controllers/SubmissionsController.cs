@@ -112,6 +112,52 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
     }
 
     /// <summary>
+    /// Resubmits a submission the teacher flagged as needing completion.
+    /// </summary>
+    /// <param name="submissionId">Submission Id.</param>
+    /// <param name="submissionUpdateDto">The new submission text.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    [HttpPut("{submissionId:guid}")]
+    [ProducesResponseType(typeof(SubmissionDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = RoleConstants.Student)]
+    public async Task<ActionResult<SubmissionDto>> UpdateSubmission(
+        [FromRoute] Guid submissionId,
+        [FromBody] SubmissionUpdateDto submissionUpdateDto,
+        CancellationToken cancellationToken)
+    {
+        string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userIdClaim, out Guid studentId))
+        {
+            return Unauthorized();
+        }
+
+        SubmissionDto? existing = await _submissionsService.GetByIdAsync(submissionId, cancellationToken);
+        if (existing is null)
+        {
+            return NotFound();
+        }
+        if (existing.StudentId != studentId)
+        {
+            return Forbid();
+        }
+
+        SubmissionsUpdateCommand command = new()
+        {
+            SubmissionId = submissionId,
+            StudentId = studentId,
+            Text = submissionUpdateDto.Text
+        };
+
+        SubmissionDto? submission = await _submissionsService.UpdateSubmission(command, cancellationToken);
+        return submission is null ? NotFound() : Ok(submission);
+    }
+
+    /// <summary>
     /// Updates the submission with feedback from a teacher.
     /// </summary>
     /// <param name="submissionId">Submission Id.</param>

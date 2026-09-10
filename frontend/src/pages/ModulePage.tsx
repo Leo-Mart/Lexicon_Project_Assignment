@@ -274,6 +274,7 @@ export default function ModulePage() {
                                     <ActivityCard
                                         key={activity.activityId}
                                         activity={activity}
+                                        courseName={module.course.name}
                                         editActivity={handleActivityEdit}
                                         deleteActivity={handleRemoveActivity}
                                         submission={submissionsByActivityId.get(
