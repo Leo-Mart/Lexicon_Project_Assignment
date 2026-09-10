@@ -176,7 +176,7 @@ export default function ActivityCard({
             {addingSubmission && (
                 <FormModal
                     config={submissionFormConfig}
-                    initialValue={{ activityId: "123", text: "" }}
+                    initialValue={{ activityId: activity.activityId, text: "" }}
                     onSave={async (data) => {
                         const created = await createSubmission(data);
                         onSubmitted?.(created);
