@@ -43,12 +43,14 @@ const resubmitFormConfig: EntityFormConfig<SubmissionRequest> = {
 
 export default function ActivityCard({
     activity,
+    courseName,
     submission,
     onSubmitted,
     editActivity,
     deleteActivity,
 }: {
     activity: ActivityResponse;
+    courseName: string;
     submission?: SubmissionResponse;
     onSubmitted?: (submission: SubmissionResponse) => void;
     editActivity: (activityId: string, payload: ActivityRequest) => void;
@@ -85,6 +87,14 @@ export default function ActivityCard({
         : isPastDeadline
           ? "Overdue"
           : "Not submitted";
+
+    // Shown in the Add submission/Resubmit modals so it's clear what the
+    // text being typed is for.
+    const submissionContext = `${courseName} · ${activity.name}${
+        activity.deadline != null
+            ? ` · Deadline: ${ActivityDate(activity.deadline)} ${ActivityTime(activity.deadline)}`
+            : ""
+    }`;
 
     // Only meaningful once submitted.
     const reviewStatusText = submission
@@ -294,6 +304,7 @@ export default function ActivityCard({
             {addingSubmission && (
                 <FormModal
                     config={submissionFormConfig}
+                    context={submissionContext}
                     initialValue={{ activityId: activity.activityId, text: "" }}
                     onSave={async (data) => {
                         const created = await createSubmission(data);
@@ -311,6 +322,7 @@ export default function ActivityCard({
             {resubmitting && submission && (
                 <FormModal
                     config={resubmitFormConfig}
+                    context={submissionContext}
                     initialValue={{
                         activityId: activity.activityId,
                         text: submission.text,
