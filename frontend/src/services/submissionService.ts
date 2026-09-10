@@ -6,6 +6,7 @@ import type { FeedbackRequest } from "../interfaces/submission/FeedbackRequest";
 import type { OverdueSubmission } from "../interfaces/submission/OverdueSubmission";
 import type { QueryParameters } from "../interfaces/common/QueryParameters";
 import type { PagedResponse } from "../interfaces/common/PagedResponse";
+import type { SubmissionReviewStatus } from "../constants/SubmissionReviewStatus";
 
 const API_URL = API_BASE_URL + "/submissions";
 
@@ -24,7 +25,7 @@ export const fetchAllSubmissions = async (): Promise<SubmissionResponse[]> => {
 // One page of submissions, searched/sorted server-side - for the Submissions table.
 export const fetchSubmissionsPage = async (
     query: QueryParameters,
-    reviewed?: boolean,
+    reviewStatus?: SubmissionReviewStatus | null,
 ): Promise<PagedResponse<SubmissionResponse>> => {
     const params = new URLSearchParams({
         search: query.search,
@@ -33,8 +34,9 @@ export const fetchSubmissionsPage = async (
         page: query.page.toString(),
         pageSize: query.pageSize.toString(),
     });
-    if (reviewed != null) {
-        params.set("reviewed", String(reviewed));
+    // Omitting the param means "not reviewed" server-side, so only set it when filtering to a status.
+    if (reviewStatus != null) {
+        params.set("reviewStatus", String(reviewStatus));
     }
 
     const response = await authFetch(`${API_URL}/paged?${params.toString()}`);

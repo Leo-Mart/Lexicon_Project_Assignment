@@ -1,5 +1,6 @@
 using LMS.Api.Data;
 using LMS.Api.DTOs.Common;
+using LMS.Api.Enums.Model;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,7 @@ public class SubmissionsRepository(LMSDbContext _context) : ISubmissionsReposito
         return await _context.Submissions.AsNoTracking().Include(submission => submission.Activity).ToListAsync(cancellationToken);
     }
 
-    public async Task<PagedResponse<Submission>> GetPagedAsync(QueryParametersDto query, bool? reviewed = null, CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<Submission>> GetPagedAsync(QueryParametersDto query, SubmissionReviewStatus? reviewStatus = null, CancellationToken cancellationToken = default)
     {
         IQueryable<Submission> submissionsQuery = _context.Submissions
             .AsNoTracking()
@@ -30,12 +31,8 @@ public class SubmissionsRepository(LMSDbContext _context) : ISubmissionsReposito
                 submission.Student.Name.Contains(search));
         }
 
-        if (reviewed.HasValue)
-        {
-            submissionsQuery = reviewed.Value
-                ? submissionsQuery.Where(submission => submission.ReviewStatus != null)
-                : submissionsQuery.Where(submission => submission.ReviewStatus == null);
-        }
+        // Null reviewStatus filters to not-yet-reviewed submissions, same as the model itself.
+        submissionsQuery = submissionsQuery.Where(submission => submission.ReviewStatus == reviewStatus);
 
         submissionsQuery = query.SortBy.ToLowerInvariant() switch
         {

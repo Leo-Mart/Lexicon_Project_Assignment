@@ -18,10 +18,7 @@ import { useAuth } from "../hooks/useAuth";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import type { OverdueSubmission } from "../interfaces/submission/OverdueSubmission";
 import type { FeedbackRequest } from "../interfaces/submission/FeedbackRequest";
-import {
-    SubmissionReviewStatus,
-    SubmissionReviewStatusNames,
-} from "../constants/SubmissionReviewStatus";
+import { SubmissionReviewStatus } from "../constants/SubmissionReviewStatus";
 
 // Extends FeedbackRequest with a read-only field so the modal can show what
 // the student wrote; submissionText is stripped back out before saving.
@@ -100,9 +97,9 @@ export default function Submissions() {
     const [sortBy, setSortBy] = useState(DEFAULT_SORT);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
-    const [tab, setTab] = useState<"not-reviewed" | "overdue" | "previous">(
-        "not-reviewed",
-    );
+    const [tab, setTab] = useState<
+        "not-reviewed" | "overdue" | "needs-completion" | "done"
+    >("not-reviewed");
 
     // The Submissions tab's table: one page at a time, searched/sorted on
     // the server. Separate from `submissions` above, which stays a full
@@ -117,7 +114,8 @@ export default function Submissions() {
     // it's its own type/fetch, not a filter over SubmissionResponse[].
     // Fetched eagerly for every activity so the summary bar is ready before
     // the Overdue tab is even opened.
-    const [overdueSortBy, setOverdueSortBy] = useState("days-desc");
+    // Ascending deadline puts the most overdue (earliest deadline) first.
+    const [overdueSortBy, setOverdueSortBy] = useState("deadline-asc");
     const [overduePage, setOverduePage] = useState(1);
     const [overdueByActivity, setOverdueByActivity] = useState<
         Map<string, OverdueSubmission[]>
@@ -183,6 +181,12 @@ export default function Submissions() {
             setTableLoading(true);
 
             const [sortField, sortDirection = "asc"] = sortBy.split("-");
+            const reviewStatus =
+                tab === "needs-completion"
+                    ? SubmissionReviewStatus.NeedsCompletion
+                    : tab === "done"
+                      ? SubmissionReviewStatus.Approved
+                      : undefined;
             const data = await fetchSubmissionsPage(
                 {
                     search,
@@ -191,7 +195,7 @@ export default function Submissions() {
                     page,
                     pageSize: PAGE_SIZE,
                 },
-                tab === "previous",
+                reviewStatus,
             );
 
             setPagedSubmissions(data.items);
@@ -290,7 +294,12 @@ export default function Submissions() {
     const notReviewedCount = submissions.filter(
         (s) => s.reviewStatus == null,
     ).length;
-    const reviewedCount = submissions.length - notReviewedCount;
+    const needsCompletionCount = submissions.filter(
+        (s) => s.reviewStatus === SubmissionReviewStatus.NeedsCompletion,
+    ).length;
+    const doneCount = submissions.filter(
+        (s) => s.reviewStatus === SubmissionReviewStatus.Approved,
+    ).length;
 
     return (
         <div className="p-4">
@@ -339,12 +348,24 @@ export default function Submissions() {
                     </Button>
                     <Button
                         variant="primary"
-                        className={tab === "previous" ? "bg-accent-blue" : ""}
-                        onClick={() => handleTabChange("previous")}
+                        className={
+                            tab === "needs-completion" ? "bg-accent-blue" : ""
+                        }
+                        onClick={() => handleTabChange("needs-completion")}
                     >
-                        Reviewed submissions
+                        Needs completion
                         <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
-                            {reviewedCount}
+                            {needsCompletionCount}
+                        </span>
+                    </Button>
+                    <Button
+                        variant="primary"
+                        className={tab === "done" ? "bg-accent-blue" : ""}
+                        onClick={() => handleTabChange("done")}
+                    >
+                        Done
+                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
+                            {doneCount}
                         </span>
                     </Button>
                 </div>
@@ -384,15 +405,6 @@ export default function Submissions() {
                                         onSortChange={handleSortChange}
                                         isLoading={tableLoading}
                                     />
-                                    {tab === "previous" && (
-                                        <SortableTh
-                                            field="review"
-                                            label="Status"
-                                            sortBy={sortBy}
-                                            onSortChange={handleSortChange}
-                                            isLoading={tableLoading}
-                                        />
-                                    )}
                                     <th className="px-4 py-3"></th>
                                 </tr>
                             </thead>
@@ -442,19 +454,29 @@ export default function Submissions() {
                                                 )}
                                             </td>
                                             <td className="px-4 py-3">
-                                                {deadline
-                                                    ? `${ActivityDate(deadline)} ${ActivityTime(deadline)}`
-                                                    : "-"}
+                                                {deadline ? (
+                                                    <>
+                                                        {ActivityDate(
+                                                            deadline,
+                                                        )}{" "}
+                                                        {ActivityTime(
+                                                            deadline,
+                                                        )}
+                                                        {daysOverdue(
+                                                            deadline,
+                                                        ) > 0 && (
+                                                            <div className="text-xs opacity-70">
+                                                                {daysOverdue(
+                                                                    deadline,
+                                                                )}{" "}
+                                                                days overdue
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    "-"
+                                                )}
                                             </td>
-                                            {tab === "previous" && (
-                                                <td className="px-4 py-3">
-                                                    {s.reviewStatus != null
-                                                        ? SubmissionReviewStatusNames[
-                                                              s.reviewStatus
-                                                          ]
-                                                        : "Not reviewed"}
-                                                </td>
-                                            )}
                                             <td className="px-4 py-3">
                                                 <Button
                                                     onClick={() =>
@@ -472,7 +494,7 @@ export default function Submissions() {
                                 {tableLoading && (
                                     <tr>
                                         <td
-                                            colSpan={tab === "previous" ? 6 : 5}
+                                            colSpan={5}
                                             className="px-4 py-3 text-center"
                                         >
                                             Loading...
@@ -483,9 +505,7 @@ export default function Submissions() {
                                     pagedSubmissions.length === 0 && (
                                         <tr>
                                             <td
-                                                colSpan={
-                                                    tab === "previous" ? 6 : 5
-                                                }
+                                                colSpan={5}
                                                 className="px-4 py-3 text-center"
                                             >
                                                 {submissions.length === 0
@@ -546,14 +566,15 @@ export default function Submissions() {
                             cmp = a.courseName.localeCompare(b.courseName);
                         } else if (sortField === "activity") {
                             cmp = a.activityName.localeCompare(b.activityName);
-                        } else if (sortField === "days") {
-                            const daysA = a.deadline
-                                ? daysOverdue(a.deadline)
+                        } else if (sortField === "deadline") {
+                            // Days overdue is derived from the deadline, so one sort covers both columns.
+                            const timeA = a.deadline
+                                ? new Date(a.deadline).getTime()
                                 : 0;
-                            const daysB = b.deadline
-                                ? daysOverdue(b.deadline)
+                            const timeB = b.deadline
+                                ? new Date(b.deadline).getTime()
                                 : 0;
-                            cmp = daysA - daysB;
+                            cmp = timeA - timeB;
                         }
                         return sortDirection === "desc" ? -cmp : cmp;
                     });
@@ -599,8 +620,8 @@ export default function Submissions() {
                                                     }
                                                 />
                                                 <SortableTh
-                                                    field="days"
-                                                    label="Days overdue"
+                                                    field="deadline"
+                                                    label="Deadline"
                                                     sortBy={overdueSortBy}
                                                     onSortChange={
                                                         handleOverdueSortChange
@@ -644,11 +665,24 @@ export default function Submissions() {
                                                         )}
                                                     </td>
                                                     <td className="px-4 py-3">
-                                                        {row.deadline
-                                                            ? daysOverdue(
-                                                                  row.deadline,
-                                                              )
-                                                            : "-"}
+                                                        {row.deadline ? (
+                                                            <>
+                                                                {ActivityDate(
+                                                                    row.deadline,
+                                                                )}{" "}
+                                                                {ActivityTime(
+                                                                    row.deadline,
+                                                                )}
+                                                                <div className="text-xs opacity-70">
+                                                                    {daysOverdue(
+                                                                        row.deadline,
+                                                                    )}{" "}
+                                                                    days overdue
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            "-"
+                                                        )}
                                                     </td>
                                                 </tr>
                                             ))}

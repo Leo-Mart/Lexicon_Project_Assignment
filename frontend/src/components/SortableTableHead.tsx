@@ -14,8 +14,7 @@ type SortableColumn =
     | "deadline"
     | "submitted"
     | "late"
-    | "review"
-    | "days";
+    | "review";
 
 export default function SortableTh({
     field,

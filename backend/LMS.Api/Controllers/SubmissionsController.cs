@@ -4,6 +4,7 @@ using System.Security.Claims;
 using LMS.Api.Constants;
 using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Submissions;
+using LMS.Api.Enums.Model;
 using LMS.Api.Models;
 using LMS.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -39,7 +40,7 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
     /// Gets a paginated, searchable, sortable page of submissions.
     /// </summary>
     /// <param name="query">Search, sort, and paging options.</param>
-    /// <param name="reviewed">Filter to only reviewed (true) or only unreviewed (false) submissions. Omit for no filter.</param>
+    /// <param name="reviewStatus">Filter to submissions with this review status. Omit for no filter.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>One page of submissions.</returns>
     [HttpGet("paged")]
@@ -49,10 +50,10 @@ public class SubmissionsController(ISubmissionsService _submissionsService) : Co
     [Authorize(Roles = RoleConstants.Teacher)]
     public async Task<ActionResult<PagedResponse<SubmissionDto>>> GetPaged(
         [FromQuery] QueryParametersDto query,
-        [FromQuery] bool? reviewed,
+        [FromQuery] SubmissionReviewStatus? reviewStatus,
         CancellationToken cancellationToken)
     {
-        PagedResponse<SubmissionDto> resources = await _submissionsService.GetPagedAsync(query, reviewed, cancellationToken);
+        PagedResponse<SubmissionDto> resources = await _submissionsService.GetPagedAsync(query, reviewStatus, cancellationToken);
 
         return Ok(resources);
     }

@@ -46,9 +46,9 @@ public class SubmissionsService(
         return _mapper.Map<List<SubmissionDto>>(resources);
     }
 
-    public async Task<PagedResponse<SubmissionDto>> GetPagedAsync(QueryParametersDto query, bool? reviewed = null, CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<SubmissionDto>> GetPagedAsync(QueryParametersDto query, SubmissionReviewStatus? reviewStatus = null, CancellationToken cancellationToken = default)
     {
-        PagedResponse<Submission> paged = await _submissionsRepository.GetPagedAsync(query, reviewed, cancellationToken);
+        PagedResponse<Submission> paged = await _submissionsRepository.GetPagedAsync(query, reviewStatus, cancellationToken);
 
         return new PagedResponse<SubmissionDto>
         {
