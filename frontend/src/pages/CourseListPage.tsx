@@ -16,12 +16,12 @@ import Button from "../components/Button";
 const COURSES_SORT_OPTIONS: SortOption[] = [
     { value: "name-asc", label: "Name A-Z" },
     { value: "name-desc", label: "Name Z-A" },
-    { value: "desc-asc", label: "Description A-Z" },
-    { value: "desc-desc", label: "Description Z-A" },
-    { value: "start-asc", label: "Start Date New-Old" },
-    { value: "start-desc", label: "Start Date Old-New" },
-    { value: "end-asc", label: "End Date New-Old" },
-    { value: "end-desc", label: "End Date Old-New" },
+    { value: "description-asc", label: "Description A-Z" },
+    { value: "description-desc", label: "Description Z-A" },
+    { value: "start-asc", label: "Start Date Old-New" },
+    { value: "start-desc", label: "Start Date New-Old" },
+    { value: "end-asc", label: "End Date Old-New" },
+    { value: "end-desc", label: "End Date New-Old" },
 ];
 
 export default function CourseListPage() {
@@ -35,7 +35,7 @@ export default function CourseListPage() {
         modules: [],
     };
 
-    const [courses, setCourses] = useState<CourseResponse[]>([newCourse]);
+    const [courses, setCourses] = useState<CourseResponse[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -129,7 +129,7 @@ export default function CourseListPage() {
         }
 
         try {
-            deleteCourse(course.courseId);
+            await deleteCourse(course.courseId);
             // Filter the deleted course from state
             setCourses(courses!.filter((c) => c.courseId !== course.courseId));
         } catch (error) {
