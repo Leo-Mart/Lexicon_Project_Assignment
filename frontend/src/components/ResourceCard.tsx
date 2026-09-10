@@ -85,9 +85,11 @@ const ResourceCard = ({
 
                                 {resource.uri && (
                                     <div className="flex p-3 text-text-dark gap-1">
-                                        <span>Resource URL: </span>
+                                        <span className="font-semibold">
+                                            Resource URL:{" "}
+                                        </span>
                                         <a
-                                            className="text-accent-blue hover:underline"
+                                            className="text-text-dark dark:text-text-dark hover:underline"
                                             href={resource.uri}
                                         >
                                             {resource.uri}
