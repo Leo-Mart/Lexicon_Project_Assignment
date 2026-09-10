@@ -194,12 +194,6 @@ export default function ActivityCard({
                         ) : (
                             ""
                         )}
-                        <button
-                            className="border-2 border-bg-header-dark p-1"
-                            onClick={() => setIsExpanded(!isExpanded)}
-                        >
-                            {isExpanded ? "Show Less" : "Show More"}
-                        </button>
                     </div>
                 </div>
                 {isExpanded && (

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Button from "../components/Button";
 import Pagination from "../components/Pagination";
-import FormModal, { type EntityFormConfig } from "../components/FormModal";
+import ReviewSubmissionModal from "../components/ReviewSubmissionModal";
 import {
     fetchAllSubmissions,
     fetchSubmissionsPage,
@@ -16,52 +16,7 @@ import { useAuth } from "../hooks/useAuth";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import type { OverdueSubmission } from "../interfaces/submission/OverdueSubmission";
 import type { FeedbackRequest } from "../interfaces/submission/FeedbackRequest";
-import {
-    SubmissionReviewStatus,
-    SubmissionReviewStatusNames,
-} from "../constants/SubmissionReviewStatus";
-
-// Extends FeedbackRequest with a read-only field so the modal can show what
-// the student wrote; submissionText is stripped back out before saving.
-interface ReviewFormValues extends FeedbackRequest {
-    submissionText: string;
-}
-
-const reviewFormConfig: EntityFormConfig<ReviewFormValues> = {
-    title: "Review submission",
-    fields: [
-        {
-            name: "submissionText",
-            label: "Submission",
-            type: "textarea",
-            readOnly: true,
-        },
-        {
-            name: "feedback",
-            label: "Feedback",
-            type: "textarea",
-            required: true,
-            maxLength: 2000,
-        },
-        {
-            name: "reviewStatus",
-            label: "Outcome",
-            type: "select",
-            required: true,
-            options: [
-                { value: "", label: "Select an outcome..." },
-                {
-                    value: String(SubmissionReviewStatus.Approved),
-                    label: "Approved",
-                },
-                {
-                    value: String(SubmissionReviewStatus.NeedsCompletion),
-                    label: "Needs completion",
-                },
-            ],
-        },
-    ],
-};
+import { SubmissionReviewStatusNames } from "../constants/SubmissionReviewStatus";
 
 const PAGE_SIZE = 10;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -213,13 +168,10 @@ export default function Submissions() {
         void check();
     }, [overdueChecked, activityNameById]);
 
-    const handleReview = async (data: ReviewFormValues) => {
+    const handleReview = async (data: FeedbackRequest) => {
         if (!reviewing) return;
 
-        const updated = await setFeedback(reviewing.submissionId, {
-            feedback: data.feedback,
-            reviewStatus: Number(data.reviewStatus) as SubmissionReviewStatus,
-        });
+        const updated = await setFeedback(reviewing.submissionId, data);
 
         setSubmissions((prev) =>
             prev.map((s) =>
@@ -668,21 +620,34 @@ export default function Submissions() {
                 </>
             )}
 
-            {reviewing && (
-                <FormModal
-                    config={reviewFormConfig}
-                    initialValue={{
-                        submissionText: reviewing.text,
-                        feedback: reviewing.feedback ?? "",
-                        // "" so the teacher has to pick an outcome, not silently keep a default.
-                        reviewStatus:
-                            reviewing.reviewStatus ??
-                            ("" as unknown as SubmissionReviewStatus),
-                    }}
-                    onSave={handleReview}
-                    onClose={() => setReviewing(null)}
-                />
-            )}
+            {reviewing &&
+                (() => {
+                    const deadline = activityDeadlineById.get(
+                        reviewing.activityId,
+                    );
+                    const deadlineText = deadline
+                        ? `${ActivityDate(deadline)} ${ActivityTime(deadline)}${
+                              new Date() > new Date(deadline)
+                                  ? ` (${daysOverdue(deadline)} days overdue)`
+                                  : ""
+                          }`
+                        : "None";
+
+                    return (
+                        <ReviewSubmissionModal
+                            submission={reviewing}
+                            studentName={studentName(reviewing)}
+                            courseName={courseName(reviewing) || "-"}
+                            activityName={
+                                activityNameById.get(reviewing.activityId) ??
+                                reviewing.activityId
+                            }
+                            deadlineText={deadlineText}
+                            onSave={handleReview}
+                            onClose={() => setReviewing(null)}
+                        />
+                    );
+                })()}
         </div>
     );
 }
