@@ -96,15 +96,21 @@ export default function ActivityCard({
     const daysUntilDeadline =
         activity.deadline != null
             ? Math.ceil(
-                  (new Date(activity.deadline).getTime() - new Date().getTime()) /
+                  (new Date(activity.deadline).getTime() -
+                      new Date().getTime()) /
                       (1000 * 60 * 60 * 24),
               )
             : null;
-    let cornerBadge: { text: string; color: string; textColor: string } | null = null;
+    let cornerBadge: { text: string; color: string; textColor: string } | null =
+        null;
     if (!isStudent) {
         // Teachers don't see per-student submission status here.
     } else if (reviewStatusText === "Approved") {
-        cornerBadge = { text: "Graded", color: "bg-green-500", textColor: "text-white" };
+        cornerBadge = {
+            text: "Graded",
+            color: "bg-green-500",
+            textColor: "text-white",
+        };
     } else if (reviewStatusText === "Needs completion") {
         cornerBadge = {
             text: "Needs completion",
@@ -112,7 +118,11 @@ export default function ActivityCard({
             textColor: "text-text-dark",
         };
     } else if (missingAndLate) {
-        cornerBadge = { text: "Overdue", color: "bg-red-500", textColor: "text-white" };
+        cornerBadge = {
+            text: "Overdue",
+            color: "bg-red-500",
+            textColor: "text-white",
+        };
     } else if (submission) {
         cornerBadge = {
             text: submissionStatusText,
@@ -134,143 +144,157 @@ export default function ActivityCard({
             textColor: "text-text-dark",
         };
     } else if (hasStarted) {
-        cornerBadge = { text: "Not submitted", color: "bg-gray-400", textColor: "text-white" };
+        cornerBadge = {
+            text: "Not submitted",
+            color: "bg-gray-400",
+            textColor: "text-white",
+        };
     }
 
     // The header dot mirrors the corner badge so both use the same color.
     const headerDotColor = cornerBadge
         ? cornerBadge.color
         : statusDotColor[submissionStatusText];
-    const headerDotLabel = cornerBadge ? cornerBadge.text : submissionStatusText;
+    const headerDotLabel = cornerBadge
+        ? cornerBadge.text
+        : submissionStatusText;
 
     return (
         <div key={activity.activityId} className="relative w-80% m-3">
             <div className="rounded overflow-hidden shadow-lg bg-white">
-            <div
-                className="bg-bg-header w-full p-4 grid grid-cols-3 items-center cursor-pointer"
-                role="button"
-                tabIndex={0}
-                aria-expanded={isExpanded}
-                onClick={() => setIsExpanded(!isExpanded)}
-                onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setIsExpanded(!isExpanded);
-                    }
-                }}
-            >
-                <div className="flex flex-row items-center gap-2">
-                    <span
-                        className={`text-xl transition-transform ${isExpanded ? "rotate-180" : ""}`}
-                        aria-hidden="true"
-                    >
-                        ▾
-                    </span>
-                    <h2 className="font-bold text-xl">{activity.name}</h2>
-                </div>
-                <h3 className="font-bold text-l bg-bg-window text-text-dark p-1.5 rounded justify-self-center">
-                    {ActivityTypeNames[activity.type]}
-                </h3>
-                <div className="flex flex-row justify-end items-center gap-2 justify-self-end">
-                    {cornerBadge && (
+                <div
+                    className="bg-bg-header w-full p-4 grid grid-cols-3 items-center cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={isExpanded}
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setIsExpanded(!isExpanded);
+                        }
+                    }}
+                >
+                    <div className="flex flex-row items-center gap-2">
                         <span
-                            className={`text-xs font-bold px-2 py-1 rounded ${cornerBadge.color} ${cornerBadge.textColor}`}
+                            className={`text-xl transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                            aria-hidden="true"
                         >
-                            {cornerBadge.text}
+                            ▾
                         </span>
-                    )}
-                    {isStudent && hasStarted && missingAndLate && (
-                        <div
-                            className="rotate-45 w-5 h-5 bg-red-400"
-                            title="Overdue"
-                            aria-label="Overdue"
-                            role="img"
-                        ></div>
-                    )}
-                    {isStudent && hasStarted && !missingAndLate && (
-                        <div
-                            className={`rounded-full w-5 h-5 ${headerDotColor}`}
-                            title={headerDotLabel}
-                            aria-label={headerDotLabel}
-                            role="img"
-                        ></div>
-                    )}
-                    {isAuthenticated && role === "Teacher" ? (
-                        <div className="flex gap-1">
-                            <Button
-                                variant="confirm"
-                                onClick={() => setShowEditActivityForm(true)}
-                                className="hover:cursor-pointer"
+                        <h2 className="font-bold text-xl">{activity.name}</h2>
+                    </div>
+                    <h3 className="font-bold text-l bg-bg-window text-text-dark p-1.5 rounded justify-self-center">
+                        {ActivityTypeNames[activity.type]}
+                    </h3>
+                    <div className="flex flex-row justify-end items-center gap-2 justify-self-end">
+                        {cornerBadge && (
+                            <span
+                                className={`text-xs font-bold px-2 py-1 rounded ${cornerBadge.color} ${cornerBadge.textColor}`}
                             >
-                                Edit
-                            </Button>
-                            <Button
-                                variant="cancel"
-                                onClick={() => setConfirmDeleteOpen(true)}
-                                className="hover:cursor-pointer"
-                            >
-                                Delete
-                            </Button>
-                        </div>
-                    ) : (
-                        ""
-                    )}
-                    <button
-                        className="border-2 border-bg-header-dark p-1"
-                        onClick={() => setIsExpanded(!isExpanded)}
-                    >
-                        {isExpanded ? "Show Less" : "Show More"}
-                    </button>
-                </div>
-            </div>
-            {isExpanded && (
-                <div className="bg-bg-window w-full">
-                    <p className="text-m text-text-dark  p-3">
-                        {activity.description}
-                    </p>
-                    <div className="flex flex-row justify-between items-center">
-                        <p className="text-sm text-text-dark  p-3 pt-0">
-                            {ActivityDate(activity.startAt)}
-                            {" | "}
-                            {ActivityTime(activity.startAt)}-
-                            {ActivityTime(activity.endAt)}
-                        </p>
-                        {isStudent && hasStarted && (
-                            <div className="flex flex-col items-start gap-2 px-3">
-                                <span
-                                    className={`text-base font-bold ${statusTextColor[submissionStatusText]}`}
+                                {cornerBadge.text}
+                            </span>
+                        )}
+                        {isStudent && hasStarted && missingAndLate && (
+                            <div
+                                className="rotate-45 w-5 h-5 bg-red-400"
+                                title="Overdue"
+                                aria-label="Overdue"
+                                role="img"
+                            ></div>
+                        )}
+                        {isStudent && hasStarted && !missingAndLate && (
+                            <div
+                                className={`rounded-full w-5 h-5 ${headerDotColor}`}
+                                title={headerDotLabel}
+                                aria-label={headerDotLabel}
+                                role="img"
+                            ></div>
+                        )}
+                        {isAuthenticated && role === "Teacher" ? (
+                            <div className="flex gap-1">
+                                <Button
+                                    variant="confirm"
+                                    onClick={() =>
+                                        setShowEditActivityForm(true)
+                                    }
+                                    className="hover:cursor-pointer"
                                 >
-                                    Status: {submissionStatusText}
-                                </span>
-                                {reviewStatusText && (
-                                    <span
-                                        className={`text-sm font-bold ${reviewTextColor[reviewStatusText]}`}
-                                    >
-                                        Review: {reviewStatusText}
-                                    </span>
-                                )}
-                                {activity.deadline != null && !submission && (
-                                    <p
-                                        className={`text-sm ${missingAndLate ? "text-red-600" : "text-text-dark"}`}
-                                    >
-                                        {" Deadline "}
-                                        {ActivityDate(activity.deadline)} {"  "}
-                                        {ActivityTime(activity.deadline)}
-                                    </p>
-                                )}
+                                    Edit
+                                </Button>
+                                <Button
+                                    variant="cancel"
+                                    onClick={() => setConfirmDeleteOpen(true)}
+                                    className="hover:cursor-pointer"
+                                >
+                                    Delete
+                                </Button>
                             </div>
+                        ) : (
+                            ""
+                        )}
+                        <button
+                            className="border-2 border-bg-header-dark p-1"
+                            onClick={() => setIsExpanded(!isExpanded)}
+                        >
+                            {isExpanded ? "Show Less" : "Show More"}
+                        </button>
+                    </div>
+                </div>
+                {isExpanded && (
+                    <div className="bg-bg-window w-full">
+                        <p className="text-m text-text-dark  p-3">
+                            {activity.description}
+                        </p>
+                        <div className="flex flex-row justify-between items-center">
+                            <p className="text-sm text-text-dark  p-3 pt-0">
+                                {ActivityDate(activity.startAt)}
+                                {" | "}
+                                {ActivityTime(activity.startAt)}-
+                                {ActivityTime(activity.endAt)}
+                            </p>
+                            {isStudent && hasStarted && (
+                                <div className="flex flex-col items-start gap-2 px-3">
+                                    <span
+                                        className={`text-base font-bold ${statusTextColor[submissionStatusText]}`}
+                                    >
+                                        Status: {submissionStatusText}
+                                    </span>
+                                    {reviewStatusText && (
+                                        <span
+                                            className={`text-sm font-bold ${reviewTextColor[reviewStatusText]}`}
+                                        >
+                                            Review: {reviewStatusText}
+                                        </span>
+                                    )}
+                                    {activity.deadline != null &&
+                                        !submission && (
+                                            <p
+                                                className={`text-sm ${missingAndLate ? "text-red-600" : "text-text-dark"}`}
+                                            >
+                                                {" Deadline "}
+                                                {ActivityDate(
+                                                    activity.deadline,
+                                                )}{" "}
+                                                {"  "}
+                                                {ActivityTime(
+                                                    activity.deadline,
+                                                )}
+                                            </p>
+                                        )}
+                                </div>
+                            )}
+                        </div>
+                        {isStudent && hasStarted && !submission && (
+                            <Button
+                                variant="primary"
+                                onClick={() => setAddingSubmission(true)}
+                            >
+                                Add submission
+                            </Button>
                         )}
                     </div>
-                    {isStudent && hasStarted && !submission && (
-                        <Button
-                            variant="primary"
-                            onClick={() => setAddingSubmission(true)}
-                        >
-                            Add submission
-                        </Button>
-                    )}
-                </div>
-            )}
+                )}
             </div>
             {addingSubmission && (
                 <FormModal
