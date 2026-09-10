@@ -142,10 +142,7 @@ export default function CourseListPage() {
                 <h1 className="text-3xl rounded-lg font-bold px-3 pb-3 text-center bg-bg-header dark:bg-bg-header-dark text-white dark:text-text-light w-50">
                     Courses
                 </h1>
-                <Button
-                    onClick={() => handleShowCourseModal(newCourse)}
-                    className="border-4 border-accent-student"
-                >
+                <Button onClick={() => handleShowCourseModal(newCourse)}>
                     Create course
                 </Button>
                 {isCourseModalVisible && (
