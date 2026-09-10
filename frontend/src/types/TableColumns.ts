@@ -13,4 +13,6 @@ export type SortableColumn =
     | "submitted"
     | "late"
     | "review"
-    | "reviewed";
+    | "reviewed"
+    | "url"
+    | "content";

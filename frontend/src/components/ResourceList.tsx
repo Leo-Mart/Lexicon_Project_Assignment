@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import type { ResourceResponse } from "../interfaces/resource/ResourceResponse";
-import ResourceListItem from "./ResourceListItem";
 import { fetchResources } from "../services/resourceService";
 import Spinner from "./Spinner";
+import type { Column } from "../types/Column";
+import DataTable from "./DataTable";
 
 const ResourceList = () => {
     const [resources, setResources] = useState<ResourceResponse[]>([]);
@@ -36,30 +37,37 @@ const ResourceList = () => {
 
         fetchAllResources();
     }, []);
+
+    const resourceColumns: Column<ResourceResponse>[] = [
+        { key: "name", header: "Name", field: "name", render: (r) => r.name },
+        {
+            key: "description",
+            header: "Description",
+            field: "description",
+            render: (r) => r.description,
+        },
+        {
+            key: "content",
+            header: "Content",
+            field: "content",
+            render: (r) => r.content,
+        },
+        { key: "url", header: "URL", field: "url", render: (r) => r.uri },
+        { key: "createdAt", header: "Created At", render: (r) => r.createdAt },
+    ];
+
     return (
         <div>
             {loading && <Spinner />}
             {error && <div className="text-red-700">{error}</div>}
-            <table className="w-full table-auto text-left text-text-dark dark:text-text-light">
-                <thead className="bg-bg-window dark:bg-bg-window-dark h-10 border-b border-accent-blue text-text-dark dark:text-text-light">
-                    <tr>
-                        <th className="px-2">Name</th>
-                        <th className="px-2">Description</th>
-                        <th className="px-2">Content</th>
-                        <th className="px-2">URL</th>
-                        <th className="px-2">Created At</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {resources.map((resource, index) => (
-                        <ResourceListItem
-                            item={resource}
-                            index={index}
-                            key={resource.name}
-                        />
-                    ))}
-                </tbody>
-            </table>
+            <DataTable
+                items={resources}
+                columns={resourceColumns}
+                getKey={(resource) => resource.resourceId}
+                sortBy=""
+                isLoading={loading}
+                onSortChange={() => {}}
+            />
         </div>
     );
 };
