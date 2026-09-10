@@ -24,6 +24,7 @@ export const fetchAllSubmissions = async (): Promise<SubmissionResponse[]> => {
 // One page of submissions, searched/sorted server-side - for the Submissions table.
 export const fetchSubmissionsPage = async (
     query: QueryParameters,
+    reviewed?: boolean,
 ): Promise<PagedResponse<SubmissionResponse>> => {
     const params = new URLSearchParams({
         search: query.search,
@@ -32,6 +33,9 @@ export const fetchSubmissionsPage = async (
         page: query.page.toString(),
         pageSize: query.pageSize.toString(),
     });
+    if (reviewed != null) {
+        params.set("reviewed", String(reviewed));
+    }
 
     const response = await authFetch(`${API_URL}/paged?${params.toString()}`);
 

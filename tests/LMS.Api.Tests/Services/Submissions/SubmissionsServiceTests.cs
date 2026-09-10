@@ -116,7 +116,7 @@ public class SubmissionsServiceTests
         QueryParametersDto query = new() { Page = 1, PageSize = 10 };
 
         _submissionsRepositoryMock
-            .Setup(repository => repository.GetPagedAsync(query, It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.GetPagedAsync(query, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PagedResponse<Submission>
             {
                 Items = submissions,
