@@ -15,6 +15,23 @@ public static class SubmissionSeeder
     public static readonly Guid ReactSubmissionId =
         Guid.Parse("70000000-0000-0000-0000-000000000003");
 
+    // Erik's extra submissions - one per new DotNet task, each showing a
+    // different review state (see ActivitySeeder for the matching tasks).
+    public static readonly Guid ErikConsoleCalculatorSubmissionId =
+        Guid.Parse("70000000-0000-0000-0000-000000000015");
+
+    public static readonly Guid ErikCollectionsExerciseSubmissionId =
+        Guid.Parse("70000000-0000-0000-0000-000000000016");
+
+    public static readonly Guid ErikJwtAuthenticationSubmissionId =
+        Guid.Parse("70000000-0000-0000-0000-000000000017");
+
+    public static readonly Guid ErikIntegrationTestsSubmissionId =
+        Guid.Parse("70000000-0000-0000-0000-000000000018");
+
+    public static readonly Guid ErikDatabaseMigrationsSubmissionId =
+        Guid.Parse("70000000-0000-0000-0000-000000000019");
+
     public static async Task SeedAsync(LMSDbContext context)
     {
         if (await context.Submissions.AnyAsync())
@@ -29,34 +46,30 @@ public static class SubmissionSeeder
 
         var submissions = new List<Submission>
         {
+            // Erik - needs completion, on time.
             new()
             {
                 SubmissionId = AspNetSubmissionOneId,
                 ActivityId = ActivitySeeder.AspNetApiTaskId,
                 StudentId = UserSeeder.StudentOneId,
                 Text = "Completed ASP.NET Core Web API assignment.",
-                SubmittedAt = new DateTime(
-                    2026, 10, 1, 14, 30, 0, DateTimeKind.Utc
-                ),
-                ReviewStatus = SubmissionReviewStatus.Approved,
-                Feedback = "Good work. Clear structure and correct use of endpoints.",
+                SubmittedAt = now.AddDays(-6),
+                ReviewStatus = SubmissionReviewStatus.NeedsCompletion,
+                Feedback = "Good structure, but the POST endpoint needs validation.",
                 FeedbackByTeacherId = UserSeeder.TeacherId,
-                FeedbackAt = new DateTime(
-                    2026, 10, 3, 10, 0, 0, DateTimeKind.Utc
-                ),
+                FeedbackAt = now.AddDays(-1),
                 CreatedAt = now,
                 UpdatedAt = now
             },
 
+            // Late, not reviewed yet.
             new()
             {
                 SubmissionId = AspNetSubmissionTwoId,
                 ActivityId = ActivitySeeder.AspNetApiTaskId,
                 StudentId = UserSeeder.StudentTwoId,
                 Text = "ASP.NET Core Web API assignment submitted.",
-                SubmittedAt = new DateTime(
-                    2026, 10, 3, 9, 0, 0, DateTimeKind.Utc
-                ),
+                SubmittedAt = now,
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -68,11 +81,11 @@ public static class SubmissionSeeder
                 ActivityId = ActivitySeeder.AspNetApiTaskId,
                 StudentId = Student(4),
                 Text = "Web API assignment submitted.",
-                SubmittedAt = new DateTime(2026, 9, 30, 10, 0, 0, DateTimeKind.Utc),
+                SubmittedAt = now.AddDays(-5),
                 ReviewStatus = SubmissionReviewStatus.NeedsCompletion,
                 Feedback = "Missing error handling on the POST endpoint.",
                 FeedbackByTeacherId = UserSeeder.TeacherId,
-                FeedbackAt = new DateTime(2026, 10, 2, 9, 0, 0, DateTimeKind.Utc),
+                FeedbackAt = now.AddDays(-2),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -84,7 +97,7 @@ public static class SubmissionSeeder
                 ActivityId = ActivitySeeder.AspNetApiTaskId,
                 StudentId = Student(6),
                 Text = "Web API assignment submitted.",
-                SubmittedAt = new DateTime(2026, 9, 29, 16, 0, 0, DateTimeKind.Utc),
+                SubmittedAt = now.AddDays(-4),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -96,11 +109,11 @@ public static class SubmissionSeeder
                 ActivityId = ActivitySeeder.AspNetApiTaskId,
                 StudentId = Student(8),
                 Text = "Web API assignment submitted.",
-                SubmittedAt = new DateTime(2026, 9, 28, 12, 0, 0, DateTimeKind.Utc),
+                SubmittedAt = now.AddDays(-7),
                 ReviewStatus = SubmissionReviewStatus.Approved,
                 Feedback = "Solid implementation.",
                 FeedbackByTeacherId = UserSeeder.TeacherId,
-                FeedbackAt = new DateTime(2026, 9, 30, 10, 0, 0, DateTimeKind.Utc),
+                FeedbackAt = now.AddDays(-4),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -112,11 +125,11 @@ public static class SubmissionSeeder
                 ActivityId = ActivitySeeder.AspNetApiTaskId,
                 StudentId = Student(10),
                 Text = "Web API assignment submitted (late).",
-                SubmittedAt = new DateTime(2026, 10, 3, 20, 0, 0, DateTimeKind.Utc),
+                SubmittedAt = now.AddDays(-2),
                 ReviewStatus = SubmissionReviewStatus.NeedsCompletion,
                 Feedback = "Late, and still missing validation.",
                 FeedbackByTeacherId = UserSeeder.TeacherId,
-                FeedbackAt = new DateTime(2026, 10, 5, 9, 0, 0, DateTimeKind.Utc),
+                FeedbackAt = now,
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -128,7 +141,79 @@ public static class SubmissionSeeder
                 ActivityId = ActivitySeeder.AspNetApiTaskId,
                 StudentId = Student(12),
                 Text = "Web API assignment submitted (late).",
-                SubmittedAt = new DateTime(2026, 10, 4, 8, 0, 0, DateTimeKind.Utc),
+                SubmittedAt = now.AddDays(-1),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            // Erik - approved, on time.
+            new()
+            {
+                SubmissionId = ErikConsoleCalculatorSubmissionId,
+                ActivityId = ActivitySeeder.ConsoleCalculatorTaskId,
+                StudentId = UserSeeder.StudentOneId,
+                Text = "Console calculator submitted.",
+                SubmittedAt = now.AddDays(-18),
+                ReviewStatus = SubmissionReviewStatus.Approved,
+                Feedback = "Clean and correct.",
+                FeedbackByTeacherId = UserSeeder.TeacherId,
+                FeedbackAt = now.AddDays(-12),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            // Erik - approved, late.
+            new()
+            {
+                SubmissionId = ErikCollectionsExerciseSubmissionId,
+                ActivityId = ActivitySeeder.CollectionsExerciseTaskId,
+                StudentId = UserSeeder.StudentOneId,
+                Text = "Collections exercise submitted (late).",
+                SubmittedAt = now.AddDays(-7),
+                ReviewStatus = SubmissionReviewStatus.Approved,
+                Feedback = "Late, but the LINQ queries are well done.",
+                FeedbackByTeacherId = UserSeeder.TeacherId,
+                FeedbackAt = now.AddDays(-4),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            // Erik - needs completion, late.
+            new()
+            {
+                SubmissionId = ErikJwtAuthenticationSubmissionId,
+                ActivityId = ActivitySeeder.JwtAuthenticationTaskId,
+                StudentId = UserSeeder.StudentOneId,
+                Text = "JWT authentication submitted (late).",
+                SubmittedAt = now.AddDays(-3),
+                ReviewStatus = SubmissionReviewStatus.NeedsCompletion,
+                Feedback = "Late, and the token isn't validated on every endpoint.",
+                FeedbackByTeacherId = UserSeeder.TeacherId,
+                FeedbackAt = now.AddDays(-1),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            // Erik - not reviewed yet, on time.
+            new()
+            {
+                SubmissionId = ErikIntegrationTestsSubmissionId,
+                ActivityId = ActivitySeeder.IntegrationTestsTaskId,
+                StudentId = UserSeeder.StudentOneId,
+                Text = "Integration tests submitted.",
+                SubmittedAt = now.AddDays(-1),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            // Erik - not reviewed yet, late.
+            new()
+            {
+                SubmissionId = ErikDatabaseMigrationsSubmissionId,
+                ActivityId = ActivitySeeder.DatabaseMigrationsTaskId,
+                StudentId = UserSeeder.StudentOneId,
+                Text = "Migrations submitted (late).",
+                SubmittedAt = now,
                 CreatedAt = now,
                 UpdatedAt = now
             },
