@@ -238,7 +238,7 @@ export default function ModulePage() {
                                         key={resource.resourceId}
                                         resource={resource}
                                         editResource={handleResourceEdit}
-                                        removeResource={handleRemoveResource}
+                                        deleteResource={handleRemoveResource}
                                     />
                                 ),
                             )}
@@ -277,6 +277,7 @@ export default function ModulePage() {
                                         courseName={module.course.name}
                                         editActivity={handleActivityEdit}
                                         deleteActivity={handleRemoveActivity}
+                                        deleteResource={handleRemoveResource}
                                         submission={submissionsByActivityId.get(
                                             activity.activityId,
                                         )}

@@ -57,6 +57,7 @@ export default function ActivityCard({
     onSubmitted?: (submission: SubmissionResponse) => void;
     editActivity: (activityId: string, payload: ActivityRequest) => void;
     deleteActivity: (activityId: string) => void;
+    deleteResource: (resourceId: string) => void;
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [addingSubmission, setAddingSubmission] = useState(false);

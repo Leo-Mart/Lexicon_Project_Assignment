@@ -51,6 +51,18 @@ export const fetchResourcesForModule = async (
     return (await response.json()) as ResourceResponse[];
 };
 
+export const fetchResourcesForActivity = async (
+    activityId: string,
+): Promise<ResourceResponse[]> => {
+    const response = await authFetch(`${API_URL}/activity/${activityId}`);
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch Resources: ${response.status}`);
+    }
+
+    return (await response.json()) as ResourceResponse[];
+};
+
 export const fetchResource = async (id: string): Promise<ResourceResponse> => {
     const response = await authFetch(`${API_URL}/${id}`);
 
