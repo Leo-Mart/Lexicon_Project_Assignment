@@ -35,6 +35,36 @@ public static class ResourceRelationSeeder
                 {
                     CourseId = CourseSeeder.FrontendCourseId,
                     ResourceId = ResourceSeeder.ReactGuideResourceId
+                },
+                new()
+                {
+                    CourseId = CourseSeeder.DotNetCourseId,
+                    ResourceId = ResourceSeeder.CourseSyllabusResourceId
+                },
+                new()
+                {
+                    CourseId = CourseSeeder.DotNetCourseId,
+                    ResourceId = ResourceSeeder.GitGuideResourceId
+                },
+                new()
+                {
+                    CourseId = CourseSeeder.DotNetCourseId,
+                    ResourceId = ResourceSeeder.OopGuideResourceId
+                },
+                new()
+                {
+                    CourseId = CourseSeeder.DotNetCourseId,
+                    ResourceId = ResourceSeeder.AuthenticationGuideResourceId
+                },
+                new()
+                {
+                    CourseId = CourseSeeder.DotNetCourseId,
+                    ResourceId = ResourceSeeder.TestingGuideResourceId
+                },
+                new()
+                {
+                    CourseId = CourseSeeder.DotNetCourseId,
+                    ResourceId = ResourceSeeder.DockerGuideResourceId
                 }
             ];
 
@@ -69,6 +99,31 @@ public static class ResourceRelationSeeder
                 {
                     ModuleId = ModuleSeeder.ReactModuleId,
                     ResourceId = ResourceSeeder.ReactGuideResourceId
+                },
+                new()
+                {
+                    ModuleId = ModuleSeeder.GitModuleId,
+                    ResourceId = ResourceSeeder.GitGuideResourceId
+                },
+                new()
+                {
+                    ModuleId = ModuleSeeder.ObjectOrientedProgrammingModuleId,
+                    ResourceId = ResourceSeeder.OopGuideResourceId
+                },
+                new()
+                {
+                    ModuleId = ModuleSeeder.AuthenticationModuleId,
+                    ResourceId = ResourceSeeder.AuthenticationGuideResourceId
+                },
+                new()
+                {
+                    ModuleId = ModuleSeeder.AutomatedTestingModuleId,
+                    ResourceId = ResourceSeeder.TestingGuideResourceId
+                },
+                new()
+                {
+                    ModuleId = ModuleSeeder.DockerDeploymentModuleId,
+                    ResourceId = ResourceSeeder.DockerGuideResourceId
                 }
             ];
 

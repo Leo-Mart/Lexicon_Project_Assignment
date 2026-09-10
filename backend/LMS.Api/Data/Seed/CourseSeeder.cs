@@ -30,7 +30,7 @@ public static class CourseSeeder
                 CourseId = DotNetCourseId,
                 Name = "C# and .NET Development",
                 Description = "Backend development with C#, .NET, ASP.NET Core and Entity Framework Core.",
-                StartDate = today.AddDays(-30),
+                StartDate = today.AddDays(-65),
                 EndDate = today.AddDays(150),
                 CreatedAt = now,
                 UpdatedAt = now
