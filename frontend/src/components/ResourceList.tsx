@@ -9,6 +9,11 @@ const ResourceList = () => {
     const [resources, setResources] = useState<ResourceResponse[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [sortBy, setSortBy] = useState("name-asc");
+
+    const handleSortChange = (value: string) => {
+        setSortBy(value);
+    };
 
     useEffect(() => {
         const fetchAllResources = async () => {
@@ -64,9 +69,9 @@ const ResourceList = () => {
                 items={resources}
                 columns={resourceColumns}
                 getKey={(resource) => resource.resourceId}
-                sortBy=""
+                sortBy={sortBy}
                 isLoading={loading}
-                onSortChange={() => {}}
+                onSortChange={handleSortChange}
             />
         </div>
     );
