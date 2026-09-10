@@ -36,13 +36,12 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 setName(user.name);
                 setRole(user.roles[0] ?? null);
 
-
-            if (userRole === "Student") {
-                const course = await fetchStudentCourse();
-                setCourseId(course.courseId);
-            } else {
-                setCourseId(null);
-            }
+                if (userRole === "Student") {
+                    const course = await fetchStudentCourse();
+                    setCourseId(course.courseId);
+                } else {
+                    setCourseId(null);
+                }
             }
 
             setIsLoading(false);
