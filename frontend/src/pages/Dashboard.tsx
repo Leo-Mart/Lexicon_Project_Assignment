@@ -19,8 +19,8 @@ export default function Dashboard() {
     const [activeTab, setActiveTab] = useState(1);
     return (
         <div className="bg-bg flex dark:bg-bg-dark min-h-screen p-10">
-            <nav className="flex flex-col w-1/7 mr-3">
-                <ul className="flex flex-col gap-5">
+            <nav className="flex flex-col w-1/7 pr-3">
+                <ul className="flex flex-col gap-5 border-4 border-accent-teacher rounded-lg p-3 h-fit">
                     {tabs.map((tab, index) => {
                         return (
                             <li key={index}>
