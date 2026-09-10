@@ -7,8 +7,7 @@ export default function MainHeader() {
     // Filter routes that should appear in the header
 
     const { isAuthenticated, role, courseId } = useAuth();
-    const homePath =
-        role === "Student" && courseId ? `/courses/${courseId}` : "/index";
+    const homePath = `/courses/${courseId}`;
 
     const headerRoutes = routes.filter((route) => {
         if (!route.createHeader) {
@@ -40,7 +39,7 @@ export default function MainHeader() {
             role="navigation"
         >
             <ul className="flex gap-5 text-3xl">
-                {isAuthenticated && (
+                {isAuthenticated && role === "Student" && courseId && (
                     <li>
                         <NavLink to={homePath}>Home</NavLink>
                     </li>
