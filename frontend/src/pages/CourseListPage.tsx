@@ -5,10 +5,13 @@ import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import { fetchCourses } from "../services/courseService";
 import { deleteCourse } from "../services/courseService";
 import ModalCreateResource from "../components/ModalCreateResource";
-import CourseTable from "../components/CourseTable";
 import { createPortal } from "react-dom";
 import type { SortOption } from "../types/SortOption";
 import TableToolbar from "../components/TableToolbar";
+import DataTable from "../components/DataTable";
+import type { Column } from "../types/Column";
+import { Link } from "react-router-dom";
+import Button from "../components/Button";
 
 const COURSES_SORT_OPTIONS: SortOption[] = [
     { value: "name-asc", label: "Name A-Z" },
@@ -134,6 +137,61 @@ export default function CourseListPage() {
         }
     }
 
+    const courseColumns: Column<CourseResponse>[] = [
+        {
+            key: "name",
+            field: "name",
+            header: "Name",
+            render: (course) => (
+                <Link
+                    className="font-bold underline text-buttons text-lg"
+                    to={`/courses/${course.courseId}`}
+                >
+                    {course.name}
+                </Link>
+            ),
+        },
+        {
+            key: "description",
+            field: "description",
+            header: "Description",
+            render: (course) => course.description,
+        },
+        {
+            key: "startDate",
+            field: "startDate",
+            header: "Start date",
+            render: (course) => course.startDate,
+        },
+        {
+            key: "endDate",
+            field: "endDate",
+            header: "End date",
+            render: (course) => course.endDate,
+        },
+        {
+            key: "actions",
+            header: "Interact",
+            className: "whitespace-nowrap",
+            render: (course) => (
+                <div className="flex items-center gap-2">
+                    <Button onClick={() => handleShowCourseModal(course)}>
+                        Update
+                    </Button>
+                    <Button onClick={() => setResourceTarget(course)}>
+                        Create Resource
+                    </Button>
+                    <Button
+                        variant="cancel"
+                        onClick={() => handleDelete(course)}
+                    >
+                        Delete
+                    </Button>
+                </div>
+            ),
+        },
+    ];
+
     if (error)
         return <div className="text-red-500 text-4xl">Error: {error}</div>;
     if (isFirstLoad) return <p>Loading...</p>;
@@ -179,17 +237,14 @@ export default function CourseListPage() {
                         document.getElementById("root")!,
                     )}
             </div>
-            <div className="bg-bg dark:bg-bg-dark border rounded m-3">
-                <CourseTable
-                    courses={courses}
-                    sortBy={sortBy}
-                    isLoading={loading}
-                    onSortChange={handleSortChange}
-                    onUpdate={handleShowCourseModal}
-                    onCreateResource={(course) => setResourceTarget(course)}
-                    onDelete={handleDelete}
-                />
-            </div>
+            <DataTable
+                items={courses}
+                columns={courseColumns}
+                getKey={(course) => course.courseId}
+                sortBy={sortBy}
+                isLoading={loading}
+                onSortChange={handleSortChange}
+            />
         </>
     );
 }
