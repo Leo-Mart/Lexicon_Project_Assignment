@@ -6,7 +6,6 @@ import {
     updateUser,
     deleteUser,
 } from "../services/userService";
-import UsersTable from "../components/UsersTable";
 import type { QueryParameters } from "../interfaces/common/QueryParameters";
 import Pagination from "../components/Pagination";
 import ModalWrapper from "../components/ModalWrapper";
@@ -24,6 +23,14 @@ import AssignCourseForm from "../components/AssignCourseForm";
 import type { UserFormValues } from "../components/UserForm";
 import type { SortOption } from "../types/SortOption";
 import TableToolbar from "../components/TableToolbar";
+import DataTable from "../components/DataTable";
+import type { Column } from "../types/Column";
+import UserBadge from "../components/UserBadge";
+import Button from "../components/Button";
+import {
+    UserStatus,
+    type UserStatus as UserStatusType,
+} from "../constants/UserConstant";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 20;
@@ -164,6 +171,77 @@ export default function Users() {
         }
     };
 
+    const userColumns: Column<UserWithCourseResponse>[] = [
+        {
+            key: "name",
+            field: "name",
+            render: (user) => user.name,
+            header: "",
+        },
+        {
+            key: "email",
+            field: "email",
+            render: (user) => user.email,
+            header: "",
+        },
+        {
+            key: "status",
+            field: "status",
+            render: (user) => getUserStatusName(user.status),
+            header: "",
+        },
+        {
+            key: "role",
+            field: "role",
+            render: (user) => <UserBadge role={user.role} />,
+            header: "",
+        },
+        {
+            key: "course",
+            field: "course",
+            render: (user) => user.courseName ?? "Not assigned",
+            header: "",
+        },
+        {
+            key: "actions",
+            render: (user) => (
+                <div className="flex gap-2">
+                    <Button onClick={() => handleEdit(user)}>Edit</Button>
+                    <Button variant="cancel" onClick={() => handleDelete(user)}>
+                        Delete
+                    </Button>
+                    {user.role === "Student" && !user.courseId && (
+                        <Button onClick={() => handleAssignCourseClick(user)}>
+                            Assign course
+                        </Button>
+                    )}
+                </div>
+            ),
+            header: "",
+        },
+    ];
+
+    const getUserStatusName = (status: UserStatusType): string => {
+        return (
+            Object.entries(UserStatus).find(
+                ([, value]) => value === status,
+            )?.[0] ?? "Unknown"
+        );
+    };
+
+    const handleEdit = (user: UserWithCourseResponse) => {
+        setEditingUser(user);
+    };
+
+    const handleDelete = (user: UserWithCourseResponse) => {
+        setUserToDelete(user);
+    };
+
+    const handleAssignCourseClick = (user: UserWithCourseResponse) => {
+        setAssignCourseError(undefined);
+        setAssigningUser(user);
+    };
+
     useEffect(() => {
         const loadUsers = async () => {
             setLoading(true);
@@ -231,33 +309,13 @@ export default function Users() {
                 }}
             />
 
-            <UsersTable
-                users={users}
+            <DataTable
+                items={users}
+                columns={userColumns}
+                getKey={(user) => user.id}
                 sortBy={sortBy}
                 isLoading={loading}
                 onSortChange={handleSortChange}
-                onEdit={(id) => {
-                    const user = users.find((user) => user.id === id);
-
-                    if (user) {
-                        setEditingUser(user);
-                    }
-                }}
-                onDelete={(id) => {
-                    const user = users.find((user) => user.id === id);
-
-                    if (user) {
-                        setUserToDelete(user);
-                    }
-                }}
-                onAssignCourse={(id) => {
-                    const user = users.find((user) => user.id === id);
-
-                    if (user) {
-                        setAssignCourseError(undefined);
-                        setAssigningUser(user);
-                    }
-                }}
             />
 
             <Pagination

@@ -160,7 +160,6 @@ export default function CourseListPage() {
                         label: "Add course",
                         onAdd: () => handleShowCourseModal(newCourse),
                     }}
-                    /* addAction={handleShowCourseModal(newCourse)} */
                 />
                 {isCourseModalVisible && (
                     <CourseModal
