@@ -132,7 +132,14 @@ export default function CourseListPage() {
     return (
         <>
             <div className="m-3 flex justify-between">
-                <h1 className="text-3xl font-bold px-3 pb-3 text-center bg-bg-header dark:bg-bg-header-dark text-white dark:text-text-light w-50">
+                <input
+                    type="search"
+                    /* value={search}
+                    onChange={(event) => onSearchChange(event.target.value)} */
+                    placeholder="Search ..."
+                    className="bg-slate-700 text-white placeholder:text-slate-400 border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
+                />
+                <h1 className="text-3xl rounded-lg font-bold px-3 pb-3 text-center bg-bg-header dark:bg-bg-header-dark text-white dark:text-text-light w-50">
                     Courses
                 </h1>
                 <Button
