@@ -232,20 +232,16 @@ export default function ModulePage() {
                     </div>
                     {moduleResources?.length ? (
                         <div className="mt-5">
-                            <ul className="flex flex-col gap-2">
-                                {moduleResources.map(
-                                    (resource: ResourceResponse) => (
-                                        <ResourceCard
-                                            key={resource.resourceId}
-                                            resource={resource}
-                                            editResource={handleResourceEdit}
-                                            removeResource={
-                                                handleRemoveResource
-                                            }
-                                        />
-                                    ),
-                                )}
-                            </ul>
+                            {moduleResources.map(
+                                (resource: ResourceResponse) => (
+                                    <ResourceCard
+                                        key={resource.resourceId}
+                                        resource={resource}
+                                        editResource={handleResourceEdit}
+                                        removeResource={handleRemoveResource}
+                                    />
+                                ),
+                            )}
                         </div>
                     ) : (
                         "Module has no activities"

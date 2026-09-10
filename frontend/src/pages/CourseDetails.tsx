@@ -3,16 +3,25 @@ import { fetchCourse } from "../services/courseService";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import Button from "../components/Button";
 import type { ResourceResponse } from "../interfaces/resource/ResourceResponse";
-import { fetchResourcesForCourse } from "../services/resourceService";
+import {
+    addResourceToCourse,
+    createResource,
+    deleteResource,
+    fetchResourcesForCourse,
+    updateResource,
+} from "../services/resourceService";
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { createPortal } from "react-dom";
-import ModalCreateResource from "../components/ModalCreateResource";
 import ModalCreateModule from "../components/ModalCreateModule";
 import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 import { fetchUsersForCourse } from "../services/enrollmentService";
 import type { EnrollmentUserResponse } from "../interfaces/enrollment/EnrollmentUserResponse";
 import { UserStatus } from "../constants/UserConstant";
+import ResourceCard from "../components/ResourceCard";
+import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
+import FormModal from "../components/FormModal";
+import { createResourceFormConfig } from "../types/formSchemas";
 
 export default function CoursesDetails() {
     const { courseId } = useParams<{ courseId: string }>();
@@ -49,8 +58,7 @@ export default function CoursesDetails() {
             status: UserStatus.Inactive,
         },
     };
-    const [showCreateResourceModal, setShowCreateResourceModal] =
-        useState(false);
+    const [showCreateResourceForm, setShowCreateResourceForm] = useState(false);
     const [showCreateModuleModal, setShowCreateModuleModal] = useState(false);
 
     const [course, setCourse] = useState<CourseResponse>(newCourse);
@@ -130,6 +138,34 @@ export default function CoursesDetails() {
         fetchAllUsersForCourse();
     }, [courseId]);
 
+    const handleResourceEdit = async (
+        resourceId: string,
+        payload: ResourceRequest,
+    ) => {
+        await updateResource(resourceId, payload);
+        const updatedResources: ResourceResponse[] = resources!.map(
+            (resource) => {
+                if (resource.resourceId === resourceId) {
+                    resource.name = payload.name;
+                    resource.description = payload.description;
+                    resource.content = payload.content;
+                    resource.uri = payload.uri ?? undefined;
+
+                    return resource;
+                } else {
+                    return resource;
+                }
+            },
+        );
+        setResources(updatedResources);
+    };
+    const handleRemoveResource = async (resourceId: string) => {
+        await deleteResource(resourceId);
+        setResources(
+            resources!.filter((resource) => resource.resourceId !== resourceId),
+        );
+    };
+
     // RENDER
     if (loading) return <p>Loading...</p>;
 
@@ -156,15 +192,33 @@ export default function CoursesDetails() {
                         {course.startDate} - {course.endDate}
                     </p>
                 </div>
-                <div className="">
-                    <h2 className="font-bold">Course resources: </h2>
-                    {resources.map((resource) => (
-                        <li className="p-3" key={resource.resourceId}>
-                            <a className="underline" href={resource.uri}>
-                                {resource.name}
-                            </a>
-                        </li>
-                    ))}
+                <div className="flex flex-col items-center bg-buttons p-2 m-2 rounded-md">
+                    <div className="flex w-full text-text-light">
+                        <h2 className="font-bold grow text-center">
+                            Course resources:{" "}
+                        </h2>
+                        {isAuthenticated && role === "Teacher" ? (
+                            <button
+                                className="rounded-md p-2 w-10 bg-buttons border-text-light justify-self-end border hover:cursor-pointer"
+                                onClick={() => setShowCreateResourceForm(true)}
+                            >
+                                +
+                            </button>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="w-1/2">
+                        {resources.map((resource) => (
+                            <>
+                                <ResourceCard
+                                    resource={resource}
+                                    removeResource={handleRemoveResource}
+                                    editResource={handleResourceEdit}
+                                />
+                            </>
+                        ))}
+                    </div>
                 </div>
                 <div className="">
                     <h2 className="font-bold">
@@ -198,12 +252,6 @@ export default function CoursesDetails() {
                         <div className="flex gap-3 justify-center">
                             <Button
                                 className="hover:cursor-pointer"
-                                onClick={() => setShowCreateResourceModal(true)}
-                            >
-                                Create resource
-                            </Button>
-                            <Button
-                                className="hover:cursor-pointer"
                                 onClick={() => setShowCreateModuleModal(true)}
                             >
                                 Create new module
@@ -213,16 +261,26 @@ export default function CoursesDetails() {
                 ) : (
                     ""
                 )}
-                {showCreateResourceModal &&
-                    createPortal(
-                        <ModalCreateResource
-                            open={showCreateResourceModal}
-                            entityId={course.courseId}
-                            createFor="course"
-                            onClose={() => setShowCreateResourceModal(false)}
-                        />,
-                        document.getElementById("root")!,
-                    )}
+                {showCreateResourceForm && (
+                    <FormModal
+                        config={createResourceFormConfig}
+                        initialValue={{
+                            name: "",
+                            description: "",
+                            content: "",
+                            uri: undefined,
+                        }}
+                        onSave={async (data) => {
+                            const resp = await createResource(data);
+                            await addResourceToCourse(
+                                resp.resourceId,
+                                course.courseId,
+                            );
+                            setResources([...resources!, resp]);
+                        }}
+                        onClose={() => setShowCreateResourceForm(false)}
+                    />
+                )}
                 {showCreateModuleModal &&
                     createPortal(
                         <ModalCreateModule

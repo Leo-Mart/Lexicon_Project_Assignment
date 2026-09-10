@@ -8,6 +8,7 @@ import { deleteCourse } from "../services/courseService";
 import ModalCreateResource from "../components/ModalCreateResource";
 import CourseTable from "../components/CourseTable";
 import { createPortal } from "react-dom";
+import TableSearchBar from "../components/TableSearchBar";
 
 export default function CourseListPage() {
     // STATE
@@ -24,6 +25,7 @@ export default function CourseListPage() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
+    const [search, setSearch] = useState("");
     const [isCourseModalVisible, setIsCourseModalVisible] = useState(false);
     const [resourceTarget, setResourceTarget] = useState<CourseResponse | null>(
         null,
@@ -34,6 +36,10 @@ export default function CourseListPage() {
 
     const handleSortChange = (value: string) => {
         setSortBy(value);
+    };
+
+    const handleSearchChange = (value: string) => {
+        setSearch(value);
     };
 
     const handleSubmitCourseModal = (returnData: CourseResponse) => {
@@ -74,7 +80,7 @@ export default function CourseListPage() {
                 const [sortField, sortDirection = "asc"] = sortBy.split("-");
 
                 const courseData = await fetchCourses({
-                    search: "",
+                    search,
                     sortBy: sortField,
                     direction: sortDirection,
                     page: 1,
@@ -94,7 +100,7 @@ export default function CourseListPage() {
         };
 
         fetchAllCourses();
-    }, [sortBy]);
+    }, [search, sortBy]);
 
     // DELETE
     async function handleDelete(course: CourseResponse) {
@@ -113,7 +119,7 @@ export default function CourseListPage() {
             // Filter the deleted course from state
             setCourses(courses!.filter((c) => c.courseId !== course.courseId));
         } catch (error) {
-            console.error("Fel vid radering:", error);
+            console.error("Error on render:", error);
         }
     }
 
@@ -131,11 +137,15 @@ export default function CourseListPage() {
 
     return (
         <>
-            <div className="m-3 flex justify-end">
-                <Button
-                    onClick={() => handleShowCourseModal(newCourse)}
-                    className=""
-                >
+            <div className="m-3 flex justify-between">
+                <TableSearchBar
+                    search={search}
+                    onSearchChange={handleSearchChange}
+                />
+                <h1 className="text-3xl rounded-lg font-bold px-3 pb-3 text-center bg-bg-header dark:bg-bg-header-dark text-white dark:text-text-light w-50">
+                    Courses
+                </h1>
+                <Button onClick={() => handleShowCourseModal(newCourse)}>
                     Create course
                 </Button>
                 {isCourseModalVisible && (
@@ -157,9 +167,6 @@ export default function CourseListPage() {
                     )}
             </div>
             <div className="bg-bg dark:bg-bg-dark border rounded m-3">
-                <h1 className="text-3xl font-bold px-3 pb-3 text-center bg-bg-header dark:bg-bg-header-dark text-white dark:text-text-light">
-                    Courses
-                </h1>
                 <CourseTable
                     courses={courses}
                     sortBy={sortBy}

@@ -7,6 +7,7 @@ import {
 } from "../constants/UserConstant";
 
 interface UserTableRowProps {
+    index: number;
     user: UserWithCourseResponse;
     onEdit: (id: string) => void;
     onDelete: (id: string) => void;
@@ -14,13 +15,20 @@ interface UserTableRowProps {
 }
 
 export default function UserTableRow({
+    index,
     user,
     onEdit,
     onDelete,
     onAssignCourse,
 }: UserTableRowProps) {
     return (
-        <tr className="border-t border-gray-700  text-text-dark hover:bg-gray-700/40">
+        <tr
+            className={
+                index % 2 === 0
+                    ? "bg-white dark:bg-bg-window-dark text-text-dark"
+                    : "bg-bg dark:bg-bg-dark text-text-dark"
+            }
+        >
             <td className="px-4 py-3">{user.name}</td>
             <td>{user.email}</td>
             <td>{getUserStatusName(user.status)}</td>
