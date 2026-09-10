@@ -146,6 +146,51 @@ public static class ResourceRelationSeeder
                 },
                 new()
                 {
+                    ActivityId = ActivitySeeder.AspNetCoreLectureId,
+                    ResourceId = ResourceSeeder.AspNetDocumentationResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.AspNetCorePracticeId,
+                    ResourceId = ResourceSeeder.AspNetDocumentationResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.AspNetCoreAuthLectureId,
+                    ResourceId = ResourceSeeder.AuthenticationGuideResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.AspNetCoreAuthLectureId,
+                    ResourceId = ResourceSeeder.JwtGuideResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.AspNetCoreValidationLectureId,
+                    ResourceId = ResourceSeeder.ModelValidationGuideResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.AspNetCoreLoggingLectureId,
+                    ResourceId = ResourceSeeder.LoggingGuideResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.AspNetCorePaginationLectureId,
+                    ResourceId = ResourceSeeder.PaginationGuideResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.AspNetCoreTestingLectureId,
+                    ResourceId = ResourceSeeder.IntegrationTestingGuideResourceId
+                },
+                new()
+                {
+                    ActivityId = ActivitySeeder.AspNetCoreTestingLectureId,
+                    ResourceId = ResourceSeeder.TestingGuideResourceId
+                },
+                new()
+                {
                     ActivityId = ActivitySeeder.AspNetApiTaskId,
                     ResourceId = ResourceSeeder.AspNetDocumentationResourceId
                 },
