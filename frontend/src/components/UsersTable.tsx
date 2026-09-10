@@ -66,8 +66,9 @@ export default function UsersTable({
                 </thead>
 
                 <tbody>
-                    {users.map((user) => (
+                    {users.map((user, index) => (
                         <UserTableRow
+                            index={index}
                             key={user.id}
                             user={user}
                             onEdit={onEdit}
