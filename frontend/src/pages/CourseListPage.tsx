@@ -25,6 +25,7 @@ export default function CourseListPage() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
+    const [search, setSearch] = useState("");
     const [isCourseModalVisible, setIsCourseModalVisible] = useState(false);
     const [resourceTarget, setResourceTarget] = useState<CourseResponse | null>(
         null,
@@ -35,6 +36,10 @@ export default function CourseListPage() {
 
     const handleSortChange = (value: string) => {
         setSortBy(value);
+    };
+
+    const handleSearchChange = (value: string) => {
+        setSearch(value);
     };
 
     const handleSubmitCourseModal = (returnData: CourseResponse) => {
@@ -75,7 +80,7 @@ export default function CourseListPage() {
                 const [sortField, sortDirection = "asc"] = sortBy.split("-");
 
                 const courseData = await fetchCourses({
-                    search: "",
+                    search,
                     sortBy: sortField,
                     direction: sortDirection,
                     page: 1,
@@ -95,7 +100,7 @@ export default function CourseListPage() {
         };
 
         fetchAllCourses();
-    }, [sortBy]);
+    }, [search, sortBy]);
 
     // DELETE
     async function handleDelete(course: CourseResponse) {
