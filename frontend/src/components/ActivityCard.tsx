@@ -190,15 +190,16 @@ export default function ActivityCard({
                         >
                             ▾
                         </span>
+                        <h3 className="font-bold text-l bg-bg-window text-text-dark p-1.5 rounded">
+                            {ActivityTypeNames[activity.type]}
+                        </h3>
                         <h2 className="font-bold text-xl">{activity.name}</h2>
                     </div>
-                    <h3 className="font-bold text-l bg-bg-window text-text-dark p-1.5 rounded justify-self-center">
-                        {ActivityTypeNames[activity.type]}
-                    </h3>
+                    <div />
                     <div className="flex flex-row justify-end items-center gap-2 justify-self-end">
                         {cornerBadge && (
                             <span
-                                className={`text-xs font-bold px-2 py-1 rounded ${cornerBadge.color} ${cornerBadge.textColor}`}
+                                className={`text-sm font-bold px-3 py-1.5 rounded ${cornerBadge.color} ${cornerBadge.textColor}`}
                             >
                                 {cornerBadge.text}
                             </span>
@@ -259,50 +260,56 @@ export default function ActivityCard({
                                 </div>
                             )}
                         </div>
-                        {isStudent &&
-                            isSubmittable &&
-                            hasStarted &&
-                            !submission && (
-                                <Button
-                                    variant="primary"
-                                    onClick={() => setAddingSubmission(true)}
-                                >
-                                    Add submission
-                                </Button>
-                            )}
-                        {isStudent &&
-                            isSubmittable &&
-                            hasStarted &&
-                            submission && (
-                                <div className="flex gap-2">
-                                    <Button
-                                        variant="primary"
-                                        onClick={() =>
-                                            setViewingSubmission(true)
-                                        }
-                                    >
-                                        View submission
-                                    </Button>
-                                    {submission.reviewStatus ===
-                                        SubmissionReviewStatus.NeedsCompletion && (
+                        <div className="flex flex-row justify-between items-center p-2">
+                            <div className="flex gap-2">
+                                {isStudent &&
+                                    isSubmittable &&
+                                    hasStarted &&
+                                    !submission && (
                                         <Button
                                             variant="primary"
                                             onClick={() =>
-                                                setResubmitting(true)
+                                                setAddingSubmission(true)
                                             }
                                         >
-                                            Resubmit
+                                            Add submission
                                         </Button>
                                     )}
-                                </div>
-                            )}
-                        <Button
-                            variant="confirm"
-                            className="m-2 hover:cursor-pointer"
-                            onClick={() => setShowDetailsModal(true)}
-                        >
-                            More info
-                        </Button>
+                                {isStudent &&
+                                    isSubmittable &&
+                                    hasStarted &&
+                                    submission && (
+                                        <>
+                                            <Button
+                                                variant="primary"
+                                                onClick={() =>
+                                                    setViewingSubmission(true)
+                                                }
+                                            >
+                                                View submission
+                                            </Button>
+                                            {submission.reviewStatus ===
+                                                SubmissionReviewStatus.NeedsCompletion && (
+                                                <Button
+                                                    variant="primary"
+                                                    onClick={() =>
+                                                        setResubmitting(true)
+                                                    }
+                                                >
+                                                    Resubmit
+                                                </Button>
+                                            )}
+                                        </>
+                                    )}
+                            </div>
+                            <Button
+                                variant="confirm"
+                                className="hover:cursor-pointer"
+                                onClick={() => setShowDetailsModal(true)}
+                            >
+                                More info
+                            </Button>
+                        </div>
                     </div>
                 )}
             </div>
