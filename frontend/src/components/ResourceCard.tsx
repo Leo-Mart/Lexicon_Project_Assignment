@@ -10,13 +10,13 @@ import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
 interface ResourceCardProps {
     resource: ResourceResponse;
     editResource: (resourceId: string, payload: ResourceRequest) => void;
-    removeResource: (resourceId: string) => void;
+    deleteResource: (resourceId: string) => void;
 }
 
 const ResourceCard = ({
     resource,
     editResource,
-    removeResource,
+    deleteResource,
 }: ResourceCardProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -68,12 +68,6 @@ const ResourceCard = ({
                             ) : (
                                 ""
                             )}
-                            <button
-                                className="border-2 border-bg-header-dark dark:text-text-light p-1"
-                                onClick={() => setIsExpanded(!isExpanded)}
-                            >
-                                {isExpanded ? "Show Less" : "Show More"}
-                            </button>
                         </div>
                     </div>
                     {isExpanded && (
@@ -110,7 +104,7 @@ const ResourceCard = ({
                         title="Delete Resource"
                         message={`Are you sure you want to delete the resource: ${resource.name}`}
                         onCancel={() => setConfirmDeleteOpen(false)}
-                        onConfirm={() => removeResource(resource.resourceId)}
+                        onConfirm={() => deleteResource(resource.resourceId)}
                     />
                 )}
                 {showEditResourceForm && (
