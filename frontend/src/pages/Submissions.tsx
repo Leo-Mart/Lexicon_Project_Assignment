@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Button from "../components/Button";
 import Pagination from "../components/Pagination";
+import SortableTh from "../components/SortableTableHead";
 import ReviewSubmissionModal from "../components/ReviewSubmissionModal";
 import {
     fetchAllSubmissions,
@@ -16,19 +18,11 @@ import { useAuth } from "../hooks/useAuth";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import type { OverdueSubmission } from "../interfaces/submission/OverdueSubmission";
 import type { FeedbackRequest } from "../interfaces/submission/FeedbackRequest";
-import { SubmissionReviewStatusNames } from "../constants/SubmissionReviewStatus";
+import { SubmissionReviewStatus } from "../constants/SubmissionReviewStatus";
 
 const PAGE_SIZE = 10;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-type SortOption = "not-reviewed-first" | "student" | "course" | "late-first";
-
-const sortOptions: { value: SortOption; label: string }[] = [
-    { value: "not-reviewed-first", label: "Not reviewed first" },
-    { value: "late-first", label: "Submitted late first" },
-    { value: "student", label: "Student name" },
-    { value: "course", label: "Course name" },
-];
+const DEFAULT_SORT = "review-asc";
 
 // How many whole days ago a deadline passed. Only meaningful once it's past.
 const daysOverdue = (deadline: string): number =>
@@ -44,6 +38,9 @@ export default function Submissions() {
     const [courseNameByModuleId, setCourseNameByModuleId] = useState<
         Map<string, string>
     >(new Map());
+    const [courseIdByModuleId, setCourseIdByModuleId] = useState<
+        Map<string, string>
+    >(new Map());
     const [studentNameById, setStudentNameById] = useState<Map<string, string>>(
         new Map(),
     );
@@ -55,10 +52,12 @@ export default function Submissions() {
     >(new Map());
     const [loading, setLoading] = useState(true);
     const [reviewing, setReviewing] = useState<SubmissionResponse | null>(null);
-    const [sortBy, setSortBy] = useState<SortOption>("not-reviewed-first");
+    const [sortBy, setSortBy] = useState(DEFAULT_SORT);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
-    const [tab, setTab] = useState<"submitted" | "overdue">("submitted");
+    const [tab, setTab] = useState<
+        "not-reviewed" | "overdue" | "needs-completion" | "done"
+    >("not-reviewed");
 
     // The Submissions tab's table: one page at a time, searched/sorted on
     // the server. Separate from `submissions` above, which stays a full
@@ -71,9 +70,11 @@ export default function Submissions() {
 
     // Per-activity overdue view: a different concept from a submission, so
     // it's its own type/fetch, not a filter over SubmissionResponse[].
-    // Fetched eagerly for every activity so the summary bar and the picker's
-    // warning markers are ready before the Overdue tab is even opened.
-    const [overdueViewActivityId, setOverdueViewActivityId] = useState("");
+    // Fetched eagerly for every activity so the summary bar is ready before
+    // the Overdue tab is even opened.
+    // Ascending deadline puts the most overdue (earliest deadline) first.
+    const [overdueSortBy, setOverdueSortBy] = useState("deadline-asc");
+    const [overduePage, setOverduePage] = useState(1);
     const [overdueByActivity, setOverdueByActivity] = useState<
         Map<string, OverdueSubmission[]>
     >(new Map());
@@ -117,6 +118,13 @@ export default function Submissions() {
                     ),
                 ),
             );
+            setCourseIdByModuleId(
+                new Map(
+                    courses.items.flatMap((c) =>
+                        c.modules.map((m) => [m.moduleId, c.courseId] as const),
+                    ),
+                ),
+            );
 
             setLoading(false);
         };
@@ -124,19 +132,35 @@ export default function Submissions() {
         void load();
     }, [role]);
 
+    // Bumped after a review is saved to force the page below to re-fetch, so
+    // a submission that no longer matches the current tab's filter (e.g.
+    // reviewed while on Not reviewed) drops out instead of lingering until
+    // the next navigation.
+    const [reloadToken, setReloadToken] = useState(0);
+
     useEffect(() => {
-        if (role !== "Teacher") return;
+        if (role !== "Teacher" || tab === "overdue") return;
 
         const loadPage = async () => {
             setTableLoading(true);
 
-            const data = await fetchSubmissionsPage({
-                search,
-                sortBy,
-                direction: "asc",
-                page,
-                pageSize: PAGE_SIZE,
-            });
+            const [sortField, sortDirection = "asc"] = sortBy.split("-");
+            const reviewStatus =
+                tab === "needs-completion"
+                    ? SubmissionReviewStatus.NeedsCompletion
+                    : tab === "done"
+                      ? SubmissionReviewStatus.Approved
+                      : undefined;
+            const data = await fetchSubmissionsPage(
+                {
+                    search,
+                    sortBy: sortField,
+                    direction: sortDirection,
+                    page,
+                    pageSize: PAGE_SIZE,
+                },
+                reviewStatus,
+            );
 
             setPagedSubmissions(data.items);
             setTotalCount(data.totalCount);
@@ -144,7 +168,7 @@ export default function Submissions() {
         };
 
         void loadPage();
-    }, [role, sortBy, search, page]);
+    }, [role, tab, sortBy, search, page, reloadToken]);
 
     // Overdue students for every activity, so the picker can flag which ones
     // need attention and the summary bar/"All activities" need no extra fetch.
@@ -168,6 +192,21 @@ export default function Submissions() {
         void check();
     }, [overdueChecked, activityNameById]);
 
+    const handleSortChange = (value: string) => {
+        setSortBy(value);
+        setPage(1);
+    };
+
+    const handleTabChange = (value: typeof tab) => {
+        setTab(value);
+        setPage(1);
+    };
+
+    const handleOverdueSortChange = (value: string) => {
+        setOverdueSortBy(value);
+        setOverduePage(1);
+    };
+
     const handleReview = async (data: FeedbackRequest) => {
         if (!reviewing) return;
 
@@ -178,11 +217,7 @@ export default function Submissions() {
                 s.submissionId === updated.submissionId ? updated : s,
             ),
         );
-        setPagedSubmissions((prev) =>
-            prev.map((s) =>
-                s.submissionId === updated.submissionId ? updated : s,
-            ),
-        );
+        setReloadToken((t) => t + 1);
         setReviewing(null);
     };
 
@@ -200,22 +235,27 @@ export default function Submissions() {
         const moduleId = activityModuleById.get(activityId);
         return (moduleId && courseNameByModuleId.get(moduleId)) ?? "";
     };
+    const courseIdForActivity = (activityId: string) => {
+        const moduleId = activityModuleById.get(activityId);
+        return moduleId ? courseIdByModuleId.get(moduleId) : undefined;
+    };
     const courseName = (s: SubmissionResponse) =>
         courseNameForActivity(s.activityId);
     const studentName = (s: SubmissionResponse) =>
         studentNameById.get(s.studentId) ?? s.studentId;
-    const submittedCountFor = (activityId: string) =>
-        submissions.filter((s) => s.activityId === activityId).length;
 
     const totalOverdue = [...overdueByActivity.values()].reduce(
         (sum, list) => sum + list.length,
         0,
     );
-    const activitiesWithOverdue = [...overdueByActivity.values()].filter(
-        (list) => list.length > 0,
-    ).length;
     const notReviewedCount = submissions.filter(
         (s) => s.reviewStatus == null,
+    ).length;
+    const needsCompletionCount = submissions.filter(
+        (s) => s.reviewStatus === SubmissionReviewStatus.NeedsCompletion,
+    ).length;
+    const doneCount = submissions.filter(
+        (s) => s.reviewStatus === SubmissionReviewStatus.Approved,
     ).length;
 
     return (
@@ -223,100 +263,114 @@ export default function Submissions() {
             <h1 className="text-2xl font-bold text-text-dark dark:text-text-light mb-2">
                 Submissions
             </h1>
-            <p className="text-text-dark dark:text-text-light mb-4">
-                {submissions.length} submission
-                {submissions.length === 1 ? "" : "s"} total, {notReviewedCount}{" "}
-                not reviewed
-                {overdueChecked && (
-                    <>
-                        ,{" "}
-                        <span
-                            className={
-                                totalOverdue > 0 ? "text-red-500 font-bold" : ""
-                            }
-                        >
-                            {totalOverdue} overdue
-                        </span>{" "}
-                        across {activitiesWithOverdue} activit
-                        {activitiesWithOverdue === 1 ? "y" : "ies"}
-                    </>
-                )}
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div className="flex items-center gap-3">
+                    <input
+                        id="student-search"
+                        type="search"
+                        aria-label="Search for student"
+                        placeholder="Search for student..."
+                        className="bg-slate-700 text-white placeholder:text-slate-400 border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
+                        value={search}
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                            setPage(1);
+                            setOverduePage(1);
+                        }}
+                    />
+                </div>
 
-            <div className="flex gap-2 mb-4">
-                <Button
-                    variant="primary"
-                    className={tab === "submitted" ? "bg-accent-blue" : ""}
-                    onClick={() => setTab("submitted")}
-                >
-                    Submissions
-                </Button>
-                <Button
-                    variant="primary"
-                    className={tab === "overdue" ? "bg-accent-blue" : ""}
-                    onClick={() => setTab("overdue")}
-                >
-                    Overdue
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                        variant="primary"
+                        className={
+                            tab === "not-reviewed" ? "bg-accent-blue" : ""
+                        }
+                        onClick={() => handleTabChange("not-reviewed")}
+                    >
+                        Not reviewed
+                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
+                            {notReviewedCount}
+                        </span>
+                    </Button>
+                    <Button
+                        variant="primary"
+                        className={tab === "overdue" ? "bg-accent-blue" : ""}
+                        onClick={() => handleTabChange("overdue")}
+                    >
+                        Overdue
+                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
+                            {overdueChecked ? totalOverdue : "…"}
+                        </span>
+                    </Button>
+                    <Button
+                        variant="primary"
+                        className={
+                            tab === "needs-completion" ? "bg-accent-blue" : ""
+                        }
+                        onClick={() => handleTabChange("needs-completion")}
+                    >
+                        Needs completion
+                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
+                            {needsCompletionCount}
+                        </span>
+                    </Button>
+                    <Button
+                        variant="primary"
+                        className={tab === "done" ? "bg-accent-blue" : ""}
+                        onClick={() => handleTabChange("done")}
+                    >
+                        Done
+                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
+                            {doneCount}
+                        </span>
+                    </Button>
+                </div>
             </div>
 
-            {tab === "submitted" && (
+            {tab !== "overdue" && (
                 <>
-                    <div className="flex flex-wrap items-center gap-3 mb-4">
-                        <label
-                            htmlFor="sort-by"
-                            className="text-text-dark dark:text-text-light"
-                        >
-                            Sort by
-                        </label>
-                        <select
-                            id="sort-by"
-                            className="bg-slate-700 text-white border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
-                            value={sortBy}
-                            onChange={(e) => {
-                                setSortBy(e.target.value as SortOption);
-                                setPage(1);
-                            }}
-                        >
-                            {sortOptions.map((opt) => (
-                                <option key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                </option>
-                            ))}
-                        </select>
-
-                        <label
-                            htmlFor="student-search"
-                            className="text-text-dark dark:text-text-light"
-                        >
-                            Student
-                        </label>
-                        <input
-                            id="student-search"
-                            type="search"
-                            placeholder="Search by name..."
-                            className="bg-slate-700 text-white placeholder:text-slate-400 border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
-                            value={search}
-                            onChange={(e) => {
-                                setSearch(e.target.value);
-                                setPage(1);
-                            }}
-                        />
-                    </div>
-
                     <div className="overflow-x-auto rounded-lg border border-accent-blue">
                         <table className="w-full text-left text-text-dark dark:text-text-light">
                             <thead className="bg-bg-window dark:bg-bg-window-dark">
                                 <tr>
-                                    <th className="px-4 py-3">Student</th>
-                                    <th className="px-4 py-3">Course</th>
-                                    <th className="px-4 py-3">Activity</th>
-                                    <th className="px-4 py-3">Deadline</th>
-                                    <th className="px-4 py-3">
-                                        Submitted Late
-                                    </th>
-                                    <th className="px-4 py-3">Review</th>
-                                    <th className="px-4 py-3">Feedback</th>
+                                    <SortableTh
+                                        field="student"
+                                        label="Student"
+                                        sortBy={sortBy}
+                                        onSortChange={handleSortChange}
+                                        isLoading={tableLoading}
+                                    />
+                                    <SortableTh
+                                        field="course"
+                                        label="Course"
+                                        sortBy={sortBy}
+                                        onSortChange={handleSortChange}
+                                        isLoading={tableLoading}
+                                    />
+                                    <SortableTh
+                                        field="activity"
+                                        label="Activity"
+                                        sortBy={sortBy}
+                                        onSortChange={handleSortChange}
+                                        isLoading={tableLoading}
+                                    />
+                                    <SortableTh
+                                        field="deadline"
+                                        label="Deadline"
+                                        sortBy={sortBy}
+                                        onSortChange={handleSortChange}
+                                        isLoading={tableLoading}
+                                    />
+                                    {tab !== "not-reviewed" && (
+                                        <SortableTh
+                                            field="reviewed"
+                                            label="Reviewed"
+                                            sortBy={sortBy}
+                                            onSortChange={handleSortChange}
+                                            isLoading={tableLoading}
+                                        />
+                                    )}
                                     <th className="px-4 py-3"></th>
                                 </tr>
                             </thead>
@@ -333,34 +387,65 @@ export default function Submissions() {
                                             <td className="px-4 py-3">
                                                 {studentName(s)}
                                             </td>
-                                            <td>{courseName(s) || "-"}</td>
-                                            <td>
-                                                {activityNameById.get(
+                                            <td className="px-4 py-3">
+                                                {courseIdForActivity(
                                                     s.activityId,
-                                                ) ?? s.activityId}
+                                                ) ? (
+                                                    <Link
+                                                        className="hover:underline"
+                                                        to={`/courses/${courseIdForActivity(s.activityId)}`}
+                                                    >
+                                                        {courseName(s) || "-"}
+                                                    </Link>
+                                                ) : (
+                                                    (courseName(s) ?? "-")
+                                                )}
                                             </td>
-                                            <td>
-                                                {deadline
-                                                    ? `${ActivityDate(deadline)} ${ActivityTime(deadline)}`
-                                                    : "-"}
+                                            <td className="px-4 py-3">
+                                                {activityModuleById.get(
+                                                    s.activityId,
+                                                ) ? (
+                                                    <Link
+                                                        className="hover:underline"
+                                                        to={`/module/${activityModuleById.get(s.activityId)}`}
+                                                    >
+                                                        {activityNameById.get(
+                                                            s.activityId,
+                                                        ) ?? s.activityId}
+                                                    </Link>
+                                                ) : (
+                                                    (activityNameById.get(
+                                                        s.activityId,
+                                                    ) ?? s.activityId)
+                                                )}
                                             </td>
-                                            <td>
-                                                {s.submittedLate ? "Yes" : "No"}
+                                            <td className="px-4 py-3">
+                                                {deadline ? (
+                                                    <>
+                                                        {ActivityDate(deadline)}{" "}
+                                                        {ActivityTime(deadline)}
+                                                        {daysOverdue(deadline) >
+                                                            0 && (
+                                                            <div className="text-xs opacity-70">
+                                                                {daysOverdue(
+                                                                    deadline,
+                                                                )}{" "}
+                                                                days overdue
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    "-"
+                                                )}
                                             </td>
-                                            <td>
-                                                {s.reviewStatus != null
-                                                    ? SubmissionReviewStatusNames[
-                                                          s.reviewStatus
-                                                      ]
-                                                    : "Not reviewed"}
-                                            </td>
-                                            <td
-                                                className="max-w-xs truncate"
-                                                title={s.feedback ?? undefined}
-                                            >
-                                                {s.feedback ?? "-"}
-                                            </td>
-                                            <td>
+                                            {tab !== "not-reviewed" && (
+                                                <td className="px-4 py-3">
+                                                    {s.feedbackAt
+                                                        ? `${ActivityDate(s.feedbackAt)} ${ActivityTime(s.feedbackAt)}`
+                                                        : "-"}
+                                                </td>
+                                            )}
+                                            <td className="px-4 py-3">
                                                 <Button
                                                     onClick={() =>
                                                         setReviewing(s)
@@ -377,7 +462,9 @@ export default function Submissions() {
                                 {tableLoading && (
                                     <tr>
                                         <td
-                                            colSpan={8}
+                                            colSpan={
+                                                tab === "not-reviewed" ? 5 : 6
+                                            }
                                             className="px-4 py-3 text-center"
                                         >
                                             Loading...
@@ -388,7 +475,11 @@ export default function Submissions() {
                                     pagedSubmissions.length === 0 && (
                                         <tr>
                                             <td
-                                                colSpan={8}
+                                                colSpan={
+                                                    tab === "not-reviewed"
+                                                        ? 5
+                                                        : 6
+                                                }
                                                 className="px-4 py-3 text-center"
                                             >
                                                 {submissions.length === 0
@@ -410,215 +501,180 @@ export default function Submissions() {
                 </>
             )}
 
-            {tab === "overdue" && (
-                <>
-                    <div className="flex items-center gap-3 mb-4">
-                        <label
-                            htmlFor="overdue-activity"
-                            className="text-text-dark dark:text-text-light"
-                        >
-                            Activity
-                        </label>
-                        <select
-                            id="overdue-activity"
-                            className="bg-slate-700 text-white border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
-                            value={overdueViewActivityId}
-                            onChange={(e) =>
-                                setOverdueViewActivityId(e.target.value)
-                            }
-                        >
-                            <option value="">Pick an activity...</option>
-                            <option value="all">All activities</option>
-                            {[...activityNameById.entries()]
-                                .sort((a, b) => a[1].localeCompare(b[1]))
-                                .map(([id, name]) => {
-                                    const flagged =
-                                        (overdueByActivity.get(id)?.length ??
-                                            0) > 0;
-                                    const label = `${name} (${submittedCountFor(id)} submitted)`;
-                                    return (
-                                        <option key={id} value={id}>
-                                            {flagged ? `⚠ ${label}` : label}
-                                        </option>
-                                    );
-                                })}
-                        </select>
-                    </div>
+            {tab === "overdue" &&
+                (() => {
+                    const rows = [...overdueByActivity.entries()].flatMap(
+                        ([activityId, students]) =>
+                            students.map((u) => ({
+                                ...u,
+                                activityId,
+                                moduleId: activityModuleById.get(activityId),
+                                activityName:
+                                    activityNameById.get(activityId) ??
+                                    activityId,
+                                courseName:
+                                    courseNameForActivity(activityId) ||
+                                    "Unknown course",
+                                courseId: courseIdForActivity(activityId),
+                                deadline:
+                                    activityDeadlineById.get(activityId) ??
+                                    null,
+                            })),
+                    );
 
-                    {overdueViewActivityId &&
-                        (() => {
-                            const isAll = overdueViewActivityId === "all";
-                            const rows: {
-                                studentId: string;
-                                studentName: string;
-                                activityId: string;
-                                activityName: string;
-                            }[] = isAll
-                                ? [...overdueByActivity.entries()].flatMap(
-                                      ([id, students]) =>
-                                          students.map((u) => ({
-                                              ...u,
-                                              activityId: id,
-                                              activityName:
-                                                  activityNameById.get(id) ??
-                                                  id,
-                                          })),
-                                  )
-                                : (
-                                      overdueByActivity.get(
-                                          overdueViewActivityId,
-                                      ) ?? []
-                                  ).map((u) => ({
-                                      ...u,
-                                      activityId: overdueViewActivityId,
-                                      activityName:
-                                          activityNameById.get(
-                                              overdueViewActivityId,
-                                          ) ?? overdueViewActivityId,
-                                  }));
+                    const filteredRows = search.trim()
+                        ? rows.filter((row) =>
+                              row.studentName
+                                  .toLowerCase()
+                                  .includes(search.trim().toLowerCase()),
+                          )
+                        : rows;
 
-                            // Group by course so "All activities" doesn't read
-                            // as one undifferentiated list once there's more
-                            // than a handful of courses.
-                            const rowsByCourse = new Map<string, typeof rows>();
-                            for (const row of rows) {
-                                const course =
-                                    courseNameForActivity(row.activityId) ||
-                                    "Unknown course";
-                                rowsByCourse.set(course, [
-                                    ...(rowsByCourse.get(course) ?? []),
-                                    row,
-                                ]);
-                            }
+                    const [sortField, sortDirection = "asc"] =
+                        overdueSortBy.split("-");
+                    const sortedRows = [...filteredRows].sort((a, b) => {
+                        let cmp = 0;
+                        if (sortField === "student") {
+                            cmp = a.studentName.localeCompare(b.studentName);
+                        } else if (sortField === "course") {
+                            cmp = a.courseName.localeCompare(b.courseName);
+                        } else if (sortField === "activity") {
+                            cmp = a.activityName.localeCompare(b.activityName);
+                        } else if (sortField === "deadline") {
+                            // Days overdue is derived from the deadline, so one sort covers both columns.
+                            const timeA = a.deadline
+                                ? new Date(a.deadline).getTime()
+                                : 0;
+                            const timeB = b.deadline
+                                ? new Date(b.deadline).getTime()
+                                : 0;
+                            cmp = timeA - timeB;
+                        }
+                        return sortDirection === "desc" ? -cmp : cmp;
+                    });
 
-                            return (
-                                <>
-                                    {!isAll &&
-                                        (() => {
-                                            const deadline =
-                                                activityDeadlineById.get(
-                                                    overdueViewActivityId,
-                                                );
-                                            const isPast =
-                                                deadline != null &&
-                                                new Date() > new Date(deadline);
-                                            return (
-                                                <p className="mb-2">
-                                                    <span className="text-text-dark dark:text-text-light">
-                                                        Deadline:{" "}
-                                                    </span>
-                                                    {deadline ? (
-                                                        <span
-                                                            className={
-                                                                isPast
-                                                                    ? "text-red-500 font-bold"
-                                                                    : "text-text-dark dark:text-text-light"
-                                                            }
-                                                        >
-                                                            {ActivityDate(
-                                                                deadline,
-                                                            )}{" "}
-                                                            {ActivityTime(
-                                                                deadline,
-                                                            )}
-                                                            {isPast
-                                                                ? ` (${daysOverdue(deadline)} days overdue)`
-                                                                : " (not passed yet)"}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-text-dark dark:text-text-light">
-                                                            None - can never be
-                                                            overdue
-                                                        </span>
-                                                    )}
-                                                </p>
-                                            );
-                                        })()}
-                                    {rows.length === 0 ? (
-                                        <p className="text-text-dark dark:text-text-light">
-                                            Nobody's overdue.
-                                        </p>
-                                    ) : (
-                                        [...rowsByCourse.entries()].map(
-                                            ([course, courseRows]) => (
-                                                <div
-                                                    key={course}
-                                                    className="mb-4"
+                    const pagedRows = sortedRows.slice(
+                        (overduePage - 1) * PAGE_SIZE,
+                        overduePage * PAGE_SIZE,
+                    );
+
+                    return (
+                        <>
+                            {filteredRows.length === 0 ? (
+                                <p className="text-text-dark dark:text-text-light">
+                                    Nobody's overdue.
+                                </p>
+                            ) : (
+                                <div className="overflow-x-auto rounded-lg border border-accent-blue">
+                                    <table className="w-full text-left text-text-dark dark:text-text-light">
+                                        <thead className="bg-bg-window dark:bg-bg-window-dark">
+                                            <tr>
+                                                <SortableTh
+                                                    field="student"
+                                                    label="Student"
+                                                    sortBy={overdueSortBy}
+                                                    onSortChange={
+                                                        handleOverdueSortChange
+                                                    }
+                                                />
+                                                <SortableTh
+                                                    field="course"
+                                                    label="Course"
+                                                    sortBy={overdueSortBy}
+                                                    onSortChange={
+                                                        handleOverdueSortChange
+                                                    }
+                                                />
+                                                <SortableTh
+                                                    field="activity"
+                                                    label="Activity"
+                                                    sortBy={overdueSortBy}
+                                                    onSortChange={
+                                                        handleOverdueSortChange
+                                                    }
+                                                />
+                                                <SortableTh
+                                                    field="deadline"
+                                                    label="Deadline"
+                                                    sortBy={overdueSortBy}
+                                                    onSortChange={
+                                                        handleOverdueSortChange
+                                                    }
+                                                />
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {pagedRows.map((row, i) => (
+                                                <tr
+                                                    key={`${row.studentId}-${i}`}
+                                                    className="border-t border-accent-blue hover:bg-bg-window/40 dark:hover:bg-bg-window-dark/40"
                                                 >
-                                                    {isAll && (
-                                                        <p className="text-text-dark dark:text-text-light font-bold mb-2">
-                                                            {course}
-                                                        </p>
-                                                    )}
-                                                    <div className="overflow-x-auto rounded-lg border border-accent-blue">
-                                                        <table className="w-full text-left text-text-dark dark:text-text-light">
-                                                            <thead className="bg-bg-window dark:bg-bg-window-dark">
-                                                                <tr>
-                                                                    <th className="px-4 py-3">
-                                                                        Student
-                                                                    </th>
-                                                                    {isAll && (
-                                                                        <>
-                                                                            <th className="px-4 py-3">
-                                                                                Activity
-                                                                            </th>
-                                                                            <th className="px-4 py-3">
-                                                                                Days
-                                                                                overdue
-                                                                            </th>
-                                                                        </>
-                                                                    )}
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {courseRows.map(
-                                                                    (u, i) => {
-                                                                        const deadline =
-                                                                            activityDeadlineById.get(
-                                                                                u.activityId,
-                                                                            );
-                                                                        return (
-                                                                            <tr
-                                                                                key={`${u.studentId}-${i}`}
-                                                                                className="border-t border-accent-blue hover:bg-bg-window/40 dark:hover:bg-bg-window-dark/40"
-                                                                            >
-                                                                                <td className="px-4 py-3">
-                                                                                    {
-                                                                                        u.studentName
-                                                                                    }
-                                                                                </td>
-                                                                                {isAll && (
-                                                                                    <>
-                                                                                        <td>
-                                                                                            {
-                                                                                                u.activityName
-                                                                                            }
-                                                                                        </td>
-                                                                                        <td>
-                                                                                            {deadline
-                                                                                                ? daysOverdue(
-                                                                                                      deadline,
-                                                                                                  )
-                                                                                                : "-"}
-                                                                                        </td>
-                                                                                    </>
-                                                                                )}
-                                                                            </tr>
-                                                                        );
-                                                                    },
+                                                    <td className="px-4 py-3">
+                                                        {row.studentName}
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        {row.courseId ? (
+                                                            <Link
+                                                                className="hover:underline"
+                                                                to={`/courses/${row.courseId}`}
+                                                            >
+                                                                {row.courseName}
+                                                            </Link>
+                                                        ) : (
+                                                            row.courseName
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        {row.moduleId ? (
+                                                            <Link
+                                                                className="hover:underline"
+                                                                to={`/module/${row.moduleId}`}
+                                                            >
+                                                                {
+                                                                    row.activityName
+                                                                }
+                                                            </Link>
+                                                        ) : (
+                                                            row.activityName
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        {row.deadline ? (
+                                                            <>
+                                                                {ActivityDate(
+                                                                    row.deadline,
+                                                                )}{" "}
+                                                                {ActivityTime(
+                                                                    row.deadline,
                                                                 )}
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                            ),
-                                        )
-                                    )}
-                                </>
-                            );
-                        })()}
-                </>
-            )}
+                                                                <div className="text-xs opacity-70">
+                                                                    {daysOverdue(
+                                                                        row.deadline,
+                                                                    )}{" "}
+                                                                    days overdue
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            "-"
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                            {filteredRows.length > 0 && (
+                                <Pagination
+                                    page={overduePage}
+                                    pageSize={PAGE_SIZE}
+                                    totalCount={filteredRows.length}
+                                    onPageChange={setOverduePage}
+                                />
+                            )}
+                        </>
+                    );
+                })()}
 
             {reviewing &&
                 (() => {

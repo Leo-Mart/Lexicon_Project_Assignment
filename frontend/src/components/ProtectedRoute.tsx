@@ -1,44 +1,28 @@
-import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { checkAuth } from "../services/authService";
+import { useAuth } from "../hooks/useAuth";
+import type { UserRole } from "../constants/UserConstant";
 
-const ProtectedRoute = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(
-        null,
-    );
+type ProtectedRouteProps = {
+    allowedRoles?: UserRole[];
+};
 
-    useEffect(() => {
-        let isMounted = true;
+const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
+    const { isAuthenticated, isLoading, role, courseId } = useAuth();
 
-        const verifyAuthentication = async (): Promise<void> => {
-            try {
-                const authenticated = await checkAuth();
-
-                if (isMounted) {
-                    setIsAuthenticated(authenticated);
-                }
-            } catch (error) {
-                console.error("Authentication check failed:", error);
-
-                if (isMounted) {
-                    setIsAuthenticated(false);
-                }
-            }
-        };
-
-        void verifyAuthentication();
-
-        return () => {
-            isMounted = false;
-        };
-    }, []);
-
-    if (isAuthenticated === null) {
+    if (isLoading) {
         return <p>Loading...</p>;
     }
 
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
+    }
+
+    if (allowedRoles && (!role || !allowedRoles.includes(role))) {
+        if (role === "Student" && courseId) {
+            return <Navigate to={`/courses/${courseId}`} replace />;
+        }
+
+        return <Navigate to="/index" replace />;
     }
 
     return <Outlet />;

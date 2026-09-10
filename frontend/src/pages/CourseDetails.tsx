@@ -15,13 +15,11 @@ import { useAuth } from "../hooks/useAuth";
 import { createPortal } from "react-dom";
 import ModalCreateModule from "../components/ModalCreateModule";
 import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
-import { fetchUsersForCourse } from "../services/enrollmentService";
-import type { EnrollmentUserResponse } from "../interfaces/enrollment/EnrollmentUserResponse";
-import { UserStatus } from "../constants/UserConstant";
 import ResourceCard from "../components/ResourceCard";
 import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
 import FormModal from "../components/FormModal";
 import { createResourceFormConfig } from "../types/formSchemas";
+import UserSideView from "../components/UserSideView";
 
 export default function CoursesDetails() {
     const { courseId } = useParams<{ courseId: string }>();
@@ -48,16 +46,6 @@ export default function CoursesDetails() {
         updatedAt: "",
     };
 
-    const emptyUser = {
-        studentId: "",
-        courseId: "",
-        student: {
-            id: "",
-            name: "",
-            email: "",
-            status: UserStatus.Inactive,
-        },
-    };
     const [showCreateResourceForm, setShowCreateResourceForm] = useState(false);
     const [showCreateModuleModal, setShowCreateModuleModal] = useState(false);
 
@@ -65,7 +53,6 @@ export default function CoursesDetails() {
     const [resources, setResources] = useState<ResourceResponse[]>([
         emptyResource,
     ]);
-    const [users, setUsers] = useState<EnrollmentUserResponse[]>([emptyUser]);
 
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -115,27 +102,8 @@ export default function CoursesDetails() {
             }
         };
 
-        const fetchAllUsersForCourse = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const userData = await fetchUsersForCourse(courseId);
-                setUsers(userData);
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : "Failed to fetch users",
-                );
-                console.error("Fetch error:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchChosenCourse(courseId);
         fetchAllResourcesForCourse();
-        fetchAllUsersForCourse();
     }, [courseId]);
 
     const handleResourceEdit = async (
@@ -182,6 +150,9 @@ export default function CoursesDetails() {
 
     return (
         <>
+            <div className="flex flex-row-reverse">
+                <UserSideView courseId={courseId!}></UserSideView>
+            </div>
             <div className="text-center">
                 <h1 className="text-3xl font-bold p-3 bg-buttons text-white">
                     {course.name}
@@ -219,14 +190,6 @@ export default function CoursesDetails() {
                             </>
                         ))}
                     </div>
-                </div>
-                <div className="">
-                    <h2 className="font-bold">
-                        People connected to this course:{" "}
-                    </h2>
-                    {users.map((user) => (
-                        <li key={user.studentId}>{user.student.name}</li>
-                    ))}
                 </div>
 
                 {course.modules.map((module) => (

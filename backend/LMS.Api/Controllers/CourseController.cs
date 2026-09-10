@@ -1,18 +1,23 @@
+using System.Security.Claims;
+using LMS.Api.Constants;
 using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Course;
 using LMS.Api.DTOs.Errors;
 using LMS.Api.DTOs.Module;
 using LMS.Api.Exceptions;
 using LMS.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LMS.Api.Controllers;
 
 [Route("api/courses")]
 [ApiController]
-public class CourseController(ICourseService courseService) : ControllerBase
+[Authorize]
+public class CourseController(ICourseService courseService, IEnrollmentService enrollmentService) : ControllerBase
 {
     private readonly ICourseService _courseService = courseService;
+    private readonly IEnrollmentService _enrollmentService = enrollmentService;
     /// <summary>
     /// Gets a paginated list of courses with optional search and sorting.
     /// </summary>
@@ -29,6 +34,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
     [ProducesResponseType(
         typeof(PagedResponse<CourseDto>),
         StatusCodes.Status200OK)]
+    [AllowAnonymous]
     public async Task<ActionResult<PagedResponse<CourseDto>>> GetCourses([FromQuery] QueryParametersDto query, CancellationToken cancellationToken = default)
     {
         PagedResponse<CourseDto> courses =
@@ -51,8 +57,14 @@ public class CourseController(ICourseService courseService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<CourseDto>> GetCourseById([FromRoute] Guid courseId)
     {
+        ActionResult? accessResult = await ValidateCourseAccessAsync(courseId);
+
+        if (accessResult is not null)
+        {
+            return accessResult;
+        }
         var course = await _courseService.GetCourseById(courseId);
-        if (course == null)
+        if (course is null)
         {
             return NotFound();
         }
@@ -74,6 +86,14 @@ public class CourseController(ICourseService courseService) : ControllerBase
         [FromRoute] Guid courseId
     )
     {
+
+        ActionResult? accessResult = await ValidateCourseAccessAsync(courseId);
+
+        if (accessResult is not null)
+        {
+            return accessResult;
+        }
+
         var modules = await _courseService.GetModulesForCourse(courseId);
         if (modules == null)
         {
@@ -91,6 +111,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
     /// <response code="201">Successfully created course, and returns the newly created course.</response>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
+    [Authorize(Roles = RoleConstants.Teacher)]
     public async Task<ActionResult<CourseDto>> CreateNewCourse(
         [FromBody] CreateNewCourseDto newCourseDto
     )
@@ -127,6 +148,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
     /// <response code="200">Course was successfully updated and returned.</response>
     [HttpPut("{courseId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(Roles = RoleConstants.Teacher)]
     public async Task<ActionResult<CourseDto>> UpdateCourse(
         [FromRoute] Guid courseId,
         [FromBody] UpdateCourseDto updateCourseDto
@@ -152,6 +174,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
     [HttpDelete("{courseId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = RoleConstants.Teacher)]
     public async Task<IActionResult> DeleteCourse([FromRoute] Guid courseId)
     {
         var deletedCourse = await _courseService.DeleteCourse(courseId);
@@ -161,5 +184,34 @@ public class CourseController(ICourseService courseService) : ControllerBase
         }
 
         return NoContent();
+    }
+
+    private async Task<ActionResult?> ValidateCourseAccessAsync(Guid courseId)
+    {
+        if (!User.IsInRole(RoleConstants.Student))
+        {
+            return null;
+        }
+
+        string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userIdClaim, out Guid studentId))
+        {
+            return Unauthorized();
+        }
+
+        CourseDto? studentCourse = await _enrollmentService.GetStudentCourseAsync(studentId);
+
+        if (studentCourse is null)
+        {
+            return NotFound();
+        }
+
+        if (studentCourse.CourseId != courseId)
+        {
+            return Forbid();
+        }
+
+        return null;
     }
 }

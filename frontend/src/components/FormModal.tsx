@@ -57,7 +57,7 @@ export default function FormModal<T extends Record<string, unknown>>({
             return;
         }
         if (type === "select") {
-            setFormData({ ...formData, ["type"]: +value });
+            setFormData({ ...formData, [name]: +value });
             return;
         }
         setFormData({ ...formData, [name]: value });
