@@ -1,10 +1,38 @@
 import { NavLink } from "react-router-dom";
 import { routes } from "../routes/config"; // Adjust the import path
 import UserInfo from "./UserInfo";
+import { useAuth } from "../hooks/useAuth";
 
 export default function MainHeader() {
     // Filter routes that should appear in the header
-    const headerRoutes = routes.filter((route) => route.createHeader);
+
+    const { isAuthenticated, role, courseId } = useAuth();
+    const homePath =
+        role === "Student" && courseId ? `/courses/${courseId}` : "/index";
+
+    const headerRoutes = routes.filter((route) => {
+        if (!route.createHeader) {
+            return false;
+        }
+
+        if (isAuthenticated && route.path === "/login") {
+            return false;
+        }
+
+        if (!route.isProtected) {
+            return true;
+        }
+
+        if (!isAuthenticated) {
+            return false;
+        }
+
+        if (!route.allowedRoles) {
+            return true;
+        }
+
+        return role !== null && route.allowedRoles.includes(role);
+    });
 
     return (
         <nav
@@ -12,6 +40,11 @@ export default function MainHeader() {
             role="navigation"
         >
             <ul className="flex gap-5 text-3xl">
+                {isAuthenticated && (
+                    <li>
+                        <NavLink to={homePath}>Home</NavLink>
+                    </li>
+                )}
                 {headerRoutes.map((route) => {
                     return (
                         <li key={route.path}>

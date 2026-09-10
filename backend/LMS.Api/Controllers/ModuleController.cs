@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using LMS.Api.Constants;
+using LMS.Api.DTOs.Course;
 using LMS.Api.DTOs.Errors;
 using LMS.Api.DTOs.Module;
 using LMS.Api.Exceptions;
@@ -11,9 +13,10 @@ namespace LMS.Api.Controllers;
 [Route("/api/modules")]
 [ApiController]
 [Authorize]
-public class ModuleController(IModuleService moduleService) : ControllerBase
+public class ModuleController(IModuleService moduleService, IEnrollmentService enrollmentService) : ControllerBase
 {
     private readonly IModuleService _moduleService = moduleService;
+    private readonly IEnrollmentService _enrollmentService = enrollmentService;
 
     /// <summary>
     /// Retrieves a full list of all available modules.
@@ -24,6 +27,7 @@ public class ModuleController(IModuleService moduleService) : ControllerBase
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = RoleConstants.Teacher)]
     public async Task<ActionResult<IEnumerable<ModuleDto>>> GetModules()
     {
         var modules = await _moduleService.GetAllModules();
@@ -51,6 +55,13 @@ public class ModuleController(IModuleService moduleService) : ControllerBase
         if (module == null)
         {
             return NotFound();
+        }
+
+        ActionResult? accessResult = await ValidateModuleAccessAsync(module);
+
+        if (accessResult is not null)
+        {
+            return accessResult;
         }
 
         return module;
@@ -130,5 +141,34 @@ public class ModuleController(IModuleService moduleService) : ControllerBase
         }
 
         return NoContent();
+    }
+
+    private async Task<ActionResult?> ValidateModuleAccessAsync(ModuleDto module)
+    {
+        if (!User.IsInRole(RoleConstants.Student))
+        {
+            return null;
+        }
+
+        string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userIdClaim, out Guid studentId))
+        {
+            return Unauthorized();
+        }
+
+        CourseDto? studentCourse = await _enrollmentService.GetStudentCourseAsync(studentId);
+
+        if (studentCourse is null)
+        {
+            return NotFound();
+        }
+
+        if (module.CourseId != studentCourse.CourseId)
+        {
+            return Forbid();
+        }
+
+        return null;
     }
 }
