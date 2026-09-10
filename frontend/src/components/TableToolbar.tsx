@@ -45,7 +45,7 @@ export default function TableToolbar({
                 </select>
             </div>
 
-            <h1 className="text-2xl text-text-light bg-bg-header p-3 rounded-2xl font-bold">
+            <h1 className="text-2xl text-text-light bg-bg-header p-1 pb-2 pl-4 pr-4 rounded-2xl font-bold">
                 {tableTitle}
             </h1>
 
