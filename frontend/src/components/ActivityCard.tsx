@@ -171,7 +171,7 @@ export default function ActivityCard({
         <div key={activity.activityId} className="relative w-80% m-3">
             <div className="rounded overflow-hidden shadow-lg bg-white">
                 <div
-                    className="bg-bg-header w-full p-4 grid grid-cols-3 items-center cursor-pointer"
+                    className="bg-bg-header w-full p-4 flex flex-row justify-between items-center gap-2 cursor-pointer"
                     role="button"
                     tabIndex={0}
                     aria-expanded={isExpanded}
@@ -195,8 +195,7 @@ export default function ActivityCard({
                         </h3>
                         <h2 className="font-bold text-xl">{activity.name}</h2>
                     </div>
-                    <div />
-                    <div className="flex flex-row justify-end items-center gap-2 justify-self-end">
+                    <div className="flex flex-row justify-end items-center gap-2">
                         {cornerBadge && (
                             <span
                                 className={`text-sm font-bold px-3 py-1.5 rounded ${cornerBadge.color} ${cornerBadge.textColor}`}
