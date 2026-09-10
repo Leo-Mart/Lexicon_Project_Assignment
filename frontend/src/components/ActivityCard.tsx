@@ -298,7 +298,7 @@ export default function ActivityCard({
                             )}
                         <Button
                             variant="confirm"
-                            className="hover:cursor-pointer"
+                            className="m-2 hover:cursor-pointer"
                             onClick={() => setShowDetailsModal(true)}
                         >
                             More info
