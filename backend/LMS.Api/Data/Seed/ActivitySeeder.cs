@@ -78,6 +78,46 @@ public static class ActivitySeeder
     public static readonly Guid PaginationTaskId =
         Guid.Parse("50000000-0000-0000-0000-000000000022");
 
+    // ASP.NET Core only had tasks - add a lecture, a practice and a code
+    // review session so it has the same variety as the other modules.
+    public static readonly Guid AspNetCoreLectureId =
+        Guid.Parse("50000000-0000-0000-0000-000000000023");
+
+    public static readonly Guid AspNetCorePracticeId =
+        Guid.Parse("50000000-0000-0000-0000-000000000024");
+
+    public static readonly Guid AspNetCoreCodeReviewId =
+        Guid.Parse("50000000-0000-0000-0000-000000000025");
+
+    // A lecture ahead of each of the topic-specific tasks, not just the one
+    // at the very start of the module.
+    public static readonly Guid AspNetCoreAuthLectureId =
+        Guid.Parse("50000000-0000-0000-0000-000000000026");
+
+    public static readonly Guid AspNetCoreTestingLectureId =
+        Guid.Parse("50000000-0000-0000-0000-000000000027");
+
+    public static readonly Guid AspNetCoreValidationLectureId =
+        Guid.Parse("50000000-0000-0000-0000-000000000028");
+
+    public static readonly Guid AspNetCoreLoggingLectureId =
+        Guid.Parse("50000000-0000-0000-0000-000000000029");
+
+    public static readonly Guid AspNetCorePaginationLectureId =
+        Guid.Parse("50000000-0000-0000-0000-000000000030");
+
+    public static readonly Guid AspNetCoreRoutingLectureId =
+        Guid.Parse("50000000-0000-0000-0000-000000000031");
+
+    public static readonly Guid AspNetCoreDiConfigLectureId =
+        Guid.Parse("50000000-0000-0000-0000-000000000032");
+
+    public static readonly Guid AspNetCoreMiddlewareLectureId =
+        Guid.Parse("50000000-0000-0000-0000-000000000033");
+
+    public static readonly Guid AspNetCoreErrorHandlingLectureId =
+        Guid.Parse("50000000-0000-0000-0000-000000000034");
+
     public static async Task SeedAsync(LMSDbContext context)
     {
         if (await context.Activities.AnyAsync())
@@ -242,6 +282,151 @@ public static class ActivitySeeder
 
             new()
             {
+                ActivityId = AspNetCoreLectureId,
+                ModuleId = ModuleSeeder.AspNetCoreModuleId,
+                Type = ActivityType.Lecture,
+                Name = "Introduction to ASP.NET Core",
+                Description = "Introduction to controllers, routing and dependency injection in ASP.NET Core.",
+                StartAt = now.AddDays(-14),
+                EndAt = now.AddDays(-14).AddHours(3),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            // Two lectures a week for the module's run - roughly one every
+            // other day.
+            new()
+            {
+                ActivityId = AspNetCoreRoutingLectureId,
+                ModuleId = ModuleSeeder.AspNetCoreModuleId,
+                Type = ActivityType.Lecture,
+                Name = "Routing & Controllers",
+                Description = "Attribute routing, route parameters and organizing endpoints across controllers.",
+                StartAt = now.AddDays(-12),
+                EndAt = now.AddDays(-12).AddHours(2),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            new()
+            {
+                ActivityId = AspNetCoreDiConfigLectureId,
+                ModuleId = ModuleSeeder.AspNetCoreModuleId,
+                Type = ActivityType.Lecture,
+                Name = "Dependency Injection & Configuration",
+                Description = "Service lifetimes, the built-in DI container, and reading configuration and secrets.",
+                StartAt = now.AddDays(-10),
+                EndAt = now.AddDays(-10).AddHours(2),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            new()
+            {
+                ActivityId = AspNetCoreAuthLectureId,
+                ModuleId = ModuleSeeder.AspNetCoreModuleId,
+                Type = ActivityType.Lecture,
+                Name = "Authentication & Authorization",
+                Description = "Securing a Web API with JWT bearer tokens and role-based authorization.",
+                StartAt = now.AddDays(-8),
+                EndAt = now.AddDays(-8).AddHours(2),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            new()
+            {
+                ActivityId = AspNetCoreMiddlewareLectureId,
+                ModuleId = ModuleSeeder.AspNetCoreModuleId,
+                Type = ActivityType.Lecture,
+                Name = "Middleware & the Request Pipeline",
+                Description = "How a request flows through middleware, and where to hook in custom behavior.",
+                StartAt = now.AddDays(-6),
+                EndAt = now.AddDays(-6).AddHours(2),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            new()
+            {
+                ActivityId = AspNetCoreValidationLectureId,
+                ModuleId = ModuleSeeder.AspNetCoreModuleId,
+                Type = ActivityType.Lecture,
+                Name = "Input Validation & Model Binding",
+                Description = "Validating incoming request models with data annotations and returning clear errors.",
+                StartAt = now.AddDays(-4),
+                EndAt = now.AddDays(-4).AddHours(2),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            new()
+            {
+                ActivityId = AspNetCoreLoggingLectureId,
+                ModuleId = ModuleSeeder.AspNetCoreModuleId,
+                Type = ActivityType.Lecture,
+                Name = "Structured Logging",
+                Description = "Using ILogger, log levels, and structured logging for a Web API.",
+                StartAt = now.AddDays(-2),
+                EndAt = now.AddDays(-2).AddHours(2),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            new()
+            {
+                ActivityId = AspNetCorePaginationLectureId,
+                ModuleId = ModuleSeeder.AspNetCoreModuleId,
+                Type = ActivityType.Lecture,
+                Name = "Pagination & Filtering Large Result Sets",
+                Description = "Paging list endpoints with page/pageSize query parameters and a total count.",
+                StartAt = now.AddDays(0),
+                EndAt = now.AddDays(0).AddHours(2),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            new()
+            {
+                ActivityId = AspNetCoreTestingLectureId,
+                ModuleId = ModuleSeeder.AspNetCoreModuleId,
+                Type = ActivityType.Lecture,
+                Name = "Testing ASP.NET Core APIs",
+                Description = "Integration testing a Web API with WebApplicationFactory.",
+                StartAt = now.AddDays(2),
+                EndAt = now.AddDays(2).AddHours(2),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            new()
+            {
+                ActivityId = AspNetCoreErrorHandlingLectureId,
+                ModuleId = ModuleSeeder.AspNetCoreModuleId,
+                Type = ActivityType.Lecture,
+                Name = "Error Handling & Problem Details",
+                Description = "Centralized exception handling and returning RFC 7807 Problem Details responses.",
+                StartAt = now.AddDays(4),
+                EndAt = now.AddDays(4).AddHours(2),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            new()
+            {
+                ActivityId = AspNetCorePracticeId,
+                ModuleId = ModuleSeeder.AspNetCoreModuleId,
+                Type = ActivityType.Practice,
+                Name = "Routing & Dependency Injection Practice",
+                Description = "Practice defining routes and registering services with the built-in DI container.",
+                StartAt = now.AddDays(-13),
+                EndAt = now.AddDays(-13).AddHours(2),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            new()
+            {
                 ActivityId = AspNetApiTaskId,
                 ModuleId = ModuleSeeder.AspNetCoreModuleId,
                 Type = ActivityType.Task,
@@ -250,6 +435,19 @@ public static class ActivitySeeder
                 StartAt = now.AddDays(-13),
                 EndAt = now.AddDays(-8),
                 Deadline = now.AddDays(-8),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+
+            new()
+            {
+                ActivityId = AspNetCoreCodeReviewId,
+                ModuleId = ModuleSeeder.AspNetCoreModuleId,
+                Type = ActivityType.Other,
+                Name = "Web API Code Review Session",
+                Description = "Live review of common mistakes seen in the Web API submissions so far.",
+                StartAt = now.AddDays(-9),
+                EndAt = now.AddDays(-9).AddHours(1),
                 CreatedAt = now,
                 UpdatedAt = now
             },
