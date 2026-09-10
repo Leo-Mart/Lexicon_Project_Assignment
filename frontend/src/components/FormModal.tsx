@@ -44,6 +44,9 @@ interface FormModalProps<T> {
     // badge in SubmissionViewModal and ActivityCard, for call sites that
     // want that consistency.
     titleBadge?: string;
+    // Rendered after titleBadge, e.g. the activity's name - so the title
+    // reads "Resubmit for [TASK] Add JWT Authentication".
+    titleSuffix?: string;
     onSave: (data: T) => Promise<void>;
     onClose: () => void;
 }
@@ -56,6 +59,7 @@ export default function FormModal<T extends Record<string, unknown>>({
     initialValue,
     context,
     titleBadge,
+    titleSuffix,
     onSave,
     onClose,
 }: FormModalProps<T>) {
@@ -178,6 +182,7 @@ export default function FormModal<T extends Record<string, unknown>>({
                                 {titleBadge}
                             </span>
                         )}
+                        {titleSuffix}
                     </h2>
                     <button
                         className="bg-btn-cancel py-1 px-2 hover:brightness-110 rounded-full text-sm"
@@ -195,46 +200,36 @@ export default function FormModal<T extends Record<string, unknown>>({
                     )}
                     {config.fields.map((field) => (
                         <div
-                            className={`mb-4 ${config.heightClass && field === charCountField ? "flex-1 flex flex-col min-h-0" : ""}`}
+                            className={`${field === charCountField ? "mb-1" : "mb-4"} ${config.heightClass && field === charCountField ? "flex-1 flex flex-col min-h-0" : ""}`}
                             key={field.name}
                         >
                             <label htmlFor={field.name}>{field.label}</label>
                             {renderInput(field)}
                         </div>
                     ))}
+                    {charCountField && (
+                        <p className="text-sm text-text-dark mb-1">
+                            {String(formData[charCountField.name] ?? "").length}{" "}
+                            / {charCountField.maxLength} chars
+                        </p>
+                    )}
                     {error && <p className="text-red-700 mb-2">{error}</p>}
                     {success && (
                         <p className="text-green-700 font-semibold text-base mb-2">
                             Saved.
                         </p>
                     )}
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <Button
-                                type="submit"
-                                variant="confirm"
-                                className="mr-3"
-                                disabled={saving}
-                            >
-                                Save
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="cancel"
-                                onClick={onClose}
-                            >
-                                Cancel
-                            </Button>
-                        </div>
-                        {charCountField && (
-                            <span className="text-sm text-text-dark">
-                                {
-                                    String(formData[charCountField.name] ?? "")
-                                        .length
-                                }{" "}
-                                / {charCountField.maxLength} chars
-                            </span>
-                        )}
+                    <div className="flex items-center justify-end gap-3">
+                        <Button
+                            type="submit"
+                            variant="confirm"
+                            disabled={saving}
+                        >
+                            Save
+                        </Button>
+                        <Button type="button" variant="cancel" onClick={onClose}>
+                            Cancel
+                        </Button>
                     </div>
                 </form>
             </div>

@@ -34,6 +34,8 @@ export default function SubmissionViewModal({
             ? SubmissionReviewStatusNames[submission.reviewStatus]
             : "Not reviewed";
 
+    const submittedSuffix = ` · Submitted: ${ActivityDate(submission.submittedAt)} ${ActivityTime(submission.submittedAt)}`;
+
     return (
         <>
             <div className="fixed inset-0 z-40 backdrop-blur-xs transition-opacity"></div>
@@ -45,6 +47,7 @@ export default function SubmissionViewModal({
                             {ActivityTypeNames[activityType]}
                         </span>
                         {activityName}
+                        {submittedSuffix}
                     </h2>
                     <div className="flex items-center gap-2">
                         <span
@@ -61,16 +64,12 @@ export default function SubmissionViewModal({
                     </div>
                 </nav>
                 <div className="bg-bg py-3 px-3 flex-1 flex flex-col min-h-0">
-                    <p className="text-sm text-text-dark mb-1">
-                        {submission.text.length} / {SUBMISSION_MAX_LENGTH}{" "}
-                        chars, submitted{" "}
-                        {ActivityDate(submission.submittedAt)}{" "}
-                        {ActivityTime(submission.submittedAt)}
-                    </p>
-
                     {/* Grows to fill the modal's height; only this scrolls if the text is long. */}
                     <p className="whitespace-pre-wrap bg-bg-window dark:bg-bg-window-dark text-text-dark dark:text-text-light rounded p-2 mb-1 flex-1 min-h-0 overflow-y-auto">
                         {submission.text}
+                    </p>
+                    <p className="text-sm text-text-dark mb-1">
+                        {submission.text.length} / {SUBMISSION_MAX_LENGTH} chars
                     </p>
 
                     {submission.feedback && (

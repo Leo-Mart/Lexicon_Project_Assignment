@@ -48,7 +48,6 @@ const resubmitFormConfig: EntityFormConfig<SubmissionRequest> = {
 
 export default function ActivityCard({
     activity,
-    courseName,
     submission,
     onSubmitted,
     editActivity,
@@ -95,13 +94,11 @@ export default function ActivityCard({
           ? "Overdue"
           : "Not submitted";
 
-    // Shown in the Add submission/Resubmit modals so it's clear what the
-    // text being typed is for.
-    const submissionContext = `${courseName} · ${activity.name}${
+    // Shown after the activity name in the Add submission/Resubmit title bar.
+    const deadlineSuffix =
         activity.deadline != null
             ? ` · Deadline: ${ActivityDate(activity.deadline)} ${ActivityTime(activity.deadline)}`
-            : ""
-    }`;
+            : "";
 
     // Only meaningful once submitted.
     const reviewStatusText = submission
@@ -319,10 +316,10 @@ export default function ActivityCard({
                 <FormModal
                     config={{
                         ...submissionFormConfig,
-                        title: `Add submission for ${activity.name}`,
+                        title: "Add submission for",
                     }}
-                    context={submissionContext}
                     titleBadge={ActivityTypeNames[activity.type]}
+                    titleSuffix={`${activity.name}${deadlineSuffix}`}
                     initialValue={{ activityId: activity.activityId, text: "" }}
                     onSave={async (data) => {
                         const created = await createSubmission(data);
@@ -343,10 +340,10 @@ export default function ActivityCard({
                 <FormModal
                     config={{
                         ...resubmitFormConfig,
-                        title: `Resubmit for ${activity.name}`,
+                        title: "Resubmit for",
                     }}
-                    context={submissionContext}
                     titleBadge={ActivityTypeNames[activity.type]}
+                    titleSuffix={`${activity.name}${deadlineSuffix}`}
                     initialValue={{
                         activityId: activity.activityId,
                         text: submission.text,

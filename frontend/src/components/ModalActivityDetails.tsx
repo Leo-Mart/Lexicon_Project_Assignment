@@ -149,9 +149,10 @@ const ModalActivityDetails = (props: ModalActivityDetailsProps) => {
                 <FormModal
                     config={{
                         ...createResourceFormConfig,
-                        title: `Add resource for ${props.activity.name}`,
+                        title: "Add resource for",
                     }}
                     titleBadge={ActivityTypeNames[props.activity.type]}
+                    titleSuffix={props.activity.name}
                     initialValue={{
                         name: "",
                         description: "",
