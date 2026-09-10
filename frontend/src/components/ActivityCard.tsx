@@ -22,6 +22,9 @@ import { createActivityFormConfig } from "../types/formSchemas";
 import { createPortal } from "react-dom";
 import ModalActivityDetails from "./ModalActivityDetails";
 
+// Shared with SubmissionViewModal so the char count there matches this limit.
+export const SUBMISSION_MAX_LENGTH = 2000;
+
 const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
     title: "Add submission",
     fields: [
@@ -30,7 +33,7 @@ const submissionFormConfig: EntityFormConfig<SubmissionRequest> = {
             label: "Submission",
             type: "textarea",
             required: true,
-            maxLength: 2000,
+            maxLength: SUBMISSION_MAX_LENGTH,
         },
     ],
     widthClass: "w-full sm:w-1/2",
@@ -327,6 +330,8 @@ export default function ActivityCard({
             {viewingSubmission && submission && (
                 <SubmissionViewModal
                     submission={submission}
+                    activityName={activity.name}
+                    activityType={activity.type}
                     onClose={() => setViewingSubmission(false)}
                 />
             )}
