@@ -20,10 +20,12 @@ const ResourceList = () => {
             setLoading(true);
             setError(null);
             try {
+                const [sortField, sortDirection = "asc"] = sortBy.split("-");
+
                 const courseData = await fetchResources({
                     search: "",
-                    sortBy: "name",
-                    direction: "asc",
+                    sortBy: sortField,
+                    direction: sortDirection,
                     page: 1,
                     pageSize: 200,
                 });
@@ -41,7 +43,7 @@ const ResourceList = () => {
         };
 
         fetchAllResources();
-    }, []);
+    }, [sortBy]);
 
     const resourceColumns: Column<ResourceResponse>[] = [
         { key: "name", header: "Name", field: "name", render: (r) => r.name },
