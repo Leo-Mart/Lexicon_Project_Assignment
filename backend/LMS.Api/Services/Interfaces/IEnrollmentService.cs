@@ -14,6 +14,6 @@ public interface IEnrollmentService
     Task<List<Enrollment>> GetEnrollmentsByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default);
 
     Task<List<EnrollmentStudentsDto>> GetStudentEnrollmentsByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default);
-    
+
     Task RemoveCourseAsync(Guid studentId, CancellationToken cancellationToken = default);
 }

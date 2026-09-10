@@ -70,7 +70,7 @@ public class EnrollmentsController : ControllerBase
     public async Task<ActionResult<List<EnrollmentStudentsDto>>> GetCourseUsers([FromRoute] Guid courseId,
         CancellationToken cancellationToken)
     {
-        
+
         List<EnrollmentStudentsDto> users = await _enrollmentService.GetStudentEnrollmentsByCourseIdAsync(courseId, cancellationToken);
 
         return Ok(users);
