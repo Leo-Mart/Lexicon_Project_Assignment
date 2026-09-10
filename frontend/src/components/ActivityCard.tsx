@@ -260,6 +260,13 @@ export default function ActivityCard({
                             )}
                         </div>
                         <div className="flex flex-row justify-between items-center p-2">
+                            <Button
+                                variant="confirm"
+                                className="hover:cursor-pointer"
+                                onClick={() => setShowDetailsModal(true)}
+                            >
+                                More info
+                            </Button>
                             <div className="flex gap-2">
                                 {isStudent &&
                                     isSubmittable &&
@@ -301,13 +308,6 @@ export default function ActivityCard({
                                         </>
                                     )}
                             </div>
-                            <Button
-                                variant="confirm"
-                                className="hover:cursor-pointer"
-                                onClick={() => setShowDetailsModal(true)}
-                            >
-                                More info
-                            </Button>
                         </div>
                     </div>
                 )}
