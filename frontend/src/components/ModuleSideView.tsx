@@ -65,7 +65,7 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
         <>
             <div className="flex flex-row absolute mt-1 h-full">
                 {isExpanded && (
-                    <div className="bg-bg-window h-full w-55 flex flex-col mx-1 z-50">
+                    <div className="bg-bg-window h-auto w-55 flex flex-col mx-1 z-50">
                         <div className="border-b-4 border-dotted py-4">
                             <h3 className="px-2">Currently viewing module:</h3>
                             <ModuleSideViewPart module={module} />

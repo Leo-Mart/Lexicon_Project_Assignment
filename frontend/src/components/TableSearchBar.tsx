@@ -13,7 +13,7 @@ export default function TableSearchBar({
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
             placeholder="Search ..."
-            className="bg-bg-header-dark text-white placeholder:text-slate-400 border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
+            className="bg-bg-header text-white placeholder:text-slate-400 border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
         />
     );
 }

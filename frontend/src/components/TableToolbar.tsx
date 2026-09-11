@@ -25,7 +25,7 @@ export default function TableToolbar({
     addAction,
 }: TableToolbarProps) {
     return (
-        <div className="flex items-center gap-5 mb-4 px-2 w-full">
+        <div className="flex items-center gap-5 mb-4 w-full">
             <div className="flex items-center gap-5 flex-1">
                 <TableSearchBar
                     search={search}
@@ -35,7 +35,7 @@ export default function TableToolbar({
                 <select
                     value={sortBy}
                     onChange={(event) => onSortChange(event.target.value)}
-                    className="bg-bg-header-dark text-white border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
+                    className="bg-bg-header text-white border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
                 >
                     {sortOptions.map((option) => (
                         <option key={option.value} value={option.value}>
