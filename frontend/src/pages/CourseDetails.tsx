@@ -21,6 +21,7 @@ import FormModal from "../components/FormModal";
 import { createResourceFormConfig } from "../types/formSchemas";
 import UserSideView from "../components/UserSideView";
 import Divider from "../components/Divider";
+import { UserStatus } from "../constants/UserConstant";
 
 export default function CoursesDetails() {
     const { courseId } = useParams<{ courseId: string }>();
@@ -45,6 +46,12 @@ export default function CoursesDetails() {
         uri: "",
         createdAt: "",
         updatedAt: "",
+        createdByTeacher: {
+            id: "",
+            name: "",
+            email: "",
+            status: UserStatus.Active,
+        },
     };
 
     const [showCreateResourceForm, setShowCreateResourceForm] = useState(false);

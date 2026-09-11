@@ -15,18 +15,20 @@ public class ResourceRepository : IResourceRepository
         _context = context;
     }
 
-    public async Task<PagedResponse<Resource>> GetAllAsync(QueryParametersDto query, CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<Resource>> GetAllAsync(
+        QueryParametersDto query,
+        CancellationToken cancellationToken = default
+    )
     {
-        IQueryable<Resource> resourcesQuery =
-            _context.Resources.AsNoTracking();
+        IQueryable<Resource> resourcesQuery = _context.Resources.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             string search = query.Search.Trim();
 
             resourcesQuery = resourcesQuery.Where(resource =>
-                resource.Name.Contains(search) ||
-                resource.Description.Contains(search));
+                resource.Name.Contains(search) || resource.Description.Contains(search)
+            );
         }
 
         resourcesQuery = query.SortBy.ToLowerInvariant() switch
@@ -41,11 +43,10 @@ public class ResourceRepository : IResourceRepository
 
             _ => query.Direction == "desc"
                 ? resourcesQuery.OrderByDescending(resource => resource.Name)
-                : resourcesQuery.OrderBy(resource => resource.Name)
+                : resourcesQuery.OrderBy(resource => resource.Name),
         };
 
-        int totalCount =
-            await resourcesQuery.CountAsync(cancellationToken);
+        int totalCount = await resourcesQuery.CountAsync(cancellationToken);
 
         List<Resource> resources = await resourcesQuery
             .Skip((query.Page - 1) * query.PageSize)
@@ -57,7 +58,7 @@ public class ResourceRepository : IResourceRepository
             Items = resources,
             TotalCount = totalCount,
             Page = query.Page,
-            PageSize = query.PageSize
+            PageSize = query.PageSize,
         };
     }
 
@@ -78,6 +79,7 @@ public class ResourceRepository : IResourceRepository
     {
         return await _context
             .Resources.AsNoTracking()
+            .Include(r => r.CreatedByTeacher)
             .Where(resource =>
                 resource.CourseResources.Any(courseResource => courseResource.CourseId == courseId)
             )
@@ -91,6 +93,7 @@ public class ResourceRepository : IResourceRepository
     {
         return await _context
             .Resources.AsNoTracking()
+            .Include(r => r.CreatedByTeacher)
             .Where(resource =>
                 resource.ModuleResources.Any(moduleResource => moduleResource.ModuleId == moduleId)
             )
@@ -104,6 +107,7 @@ public class ResourceRepository : IResourceRepository
     {
         return await _context
             .Resources.AsNoTracking()
+            .Include(r => r.CreatedByTeacher)
             .Where(resource =>
                 resource.ActivityResources.Any(activityResource =>
                     activityResource.ActivityId == activityId

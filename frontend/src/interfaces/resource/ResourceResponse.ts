@@ -1,3 +1,5 @@
+import type { UserResponse } from "../user/UserResponse";
+
 export interface ResourceResponse {
     resourceId: string;
     createdByTeacherId: string;
@@ -7,4 +9,5 @@ export interface ResourceResponse {
     uri?: string | undefined;
     createdAt: string;
     updatedAt: string;
+    createdByTeacher: UserResponse;
 }
