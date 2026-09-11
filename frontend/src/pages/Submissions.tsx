@@ -11,7 +11,7 @@ import {
     setFeedback,
 } from "../services/submissionService";
 import { fetchActivities } from "../services/activityService";
-import { ActivityDate, ActivityTime } from "../constants/ActivityTimeConverter";
+import { ActivityDate, ActivityTime } from "../utils/ActivityTimeConverter.ts";
 import { fetchUsers } from "../services/userService";
 import { fetchCourses } from "../services/courseService";
 import { useAuth } from "../hooks/useAuth";
@@ -22,6 +22,9 @@ import { SubmissionReviewStatus } from "../constants/SubmissionReviewStatus";
 import SubmissionCategoryButtons from "../components/SubmissionCategoryButtons";
 import type { SubmissionTabs } from "../types/SubmissionTabs";
 import { daysLate, daysOverdue } from "../utils/deadlines.ts";
+import { createActivityLookups, type ActivityLookups } from "../utils/IdsFromActivity.ts";
+/* import DataTable from "../components/DataTable";
+import type { Column } from "../types/Column.ts"; */
 
 const PAGE_SIZE = 10;
 
@@ -31,30 +34,13 @@ const DEFAULT_SORT = "review-asc";
 export default function Submissions() {
     const { role } = useAuth();
     const [submissions, setSubmissions] = useState<SubmissionResponse[]>([]);
-    const [activityNameById, setActivityNameById] = useState<
-        Map<string, string>
-    >(new Map());
-    const [courseNameByModuleId, setCourseNameByModuleId] = useState<
-        Map<string, string>
-    >(new Map());
-    const [courseIdByModuleId, setCourseIdByModuleId] = useState<
-        Map<string, string>
-    >(new Map());
-    const [studentNameById, setStudentNameById] = useState<Map<string, string>>(
-        new Map(),
-    );
-    const [activityModuleById, setActivityModuleById] = useState<
-        Map<string, string>
-    >(new Map());
-    const [activityDeadlineById, setActivityDeadlineById] = useState<
-        Map<string, string | null>
-    >(new Map());
     const [loading, setLoading] = useState(true);
     const [reviewing, setReviewing] = useState<SubmissionResponse | null>(null);
     const [sortBy, setSortBy] = useState(DEFAULT_SORT);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
     const [tab, setTab] = useState<SubmissionTabs>("not-reviewed");
+    const [lookups, setLookups] = useState<ActivityLookups | null>(null);
 
     // The Submissions tab's table: one page at a time, searched/sorted on
     // the server. Separate from `submissions` above, which stays a full
@@ -77,57 +63,14 @@ export default function Submissions() {
     >(new Map());
     const [overdueChecked, setOverdueChecked] = useState(false);
 
-    useEffect(() => {
-        if (role !== "Teacher") return;
-
-        const load = async () => {
-            setLoading(true);
-
-            const [submissionData, activities, users, courses] =
-                await Promise.all([
-                    fetchAllSubmissions(),
-                    fetchActivities(),
-                    fetchUsers(),
-                    fetchCourses({
-                        search: "",
-                        sortBy: "name",
-                        direction: "asc",
-                        page: 1,
-                        pageSize: 200,
-                    }),
-                ]);
-
-            setSubmissions(submissionData);
-            setActivityNameById(
-                new Map(activities.map((a) => [a.activityId, a.name])),
-            );
-            setActivityModuleById(
-                new Map(activities.map((a) => [a.activityId, a.moduleId])),
-            );
-            setActivityDeadlineById(
-                new Map(activities.map((a) => [a.activityId, a.deadline])),
-            );
-            setStudentNameById(new Map(users.map((u) => [u.id, u.name])));
-            setCourseNameByModuleId(
-                new Map(
-                    courses.items.flatMap((c) =>
-                        c.modules.map((m) => [m.moduleId, c.name] as const),
-                    ),
-                ),
-            );
-            setCourseIdByModuleId(
-                new Map(
-                    courses.items.flatMap((c) =>
-                        c.modules.map((m) => [m.moduleId, c.courseId] as const),
-                    ),
-                ),
-            );
-
-            setLoading(false);
-        };
-
-        void load();
-    }, [role]);
+useEffect(() => {
+    if (role !== "Teacher") return;
+    void (async () => {
+        const [submissions, activities, users, courses] = await Promise.all([...]);
+        setSubmissions(submissions);
+        setLookups(createActivityLookups(activities, courses, users));
+    })();
+}, [role]);
 
     // Bumped after a review is saved to force the page below to re-fetch, so
     // a submission that no longer matches the current tab's filter (e.g.
@@ -170,13 +113,16 @@ export default function Submissions() {
     // Overdue students for every activity, so the picker can flag which ones
     // need attention and the summary bar/"All activities" need no extra fetch.
     useEffect(() => {
-        if (overdueChecked || activityNameById.size === 0) {
+        if (overdueChecked || !lookups || submissions.length === 0) {
             return;
         }
 
         const check = async () => {
+            const activityIds = [
+                ...new Set(submissions.map(({ activityId }) => activityId)),
+            ];
             const entries = await Promise.all(
-                [...activityNameById.keys()].map(async (id) => {
+                activityIds.map(async (id) => {
                     const overdue = await fetchOverdueByActivityId(id);
                     return [id, overdue] as const;
                 }),
@@ -187,7 +133,7 @@ export default function Submissions() {
         };
 
         void check();
-    }, [overdueChecked, activityNameById]);
+    }, [overdueChecked, lookups, submissions]);
 
     const handleSortChange = (value: string) => {
         setSortBy(value);
@@ -227,19 +173,6 @@ export default function Submissions() {
     }
 
     if (loading) return <div className="p-4">Loading...</div>;
-
-    const courseNameForActivity = (activityId: string) => {
-        const moduleId = activityModuleById.get(activityId);
-        return (moduleId && courseNameByModuleId.get(moduleId)) ?? "";
-    };
-    const courseIdForActivity = (activityId: string) => {
-        const moduleId = activityModuleById.get(activityId);
-        return moduleId ? courseIdByModuleId.get(moduleId) : undefined;
-    };
-    const courseName = (s: SubmissionResponse) =>
-        courseNameForActivity(s.activityId);
-    const studentName = (s: SubmissionResponse) =>
-        studentNameById.get(s.studentId) ?? s.studentId;
 
     const totalOverdue = [...overdueByActivity.values()].reduce(
         (sum, list) => sum + list.length,
@@ -291,6 +224,7 @@ export default function Submissions() {
             {tab !== "overdue" && (
                 <>
                     <div className="overflow-x-auto rounded-lg border border-accent-blue">
+                        {/* <DataTable /> */}
                         <table className="w-full text-left text-text-dark dark:text-text-light">
                             <thead className="bg-bg-window dark:bg-bg-window-dark">
                                 <tr>
@@ -336,9 +270,7 @@ export default function Submissions() {
                             </thead>
                             <tbody>
                                 {pagedSubmissions.map((s) => {
-                                    const deadline = activityDeadlineById.get(
-                                        s.activityId,
-                                    );
+                                    const deadline = lookups?.deadlineForActivity(s.activityId)
                                     // Done shows how late the submission itself was; the other
                                     // tabs show how overdue it still is, growing until resolved.
                                     const lateDays = deadline
@@ -352,7 +284,7 @@ export default function Submissions() {
                                             className="border-t border-accent-blue hover:bg-bg-window/40 dark:hover:bg-bg-window-dark/40"
                                         >
                                             <td className="px-4 py-3">
-                                                {studentName(s)}
+                                                {lookups?.studentName(s.studentId)}
                                                 {s.resubmittedAt != null && (
                                                     <span className="ml-2 rounded-full bg-accent-blue/30 px-2 py-0.5 text-xs">
                                                         Resubmitted
@@ -360,33 +292,31 @@ export default function Submissions() {
                                                 )}
                                             </td>
                                             <td className="px-4 py-3">
-                                                {courseIdForActivity(
+                                                {lookups?.courseIdForActivity(
                                                     s.activityId,
                                                 ) ? (
                                                     <Link
                                                         className="underline text-buttons"
-                                                        to={`/courses/${courseIdForActivity(s.activityId)}`}
+                                                        to={`/courses/${lookups?.courseIdForActivity(s.activityId)}`}
                                                     >
-                                                        {courseName(s) || "-"}
+                                                        {lookups?.courseNameForActivity(s.activityId) || "-"}
                                                     </Link>
                                                 ) : (
-                                                    (courseName(s) ?? "-")
+                                                    (lookups?.courseNameForActivity(s.activityId) ?? "-")
                                                 )}
                                             </td>
                                             <td className="px-4 py-3">
-                                                {activityModuleById.get(
-                                                    s.activityId,
-                                                ) ? (
+                                                {lookups?.moduleIdForActivity(s.activityId) ? (
                                                     <Link
                                                         className="underline text-buttons"
-                                                        to={`/module/${activityModuleById.get(s.activityId)}`}
+                                                        to={`/module/${lookups?.moduleIdForActivity(s.activityId)}`}
                                                     >
-                                                        {activityNameById.get(
+                                                        {lookups?.activityName(
                                                             s.activityId,
                                                         ) ?? s.activityId}
                                                     </Link>
                                                 ) : (
-                                                    (activityNameById.get(
+                                                    (lookups?.activityName(
                                                         s.activityId,
                                                     ) ?? s.activityId)
                                                 )}
@@ -482,16 +412,16 @@ export default function Submissions() {
                             students.map((u) => ({
                                 ...u,
                                 activityId,
-                                moduleId: activityModuleById.get(activityId),
+                                moduleId: lookups?.moduleIdForActivity(activityId),
                                 activityName:
-                                    activityNameById.get(activityId) ??
+                                    lookups?.activityName ??
                                     activityId,
                                 courseName:
-                                    courseNameForActivity(activityId) ||
+                                    lookups?.courseNameForActivity ||
                                     "Unknown course",
-                                courseId: courseIdForActivity(activityId),
+                                courseId: lookups?.courseIdForActivity,
                                 deadline:
-                                    activityDeadlineById.get(activityId) ??
+                                    lookups?.deadlineForActivity ??
                                     null,
                             })),
                     );
@@ -652,7 +582,7 @@ export default function Submissions() {
 
             {reviewing &&
                 (() => {
-                    const deadline = activityDeadlineById.get(
+                    const deadline = lookups?.deadlineForActivity(
                         reviewing.activityId,
                     );
                     const deadlineText = deadline
