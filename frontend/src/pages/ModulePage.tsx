@@ -48,6 +48,7 @@ export default function ModulePage() {
     const [activityTypeFilter, setActivityTypeFilter] = useState<
         ActivityType | "all"
     >("all");
+    const [sortAscending, setSortAscending] = useState(true);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -273,16 +274,42 @@ export default function ModulePage() {
                     {moduleActivities?.length ? (
                         <>
                             <div className="flex flex-wrap justify-center items-center gap-2 mt-3">
-                                <button
-                                    onClick={() => setActivityTypeFilter("all")}
-                                    className={`font-bold text-l bg-bg-window text-text-dark p-1.5 rounded hover:cursor-pointer ${
-                                        activityTypeFilter === "all"
-                                            ? "ring-2 ring-accent-blue"
-                                            : ""
-                                    }`}
-                                >
-                                    All ({moduleActivities.length})
-                                </button>
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        onClick={() =>
+                                            activityTypeFilter === "all"
+                                                ? setSortAscending(
+                                                      !sortAscending,
+                                                  )
+                                                : setActivityTypeFilter("all")
+                                        }
+                                        className="relative overflow-hidden font-bold text-l bg-bg-window text-text-dark p-1.5 rounded hover:cursor-pointer"
+                                    >
+                                        {activityTypeFilter === "all" && (
+                                            <span
+                                                className={`absolute left-0 right-0 h-1.5 ${
+                                                    sortAscending
+                                                        ? "bottom-0 bg-gray-300"
+                                                        : "top-0 bg-accent-blue"
+                                                }`}
+                                            />
+                                        )}
+                                        All ({moduleActivities.length})
+                                    </button>
+                                    <span
+                                        className={`text-xl font-black ${
+                                            activityTypeFilter === "all"
+                                                ? ""
+                                                : "invisible"
+                                        } ${
+                                            sortAscending
+                                                ? "text-gray-300"
+                                                : "text-accent-blue"
+                                        }`}
+                                    >
+                                        {sortAscending ? "▲" : "▼"}
+                                    </span>
+                                </div>
                                 {Object.entries(ActivityTypeNames).map(
                                     ([typeValue, typeName]) => {
                                         const type = Number(
@@ -292,21 +319,53 @@ export default function ModulePage() {
                                             (activity) =>
                                                 activity.type === type,
                                         ).length;
+                                        const isActive =
+                                            activityTypeFilter === type;
 
                                         return count > 0 ? (
-                                            <button
+                                            <div
                                                 key={type}
-                                                onClick={() =>
-                                                    setActivityTypeFilter(type)
-                                                }
-                                                className={`font-bold text-l bg-bg-window text-text-dark p-1.5 rounded hover:cursor-pointer ${
-                                                    activityTypeFilter === type
-                                                        ? "ring-2 ring-accent-blue"
-                                                        : ""
-                                                }`}
+                                                className="flex items-center gap-1"
                                             >
-                                                {typeName} ({count})
-                                            </button>
+                                                <button
+                                                    onClick={() =>
+                                                        isActive
+                                                            ? setSortAscending(
+                                                                  !sortAscending,
+                                                              )
+                                                            : setActivityTypeFilter(
+                                                                  type,
+                                                              )
+                                                    }
+                                                    className="relative overflow-hidden font-bold text-l bg-bg-window text-text-dark p-1.5 rounded hover:cursor-pointer"
+                                                >
+                                                    {isActive && (
+                                                        <span
+                                                            className={`absolute left-0 right-0 h-1.5 ${
+                                                                sortAscending
+                                                                    ? "bottom-0 bg-gray-300"
+                                                                    : "top-0 bg-accent-blue"
+                                                            }`}
+                                                        />
+                                                    )}
+                                                    {typeName} ({count})
+                                                </button>
+                                                <span
+                                                    className={`text-xl font-black ${
+                                                        isActive
+                                                            ? ""
+                                                            : "invisible"
+                                                    } ${
+                                                        sortAscending
+                                                            ? "text-gray-300"
+                                                            : "text-accent-blue"
+                                                    }`}
+                                                >
+                                                    {sortAscending
+                                                        ? "▲"
+                                                        : "▼"}
+                                                </span>
+                                            </div>
                                         ) : null;
                                     },
                                 )}
@@ -319,6 +378,12 @@ export default function ModulePage() {
                                             activity.type ===
                                                 activityTypeFilter,
                                     )
+                                    .sort((a, b) => {
+                                        const diff =
+                                            new Date(a.startAt).getTime() -
+                                            new Date(b.startAt).getTime();
+                                        return sortAscending ? diff : -diff;
+                                    })
                                     .map((activity: ActivityResponse) => (
                                         <ActivityCard
                                             key={activity.activityId}

@@ -259,8 +259,14 @@ export default function ActivityCard({
                         </p>
                         <div className="flex flex-row justify-between items-center">
                             <p className="text-sm text-text-dark  p-3 pt-0">
-                                {ActivityDate(activity.startAt) ===
-                                ActivityDate(activity.endAt) ? (
+                                {activity.deadline != null ? (
+                                    <>
+                                        Deadline:{" "}
+                                        {ActivityDate(activity.deadline)}{" "}
+                                        {ActivityTime(activity.deadline)}
+                                    </>
+                                ) : ActivityDate(activity.startAt) ===
+                                  ActivityDate(activity.endAt) ? (
                                     <>
                                         Scheduled:{" "}
                                         {ActivityDate(activity.startAt)}
@@ -279,24 +285,10 @@ export default function ActivityCard({
                                     </>
                                 )}
                             </p>
-                            {isStudent && isSubmittable && hasStarted && (
-                                <div className="flex flex-col items-start gap-2 px-3">
-                                    {activity.deadline != null &&
-                                        !submission && (
-                                            <p
-                                                className={`text-sm ${missingAndLate ? "text-red-600" : "text-text-dark"}`}
-                                            >
-                                                {" Deadline "}
-                                                {ActivityDate(
-                                                    activity.deadline,
-                                                )}{" "}
-                                                {"  "}
-                                                {ActivityTime(
-                                                    activity.deadline,
-                                                )}
-                                            </p>
-                                        )}
-                                </div>
+                            {isStudent && missingAndLate && (
+                                <p className="text-sm text-red-600 px-3">
+                                    Overdue - not yet submitted
+                                </p>
                             )}
                         </div>
                         <div className="flex flex-row justify-between items-center p-2">

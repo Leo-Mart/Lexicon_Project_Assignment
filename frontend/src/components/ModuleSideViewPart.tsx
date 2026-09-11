@@ -15,7 +15,7 @@ export default function ModuleSideViewPart({
         <>
             <Link to={`/module/${module.moduleId}`} className="details-button">
                 <div
-                    className={`text-l  text-black font-semibold rounded p-2 m-1.5 ${isPast ? "bg-bg" : isFuture ? "bg-accent-blue" : "bg-btn-confirm"}`}
+                    className={`text-l  text-black font-semibold rounded p-2 m-1.5 ${isPast ? "bg-gray-300" : isFuture ? "bg-accent-blue" : "bg-btn-confirm"}`}
                 >
                     <h1 className="text-center">{module.name}</h1>
                     <p className="text-center">
