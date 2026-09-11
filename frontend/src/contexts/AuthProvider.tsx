@@ -41,8 +41,24 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 if (userRole === "Student") {
                     const course = await fetchStudentCourse();
                     setCourseId(course.courseId);
+                    const modules = await fetchModulesForCourse(
+                        course.courseId,
+                    );
+
+                    const today = new Intl.DateTimeFormat("sv-SE").format(
+                        new Date(),
+                    );
+
+                    const currentModule = modules.find(
+                        (module) =>
+                            module.startDate <= today &&
+                            module.endDate >= today,
+                    );
+
+                    setCurrentModuleId(currentModule?.moduleId ?? null);
                 } else {
                     setCourseId(null);
+                    setCurrentModuleId(null);
                 }
             }
 
@@ -63,6 +79,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setRole(userRole);
 
             if (userRole === "Teacher") {
+                setCourseId(null);
+                setCurrentModuleId(null);
                 nav("/index");
             } else if (userRole === "Student") {
                 const course = await fetchStudentCourse();

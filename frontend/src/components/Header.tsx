@@ -1,13 +1,15 @@
 import { NavLink } from "react-router-dom";
-import { routes } from "../routes/config"; // Adjust the import path
+import { routes } from "../routes/config";
 import UserInfo from "./UserInfo";
 import { useAuth } from "../hooks/useAuth";
 
 export default function MainHeader() {
     // Filter routes that should appear in the header
 
-    const { isAuthenticated, role, courseId } = useAuth();
-    const homePath = `/courses/${courseId}`;
+    const { isAuthenticated, role, courseId, currentModuleId } = useAuth();
+    const homePath = currentModuleId
+        ? `/module/${currentModuleId}`
+        : `/courses/${courseId}`;
 
     const headerRoutes = routes.filter((route) => {
         if (!route.createHeader) {
