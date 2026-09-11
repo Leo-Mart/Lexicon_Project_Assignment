@@ -2,9 +2,13 @@ import Button from "./Button";
 import { ActivityDate, ActivityTime } from "../constants/ActivityTimeConverter";
 import { SubmissionReviewStatusNames } from "../constants/SubmissionReviewStatus";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
+import { ActivityType, ActivityTypeNames } from "../constants/ActivityType";
+import { SUBMISSION_MAX_LENGTH } from "./ActivityCard";
 
 interface SubmissionViewModalProps {
     submission: SubmissionResponse;
+    activityName: string;
+    activityType: ActivityType;
     onClose: () => void;
 }
 
@@ -21,6 +25,8 @@ const reviewBadge: Record<string, string> = {
 // don't.
 export default function SubmissionViewModal({
     submission,
+    activityName,
+    activityType,
     onClose,
 }: SubmissionViewModalProps) {
     const reviewStatusText =
@@ -28,15 +34,24 @@ export default function SubmissionViewModal({
             ? SubmissionReviewStatusNames[submission.reviewStatus]
             : "Not reviewed";
 
+    const submittedSuffix = ` · Submitted: ${ActivityDate(submission.submittedAt)} ${ActivityTime(submission.submittedAt)}`;
+
     return (
         <>
             <div className="fixed inset-0 z-40 backdrop-blur-xs transition-opacity"></div>
             <dialog className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 flex w-full sm:w-1/2 h-[75vh] flex-col bg-bg rounded-lg">
                 <nav className="bg-bg-header dark:bg-bg-header-dark text-text-light rounded-t-md flex items-center justify-between px-4 py-2">
-                    <h2 className="text-lg text-text-light">Your submission</h2>
+                    <h2 className="flex items-center gap-2 text-lg text-text-light">
+                        Your submission for
+                        <span className="font-bold text-l bg-bg-window text-text-dark p-1.5 rounded">
+                            {ActivityTypeNames[activityType]}
+                        </span>
+                        {activityName}
+                        {submittedSuffix}
+                    </h2>
                     <div className="flex items-center gap-2">
                         <span
-                            className={`text-xs font-bold px-2 py-1 rounded ${reviewBadge[reviewStatusText]}`}
+                            className={`text-sm font-bold px-3 py-1.5 rounded ${reviewBadge[reviewStatusText]}`}
                         >
                             {reviewStatusText}
                         </span>
@@ -50,12 +65,20 @@ export default function SubmissionViewModal({
                 </nav>
                 <div className="bg-bg py-3 px-3 flex-1 flex flex-col min-h-0">
                     {/* Grows to fill the modal's height; only this scrolls if the text is long. */}
-                    <p className="whitespace-pre-wrap bg-bg-window dark:bg-bg-window-dark text-text-dark dark:text-text-light rounded p-2 mb-4 flex-1 min-h-0 overflow-y-auto">
+                    <p className="whitespace-pre-wrap bg-bg-window dark:bg-bg-window-dark text-text-dark dark:text-text-light rounded p-2 mb-1 flex-1 min-h-0 overflow-y-auto">
                         {submission.text}
+                    </p>
+                    <p className="text-sm text-text-dark mb-1">
+                        {submission.text.length} / {SUBMISSION_MAX_LENGTH} chars
                     </p>
 
                     {submission.feedback && (
                         <>
+                            <span
+                                className={`self-start text-sm font-bold px-3 py-1.5 rounded mb-1 ${reviewBadge[reviewStatusText]}`}
+                            >
+                                {reviewStatusText}
+                            </span>
                             <p className="text-sm font-semibold text-text-dark mb-1">
                                 Feedback from teacher
                             </p>
@@ -65,18 +88,7 @@ export default function SubmissionViewModal({
                         </>
                     )}
 
-                    <div className="flex items-center justify-between">
-                        <p className="text-sm text-text-dark">
-                            {submission.text.length} chars, submitted{" "}
-                            {ActivityDate(submission.submittedAt)}{" "}
-                            {ActivityTime(submission.submittedAt)}
-                            {submission.submittedLate && (
-                                <span className="text-red-500 font-semibold">
-                                    {" "}
-                                    (Late)
-                                </span>
-                            )}
-                        </p>
+                    <div className="flex items-center justify-end">
                         <Button variant="primary" onClick={onClose}>
                             Close
                         </Button>

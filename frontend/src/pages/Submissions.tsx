@@ -28,6 +28,13 @@ const DEFAULT_SORT = "review-asc";
 const daysOverdue = (deadline: string): number =>
     Math.floor((Date.now() - new Date(deadline).getTime()) / MS_PER_DAY);
 
+// How many whole days after the deadline a submission came in.
+const daysLate = (deadline: string, submittedAt: string): number =>
+    Math.floor(
+        (new Date(submittedAt).getTime() - new Date(deadline).getTime()) /
+            MS_PER_DAY,
+    );
+
 // Mock teacher review page: everything fetched and joined client-side.
 export default function Submissions() {
     const { role } = useAuth();
@@ -386,6 +393,12 @@ export default function Submissions() {
                                         >
                                             <td className="px-4 py-3">
                                                 {studentName(s)}
+                                                {s.updatedAt !==
+                                                    s.createdAt && (
+                                                    <span className="ml-2 rounded-full bg-accent-blue/30 px-2 py-0.5 text-xs">
+                                                        Resubmitted
+                                                    </span>
+                                                )}
                                             </td>
                                             <td className="px-4 py-3">
                                                 {courseIdForActivity(
@@ -424,15 +437,30 @@ export default function Submissions() {
                                                     <>
                                                         {ActivityDate(deadline)}{" "}
                                                         {ActivityTime(deadline)}
-                                                        {daysOverdue(deadline) >
-                                                            0 && (
-                                                            <div className="text-xs opacity-70">
-                                                                {daysOverdue(
-                                                                    deadline,
-                                                                )}{" "}
-                                                                days overdue
-                                                            </div>
-                                                        )}
+                                                        {tab === "done"
+                                                            ? daysLate(
+                                                                  deadline,
+                                                                  s.submittedAt,
+                                                              ) > 0 && (
+                                                                  <div className="text-xs opacity-70">
+                                                                      {daysLate(
+                                                                          deadline,
+                                                                          s.submittedAt,
+                                                                      )}{" "}
+                                                                      days late
+                                                                  </div>
+                                                              )
+                                                            : daysOverdue(
+                                                                  deadline,
+                                                              ) > 0 && (
+                                                                  <div className="text-xs opacity-70">
+                                                                      {daysOverdue(
+                                                                          deadline,
+                                                                      )}{" "}
+                                                                      days
+                                                                      overdue
+                                                                  </div>
+                                                              )}
                                                     </>
                                                 ) : (
                                                     "-"

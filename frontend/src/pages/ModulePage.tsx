@@ -13,7 +13,7 @@ import {
     deleteActivity,
     updateActivity,
 } from "../services/activityService";
-import { ActivityType } from "../constants/ActivityType";
+import { ActivityType, ActivityTypeNames } from "../constants/ActivityType";
 import {
     addResourceToModule,
     createResource,
@@ -45,6 +45,10 @@ export default function ModulePage() {
     const [moduleActivities, setModuleActivities] = useState<
         ActivityResponse[] | undefined
     >(undefined);
+    const [activityTypeFilter, setActivityTypeFilter] = useState<
+        ActivityType | "all"
+    >("all");
+    const [sortAscending, setSortAscending] = useState(true);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -206,11 +210,11 @@ export default function ModulePage() {
                     </Button>
                 </Link>
             </div>
-            <div className="bg-bg dark:bg-bg-dark p-10 grid grid-flow-col grid-rows-3 grid-cols-2 gap-8 m-8">
+            <div className="bg-bg dark:bg-bg-dark p-10 grid grid-flow-col grid-rows-[auto_1fr_1fr] grid-cols-2 gap-8 m-8">
                 {moduleActivities && (
                     <ActivitySchedule activities={moduleActivities} />
                 )}
-                <div className="row-span-2 overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-light">
+                <div className="row-span-2 max-h-[70vh] overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-light">
                     <div className="flex">
                         <div className="flex w-full">
                             <h1 className="text-4xl grow text-center">
@@ -247,7 +251,7 @@ export default function ModulePage() {
                         "Module has no activities"
                     )}
                 </div>
-                <div className="row-span-2 overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-light dark:text-text-light">
+                <div className="row-span-2 max-h-[70vh] overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-light dark:text-text-light">
                     <div className="flex">
                         <div className="flex w-full ">
                             <h1 className="text-4xl grow text-center">
@@ -268,31 +272,144 @@ export default function ModulePage() {
                         </div>
                     </div>
                     {moduleActivities?.length ? (
-                        <div className="mt-5">
-                            {moduleActivities!.map(
-                                (activity: ActivityResponse) => (
-                                    <ActivityCard
-                                        key={activity.activityId}
-                                        activity={activity}
-                                        courseName={module.course.name}
-                                        editActivity={handleActivityEdit}
-                                        deleteActivity={handleRemoveActivity}
-                                        deleteResource={handleRemoveResource}
-                                        submission={submissionsByActivityId.get(
-                                            activity.activityId,
-                                        )}
-                                        onSubmitted={(submission) =>
-                                            setSubmissionsByActivityId((prev) =>
-                                                new Map(prev).set(
-                                                    submission.activityId,
-                                                    submission,
-                                                ),
-                                            )
+                        <>
+                            <div className="flex flex-wrap justify-center items-center gap-2 mt-3">
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        onClick={() =>
+                                            activityTypeFilter === "all"
+                                                ? setSortAscending(
+                                                      !sortAscending,
+                                                  )
+                                                : setActivityTypeFilter("all")
                                         }
-                                    />
-                                ),
-                            )}
-                        </div>
+                                        className="relative overflow-hidden font-bold text-l bg-bg-window text-text-dark p-1.5 rounded hover:cursor-pointer"
+                                    >
+                                        {activityTypeFilter === "all" && (
+                                            <span
+                                                className={`absolute left-0 right-0 h-1.5 ${
+                                                    sortAscending
+                                                        ? "bottom-0 bg-gray-300"
+                                                        : "top-0 bg-accent-blue"
+                                                }`}
+                                            />
+                                        )}
+                                        All ({moduleActivities.length})
+                                    </button>
+                                    <span
+                                        className={`text-xl font-black ${
+                                            activityTypeFilter === "all"
+                                                ? ""
+                                                : "invisible"
+                                        } ${
+                                            sortAscending
+                                                ? "text-gray-300"
+                                                : "text-accent-blue"
+                                        }`}
+                                    >
+                                        {sortAscending ? "▲" : "▼"}
+                                    </span>
+                                </div>
+                                {Object.entries(ActivityTypeNames).map(
+                                    ([typeValue, typeName]) => {
+                                        const type = Number(
+                                            typeValue,
+                                        ) as ActivityType;
+                                        const count = moduleActivities.filter(
+                                            (activity) =>
+                                                activity.type === type,
+                                        ).length;
+                                        const isActive =
+                                            activityTypeFilter === type;
+
+                                        return count > 0 ? (
+                                            <div
+                                                key={type}
+                                                className="flex items-center gap-1"
+                                            >
+                                                <button
+                                                    onClick={() =>
+                                                        isActive
+                                                            ? setSortAscending(
+                                                                  !sortAscending,
+                                                              )
+                                                            : setActivityTypeFilter(
+                                                                  type,
+                                                              )
+                                                    }
+                                                    className="relative overflow-hidden font-bold text-l bg-bg-window text-text-dark p-1.5 rounded hover:cursor-pointer"
+                                                >
+                                                    {isActive && (
+                                                        <span
+                                                            className={`absolute left-0 right-0 h-1.5 ${
+                                                                sortAscending
+                                                                    ? "bottom-0 bg-gray-300"
+                                                                    : "top-0 bg-accent-blue"
+                                                            }`}
+                                                        />
+                                                    )}
+                                                    {typeName} ({count})
+                                                </button>
+                                                <span
+                                                    className={`text-xl font-black ${
+                                                        isActive
+                                                            ? ""
+                                                            : "invisible"
+                                                    } ${
+                                                        sortAscending
+                                                            ? "text-gray-300"
+                                                            : "text-accent-blue"
+                                                    }`}
+                                                >
+                                                    {sortAscending ? "▲" : "▼"}
+                                                </span>
+                                            </div>
+                                        ) : null;
+                                    },
+                                )}
+                            </div>
+                            <div className="mt-3">
+                                {moduleActivities
+                                    .filter(
+                                        (activity) =>
+                                            activityTypeFilter === "all" ||
+                                            activity.type ===
+                                                activityTypeFilter,
+                                    )
+                                    .sort((a, b) => {
+                                        const diff =
+                                            new Date(a.startAt).getTime() -
+                                            new Date(b.startAt).getTime();
+                                        return sortAscending ? diff : -diff;
+                                    })
+                                    .map((activity: ActivityResponse) => (
+                                        <ActivityCard
+                                            key={activity.activityId}
+                                            activity={activity}
+                                            courseName={module.course.name}
+                                            editActivity={handleActivityEdit}
+                                            deleteActivity={
+                                                handleRemoveActivity
+                                            }
+                                            deleteResource={
+                                                handleRemoveResource
+                                            }
+                                            submission={submissionsByActivityId.get(
+                                                activity.activityId,
+                                            )}
+                                            onSubmitted={(submission) =>
+                                                setSubmissionsByActivityId(
+                                                    (prev) =>
+                                                        new Map(prev).set(
+                                                            submission.activityId,
+                                                            submission,
+                                                        ),
+                                                )
+                                            }
+                                        />
+                                    ))}
+                            </div>
+                        </>
                     ) : (
                         "Module has no activities"
                     )}
