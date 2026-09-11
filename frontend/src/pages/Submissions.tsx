@@ -393,7 +393,8 @@ export default function Submissions() {
                                         >
                                             <td className="px-4 py-3">
                                                 {studentName(s)}
-                                                {s.updatedAt !== s.createdAt && (
+                                                {s.updatedAt !==
+                                                    s.createdAt && (
                                                     <span className="ml-2 rounded-full bg-accent-blue/30 px-2 py-0.5 text-xs">
                                                         Resubmitted
                                                     </span>
@@ -449,13 +450,15 @@ export default function Submissions() {
                                                                       days late
                                                                   </div>
                                                               )
-                                                            : daysOverdue(deadline) >
-                                                                  0 && (
+                                                            : daysOverdue(
+                                                                  deadline,
+                                                              ) > 0 && (
                                                                   <div className="text-xs opacity-70">
                                                                       {daysOverdue(
                                                                           deadline,
                                                                       )}{" "}
-                                                                      days overdue
+                                                                      days
+                                                                      overdue
                                                                   </div>
                                                               )}
                                                     </>

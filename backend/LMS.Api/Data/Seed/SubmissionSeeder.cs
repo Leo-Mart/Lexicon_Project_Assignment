@@ -570,19 +570,19 @@ public static class SubmissionSeeder
         Submission Filler(
             Guid activityId, Guid studentId, string text, string feedback,
             int submittedDaysAgo, int feedbackDaysAgo) => new()
-        {
-            SubmissionId = Guid.Parse($"71000000-0000-0000-0000-{fillerSeq++:D12}"),
-            ActivityId = activityId,
-            StudentId = studentId,
-            Text = text,
-            SubmittedAt = now.AddDays(submittedDaysAgo),
-            ReviewStatus = SubmissionReviewStatus.Approved,
-            Feedback = feedback,
-            FeedbackByTeacherId = UserSeeder.TeacherId,
-            FeedbackAt = now.AddDays(feedbackDaysAgo),
-            CreatedAt = now,
-            UpdatedAt = now
-        };
+            {
+                SubmissionId = Guid.Parse($"71000000-0000-0000-0000-{fillerSeq++:D12}"),
+                ActivityId = activityId,
+                StudentId = studentId,
+                Text = text,
+                SubmittedAt = now.AddDays(submittedDaysAgo),
+                ReviewStatus = SubmissionReviewStatus.Approved,
+                Feedback = feedback,
+                FeedbackByTeacherId = UserSeeder.TeacherId,
+                FeedbackAt = now.AddDays(feedbackDaysAgo),
+                CreatedAt = now,
+                UpdatedAt = now
+            };
 
         Guid T2 = UserSeeder.StudentTwoId;
         var fillerGroups = new (
