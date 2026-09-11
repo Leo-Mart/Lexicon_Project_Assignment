@@ -151,29 +151,6 @@ export default function CoursesDetails() {
 
     return (
         <>
-            {isAuthenticated && role === "Teacher" ? (
-                <div className="fixed top-2/10 left-16 w-1/10">
-                    <h3 className="text-text-dark dark:text-text-light">
-                        Teacher Control
-                    </h3>
-                    <div className="flex flex-col gap-3 justify-center">
-                        <Button
-                            className="hover:cursor-pointer"
-                            onClick={() => setShowCreateModuleModal(true)}
-                        >
-                            Create new module
-                        </Button>
-                        <Button
-                            className="hover:cursor-pointer"
-                            onClick={() => setShowCreateResourceForm(true)}
-                        >
-                            Create new resource
-                        </Button>
-                    </div>
-                </div>
-            ) : (
-                ""
-            )}
             <div className="flex flex-row-reverse">
                 <UserSideView courseId={courseId!}></UserSideView>
             </div>
@@ -181,47 +158,87 @@ export default function CoursesDetails() {
                 <h1 className="text-3xl font-bold p-3">{course.name}</h1>
                 <Divider />
                 <div className=" p-3">
-                    <h2 className="text-xl">{course.description}</h2>
+                    <h2 className="text-l">{course.description}</h2>
                     <p>
                         {course.startDate} - {course.endDate}
                     </p>
                 </div>
-                <h3 className="font-bold ">Course Modules:</h3>
-                {course.modules.map((module) => (
-                    <li className="p-3" key={module.moduleId}>
-                        <Link to={`/module/${module.moduleId}`}>
-                            <Button className="w-1/2 hover:cursor-pointer">
-                                <h2 className="font-extrabold p-2">
-                                    {module.name}
-                                </h2>
-                                <p>{module.description}</p>
-                                <p>
-                                    {module.startDate} - {module.endDate}
-                                </p>
-                            </Button>
-                        </Link>
-                    </li>
-                ))}
                 <Divider />
-                <div className="flex flex-col items-center p-2 m-2 rounded-md">
-                    <div className="flex w-full text-text-light">
-                        <h2 className="font-bold grow text-center">
-                            Course resources:{" "}
-                        </h2>
+                <div className="grid grid-cols-6 gap-2">
+                    <div>
+                        {isAuthenticated && role === "Teacher" ? (
+                            <div className="fixed top-3/14 left-16 w-1/10">
+                                <h3 className="text-text-dark dark:text-text-light">
+                                    Teacher Control
+                                </h3>
+                                <div className="flex flex-col gap-3 justify-center">
+                                    <Button
+                                        className="hover:cursor-pointer"
+                                        onClick={() =>
+                                            setShowCreateModuleModal(true)
+                                        }
+                                    >
+                                        Create new module
+                                    </Button>
+                                    <Button
+                                        className="hover:cursor-pointer"
+                                        onClick={() =>
+                                            setShowCreateResourceForm(true)
+                                        }
+                                    >
+                                        Create new resource
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            ""
+                        )}
                     </div>
-                    <div className="w-1/2">
-                        {resources.map((resource) => (
-                            <>
-                                <ResourceCard
-                                    resource={resource}
-                                    key={resource.resourceId}
-                                    deleteResource={handleRemoveResource}
-                                    editResource={handleResourceEdit}
-                                />
-                            </>
-                        ))}
+                    <div className="p-2 m-2 col-span-2 rounded-md">
+                        <h3 className="font-bold text-text-dark dark:text-text-light ">
+                            Select module for more information
+                        </h3>
+                        <ul>
+                            {course.modules.map((module) => (
+                                <li className="p-3" key={module.moduleId}>
+                                    <Link to={`/module/${module.moduleId}`}>
+                                        <Button className="w-full hover:cursor-pointer">
+                                            <h2 className="font-extrabold p-2">
+                                                {module.name}
+                                            </h2>
+                                            <p>{module.description}</p>
+                                            <p>
+                                                {module.startDate} -{" "}
+                                                {module.endDate}
+                                            </p>
+                                        </Button>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    <div className="flex flex-col items-center p-2 m-2 rounded-md col-span-2">
+                        <div className="flex w-full text-text-light">
+                            <h2 className="font-bold grow text-center text-text-dark dark:text-text-light">
+                                Course resources:{" "}
+                            </h2>
+                        </div>
+                        <div className="">
+                            {resources.map((resource) => (
+                                <>
+                                    <ResourceCard
+                                        resource={resource}
+                                        key={resource.resourceId}
+                                        deleteResource={handleRemoveResource}
+                                        editResource={handleResourceEdit}
+                                    />
+                                </>
+                            ))}
+                        </div>
                     </div>
                 </div>
+
                 {showCreateResourceForm && (
                     <FormModal
                         config={createResourceFormConfig}

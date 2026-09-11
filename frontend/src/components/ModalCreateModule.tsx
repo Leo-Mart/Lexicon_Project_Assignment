@@ -42,7 +42,7 @@ const ModalCreateModule = (props: CreateModuleModalProps) => {
         <ModalWrapper
             open={props.open}
             onClose={props.onClose}
-            title="Create new Resource"
+            title="Create new Module"
         >
             <div className="bg-bg py-3 px-3">
                 <form
