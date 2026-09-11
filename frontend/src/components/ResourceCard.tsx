@@ -76,7 +76,7 @@ const ResourceCard = ({
                                 <p>{resource.description}</p>
                                 <p>
                                     <span className="font-semibold">
-                                        Created by:{" "}
+                                        Added by:{" "}
                                     </span>
                                     {resource.createdByTeacher.name}
                                 </p>
