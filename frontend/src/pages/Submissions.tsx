@@ -26,6 +26,7 @@ import {
 import { fetchActivities } from "../services/activityService.ts";
 import { fetchCourses } from "../services/courseService.ts";
 import { fetchUsers } from "../services/userService.ts";
+import TableSearchBar from "../components/TableSearchBar.tsx";
 /* import DataTable from "../components/DataTable";
 import type { Column } from "../types/Column.ts"; */
 
@@ -188,6 +189,12 @@ export default function Submissions() {
         setReviewing(null);
     };
 
+    const onSearchChange = (value: string) => {
+        setSearch(value);
+        setPage(1);
+        setOverduePage(1);
+    };
+
     if (role !== "Teacher") {
         return (
             <div className="p-4 text-text-dark dark:text-text-light">
@@ -218,21 +225,10 @@ export default function Submissions() {
                 Submissions
             </h1>
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                <div className="flex items-center gap-3">
-                    <input
-                        id="student-search"
-                        type="search"
-                        aria-label="Search for student"
-                        placeholder="Search for student..."
-                        className="bg-slate-700 text-white placeholder:text-slate-400 border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
-                        value={search}
-                        onChange={(e) => {
-                            setSearch(e.target.value);
-                            setPage(1);
-                            setOverduePage(1);
-                        }}
-                    />
-                </div>
+                <TableSearchBar
+                    search={search}
+                    onSearchChange={onSearchChange}
+                />
 
                 <SubmissionCategoryButtons
                     notReviewedCount={notReviewedCount}
