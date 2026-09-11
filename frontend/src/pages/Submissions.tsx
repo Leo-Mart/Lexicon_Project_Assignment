@@ -10,7 +10,7 @@ import {
     fetchOverdueByActivityId,
     setFeedback,
 } from "../services/submissionService";
-import { fetchActivitys } from "../services/activityService";
+import { fetchActivities } from "../services/activityService";
 import { ActivityDate, ActivityTime } from "../constants/ActivityTimeConverter";
 import { fetchUsers } from "../services/userService";
 import { fetchCourses } from "../services/courseService";
@@ -97,7 +97,7 @@ export default function Submissions() {
             const [submissionData, activities, users, courses] =
                 await Promise.all([
                     fetchAllSubmissions(),
-                    fetchActivitys(),
+                    fetchActivities(),
                     fetchUsers(),
                     fetchCourses({
                         search: "",
