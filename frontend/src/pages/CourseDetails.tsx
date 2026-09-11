@@ -20,6 +20,7 @@ import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
 import FormModal from "../components/FormModal";
 import { createResourceFormConfig } from "../types/formSchemas";
 import UserSideView from "../components/UserSideView";
+import Divider from "../components/Divider";
 
 export default function CoursesDetails() {
     const { courseId } = useParams<{ courseId: string }>();
@@ -150,48 +151,42 @@ export default function CoursesDetails() {
 
     return (
         <>
+            {isAuthenticated && role === "Teacher" ? (
+                <div className="fixed top-2/10 left-16 w-1/10">
+                    <h3 className="text-text-dark dark:text-text-light">
+                        Teacher Control
+                    </h3>
+                    <div className="flex flex-col gap-3 justify-center">
+                        <Button
+                            className="hover:cursor-pointer"
+                            onClick={() => setShowCreateModuleModal(true)}
+                        >
+                            Create new module
+                        </Button>
+                        <Button
+                            className="hover:cursor-pointer"
+                            onClick={() => setShowCreateResourceForm(true)}
+                        >
+                            Create new resource
+                        </Button>
+                    </div>
+                </div>
+            ) : (
+                ""
+            )}
             <div className="flex flex-row-reverse">
                 <UserSideView courseId={courseId!}></UserSideView>
             </div>
-            <div className="text-center">
-                <h1 className="text-3xl font-bold p-3 bg-buttons text-white">
-                    {course.name}
-                </h1>
-                <div className=" p-3 text-text-dark dark:text-text-light">
+            <div className="text-center text-text-dark dark:text-text-light">
+                <h1 className="text-3xl font-bold p-3">{course.name}</h1>
+                <Divider />
+                <div className=" p-3">
                     <h2 className="text-xl">{course.description}</h2>
                     <p>
                         {course.startDate} - {course.endDate}
                     </p>
                 </div>
-                <div className="flex flex-col items-center bg-buttons p-2 m-2 rounded-md">
-                    <div className="flex w-full text-text-light">
-                        <h2 className="font-bold grow text-center">
-                            Course resources:{" "}
-                        </h2>
-                        {isAuthenticated && role === "Teacher" ? (
-                            <button
-                                className="rounded-md p-2 w-10 bg-buttons border-text-light justify-self-end border hover:cursor-pointer"
-                                onClick={() => setShowCreateResourceForm(true)}
-                            >
-                                +
-                            </button>
-                        ) : (
-                            ""
-                        )}
-                    </div>
-                    <div className="w-1/2">
-                        {resources.map((resource) => (
-                            <>
-                                <ResourceCard
-                                    resource={resource}
-                                    deleteResource={handleRemoveResource}
-                                    editResource={handleResourceEdit}
-                                />
-                            </>
-                        ))}
-                    </div>
-                </div>
-
+                <h3 className="font-bold ">Course Modules:</h3>
                 {course.modules.map((module) => (
                     <li className="p-3" key={module.moduleId}>
                         <Link to={`/module/${module.moduleId}`}>
@@ -207,23 +202,26 @@ export default function CoursesDetails() {
                         </Link>
                     </li>
                 ))}
-                {isAuthenticated && role === "Teacher" ? (
-                    <>
-                        <h3 className="text-text-dark dark:text-text-light">
-                            Teacher Control
-                        </h3>
-                        <div className="flex gap-3 justify-center">
-                            <Button
-                                className="hover:cursor-pointer"
-                                onClick={() => setShowCreateModuleModal(true)}
-                            >
-                                Create new module
-                            </Button>
-                        </div>
-                    </>
-                ) : (
-                    ""
-                )}
+                <Divider />
+                <div className="flex flex-col items-center p-2 m-2 rounded-md">
+                    <div className="flex w-full text-text-light">
+                        <h2 className="font-bold grow text-center">
+                            Course resources:{" "}
+                        </h2>
+                    </div>
+                    <div className="w-1/2">
+                        {resources.map((resource) => (
+                            <>
+                                <ResourceCard
+                                    resource={resource}
+                                    key={resource.resourceId}
+                                    deleteResource={handleRemoveResource}
+                                    editResource={handleResourceEdit}
+                                />
+                            </>
+                        ))}
+                    </div>
+                </div>
                 {showCreateResourceForm && (
                     <FormModal
                         config={createResourceFormConfig}

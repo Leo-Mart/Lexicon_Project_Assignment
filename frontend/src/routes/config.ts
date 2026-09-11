@@ -74,7 +74,7 @@ export const routes = [
         path: "/users",
         displayName: "Users",
         component: lazy(() => import("../pages/Users")),
-        createHeader: true,
+        createHeader: false,
         isProtected: true,
         allowedRoles: teacherOnly,
     },
