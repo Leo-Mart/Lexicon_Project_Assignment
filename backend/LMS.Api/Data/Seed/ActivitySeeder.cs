@@ -426,6 +426,7 @@ public static class ActivitySeeder
                 Description = "Practice defining routes and registering services with the built-in DI container.",
                 StartAt = now.AddDays(-13),
                 EndAt = now.AddDays(-13).AddHours(2),
+                Deadline = now.AddDays(-11),
                 CreatedAt = now,
                 UpdatedAt = now
             },
