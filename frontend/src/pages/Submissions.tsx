@@ -19,6 +19,8 @@ import type { SubmissionResponse } from "../interfaces/submission/SubmissionResp
 import type { OverdueSubmission } from "../interfaces/submission/OverdueSubmission";
 import type { FeedbackRequest } from "../interfaces/submission/FeedbackRequest";
 import { SubmissionReviewStatus } from "../constants/SubmissionReviewStatus";
+import SubmissionCategoryButtons from "../components/SubmissionCategoryButtons";
+import type { SubmissionTabs } from "../types/SubmissionTabs";
 
 const PAGE_SIZE = 10;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -63,9 +65,7 @@ export default function Submissions() {
     const [sortBy, setSortBy] = useState(DEFAULT_SORT);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
-    const [tab, setTab] = useState<
-        "not-reviewed" | "overdue" | "needs-completion" | "done"
-    >("not-reviewed");
+    const [tab, setTab] = useState<SubmissionTabs>("not-reviewed");
 
     // The Submissions tab's table: one page at a time, searched/sorted on
     // the server. Separate from `submissions` above, which stays a full
@@ -288,52 +288,15 @@ export default function Submissions() {
                     />
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                        variant="primary"
-                        className={
-                            tab === "not-reviewed" ? "bg-accent-blue" : ""
-                        }
-                        onClick={() => handleTabChange("not-reviewed")}
-                    >
-                        Not reviewed
-                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
-                            {notReviewedCount}
-                        </span>
-                    </Button>
-                    <Button
-                        variant="primary"
-                        className={tab === "overdue" ? "bg-accent-blue" : ""}
-                        onClick={() => handleTabChange("overdue")}
-                    >
-                        Overdue
-                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
-                            {overdueChecked ? totalOverdue : "…"}
-                        </span>
-                    </Button>
-                    <Button
-                        variant="primary"
-                        className={
-                            tab === "needs-completion" ? "bg-accent-blue" : ""
-                        }
-                        onClick={() => handleTabChange("needs-completion")}
-                    >
-                        Needs completion
-                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
-                            {needsCompletionCount}
-                        </span>
-                    </Button>
-                    <Button
-                        variant="primary"
-                        className={tab === "done" ? "bg-accent-blue" : ""}
-                        onClick={() => handleTabChange("done")}
-                    >
-                        Done
-                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
-                            {doneCount}
-                        </span>
-                    </Button>
-                </div>
+                <SubmissionCategoryButtons
+                    notReviewedCount={notReviewedCount}
+                    overdueChecked={overdueChecked}
+                    totalOverdue={totalOverdue}
+                    needsCompletionCount={needsCompletionCount}
+                    doneCount={doneCount}
+                    tab={tab}
+                    handleTabChange={handleTabChange}
+                />
             </div>
 
             {tab !== "overdue" && (
