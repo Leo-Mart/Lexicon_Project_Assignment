@@ -361,9 +361,7 @@ export default function ModulePage() {
                                                             : "text-accent-blue"
                                                     }`}
                                                 >
-                                                    {sortAscending
-                                                        ? "▲"
-                                                        : "▼"}
+                                                    {sortAscending ? "▲" : "▼"}
                                                 </span>
                                             </div>
                                         ) : null;

@@ -227,7 +227,11 @@ export default function FormModal<T extends Record<string, unknown>>({
                         >
                             Save
                         </Button>
-                        <Button type="button" variant="cancel" onClick={onClose}>
+                        <Button
+                            type="button"
+                            variant="cancel"
+                            onClick={onClose}
+                        >
                             Cancel
                         </Button>
                     </div>
