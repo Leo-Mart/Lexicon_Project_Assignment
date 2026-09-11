@@ -309,7 +309,8 @@ public static class SubmissionSeeder
                 Text = "Added the input validation you flagged - the POST endpoint now returns 400 with the model errors instead of crashing. Sorry this took a while to get back to.",
                 SubmittedAt = now,
                 CreatedAt = now.AddDays(-9),
-                UpdatedAt = now
+                UpdatedAt = now,
+                ResubmittedAt = now
             },
 
             // On time, needs completion.
@@ -337,7 +338,8 @@ public static class SubmissionSeeder
                 Text = "Added error handling to the POST endpoint and validation on the required fields, like you mentioned. Let me know if anything else needs work.",
                 SubmittedAt = now.AddDays(-10),
                 CreatedAt = now.AddDays(-11),
-                UpdatedAt = now.AddDays(-10)
+                UpdatedAt = now.AddDays(-10),
+                ResubmittedAt = now.AddDays(-10)
             },
 
             // On time, approved.

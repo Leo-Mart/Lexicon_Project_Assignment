@@ -393,8 +393,7 @@ export default function Submissions() {
                                         >
                                             <td className="px-4 py-3">
                                                 {studentName(s)}
-                                                {s.updatedAt !==
-                                                    s.createdAt && (
+                                                {s.resubmittedAt != null && (
                                                     <span className="ml-2 rounded-full bg-accent-blue/30 px-2 py-0.5 text-xs">
                                                         Resubmitted
                                                     </span>

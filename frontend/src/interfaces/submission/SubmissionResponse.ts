@@ -13,4 +13,5 @@ export interface SubmissionResponse {
     feedbackAt: string | null;
     createdAt: string;
     updatedAt: string;
+    resubmittedAt: string | null;
 }
