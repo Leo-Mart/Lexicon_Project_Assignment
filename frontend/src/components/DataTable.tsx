@@ -74,8 +74,8 @@ export default function DataTable<T>({
                                 key={getKey(item)}
                                 className={
                                     index % 2 === 0
-                                        ? "bg-white dark:bg-bg-window-dark text-text-dark"
-                                        : "bg-bg dark:bg-bg-dark text-text-dark"
+                                        ? "bg-white dark:bg-bg-header-dark text-text-dark dark:text-text-light"
+                                        : "bg-bg dark:bg-bg-dark text-text-dark dark:text-text-light"
                                 }
                             >
                                 {columns.map((column) => (
