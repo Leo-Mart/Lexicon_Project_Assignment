@@ -144,7 +144,7 @@ export default function CourseListPage() {
             header: "Name",
             render: (course) => (
                 <Link
-                    className="font-bold underline text-buttons text-lg"
+                    className="font-bold underline text-buttons dark:text-buttons-dark text-lg"
                     to={`/courses/${course.courseId}`}
                 >
                     {course.name}

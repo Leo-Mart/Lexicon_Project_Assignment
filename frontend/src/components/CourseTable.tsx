@@ -69,7 +69,7 @@ export default function CourseTable({
                     >
                         <td className="p-3">
                             <Link
-                                className="font-bold underline text-buttons text-lg"
+                                className="font-bold underline text-buttons dark:text-buttons-dark text-lg"
                                 to={`/courses/${course.courseId}`}
                             >
                                 {course.name}

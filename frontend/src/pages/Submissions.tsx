@@ -229,7 +229,7 @@ export default function Submissions() {
                         "-";
                     return courseId ? (
                         <Link
-                            className="underline text-buttons"
+                            className="underline text-buttons dark:text-buttons-dark"
                             to={`/courses/${courseId}`}
                         >
                             {courseName}
@@ -253,7 +253,7 @@ export default function Submissions() {
                         submission.activityId;
                     return moduleId ? (
                         <Link
-                            className="underline text-buttons"
+                            className="underline text-buttons dark:text-buttons-dark"
                             to={`/module/${moduleId}`}
                         >
                             {activityName}
@@ -507,7 +507,7 @@ export default function Submissions() {
                                                     <td className="px-4 py-3">
                                                         {row.courseId ? (
                                                             <Link
-                                                                className="underline text-buttons"
+                                                                className="underline text-buttons dark:text-buttons-dark"
                                                                 to={`/courses/${row.courseId}`}
                                                             >
                                                                 {row.courseName}
@@ -519,7 +519,7 @@ export default function Submissions() {
                                                     <td className="px-4 py-3">
                                                         {row.moduleId ? (
                                                             <Link
-                                                                className="underline text-buttons"
+                                                                className="underline text-buttons dark:text-buttons-dark"
                                                                 to={`/module/${row.moduleId}`}
                                                             >
                                                                 {
