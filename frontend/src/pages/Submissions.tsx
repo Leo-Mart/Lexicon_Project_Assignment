@@ -584,7 +584,10 @@ export default function Submissions() {
                     return (
                         <ReviewSubmissionModal
                             submission={reviewing}
-                            studentName={reviewing.studentId}
+                            studentName={
+                                lookups?.studentName(reviewing.studentId) ??
+                                reviewing.studentId
+                            }
                             courseName={
                                 lookups?.courseNameForActivity(
                                     reviewing.activityId,
