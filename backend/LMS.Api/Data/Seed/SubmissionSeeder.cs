@@ -300,15 +300,15 @@ public static class SubmissionSeeder
                 UpdatedAt = now
             },
 
-            // Late, not reviewed yet.
+            // Late, resubmitted after a needs-completion, not reviewed yet.
             new()
             {
                 SubmissionId = AspNetSubmissionTwoId,
                 ActivityId = ActivitySeeder.AspNetApiTaskId,
                 StudentId = UserSeeder.StudentTwoId,
-                Text = "Web API with all five endpoints working against the database. Tested each one manually with Postman before submitting - collection is attached.",
+                Text = "Added the input validation you flagged - the POST endpoint now returns 400 with the model errors instead of crashing. Sorry this took a while to get back to.",
                 SubmittedAt = now,
-                CreatedAt = now,
+                CreatedAt = now.AddDays(-9),
                 UpdatedAt = now
             },
 
@@ -328,16 +328,16 @@ public static class SubmissionSeeder
                 UpdatedAt = now
             },
 
-            // On time, not reviewed yet.
+            // Resubmitted after a needs-completion, not reviewed yet.
             new()
             {
                 SubmissionId = Guid.Parse("70000000-0000-0000-0000-000000000005"),
                 ActivityId = ActivitySeeder.AspNetApiTaskId,
                 StudentId = Student(6),
-                Text = "Completed the Web API assignment - all endpoints are implemented, and I added a couple of extra query parameters for filtering on top of what was asked.",
+                Text = "Added error handling to the POST endpoint and validation on the required fields, like you mentioned. Let me know if anything else needs work.",
                 SubmittedAt = now.AddDays(-10),
-                CreatedAt = now,
-                UpdatedAt = now
+                CreatedAt = now.AddDays(-11),
+                UpdatedAt = now.AddDays(-10)
             },
 
             // On time, approved.
