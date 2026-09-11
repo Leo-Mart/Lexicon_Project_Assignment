@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Button from "../components/Button";
 import Pagination from "../components/Pagination";
@@ -27,6 +27,8 @@ import { fetchActivities } from "../services/activityService.ts";
 import { fetchCourses } from "../services/courseService.ts";
 import { fetchUsers } from "../services/userService.ts";
 import TableSearchBar from "../components/TableSearchBar.tsx";
+import DataTable from "../components/DataTable.tsx";
+import type { Column } from "../types/Column.ts";
 /* import DataTable from "../components/DataTable";
 import type { Column } from "../types/Column.ts"; */
 
@@ -195,6 +197,132 @@ export default function Submissions() {
         setOverduePage(1);
     };
 
+    const submissionColumns: Column<SubmissionResponse>[] = useMemo(() => {
+        const baseColumns: Column<SubmissionResponse>[] = [
+            {
+                key: "student",
+                field: "student",
+                header: "Student",
+                className: "px-4 py-3",
+                render: (submission) => (
+                    <>
+                        {lookups?.studentName(submission.studentId)}
+                        {submission.resubmittedAt != null && (
+                            <span className="ml-2 rounded-full bg-accent-blue/30 px-2 py-0.5 text-xs">
+                                Resubmitted
+                            </span>
+                        )}
+                    </>
+                ),
+            },
+            {
+                key: "course",
+                field: "course",
+                header: "Course",
+                className: "px-4 py-3",
+                render: (submission) => {
+                    const courseId = lookups?.courseIdForActivity(
+                        submission.activityId,
+                    );
+                    const courseName =
+                        lookups?.courseNameForActivity(submission.activityId) ||
+                        "-";
+                    return courseId ? (
+                        <Link
+                            className="underline text-buttons"
+                            to={`/courses/${courseId}`}
+                        >
+                            {courseName}
+                        </Link>
+                    ) : (
+                        courseName
+                    );
+                },
+            },
+            {
+                key: "activity",
+                field: "activity",
+                header: "Activity",
+                className: "px-4 py-3",
+                render: (submission) => {
+                    const moduleId = lookups?.moduleIdForActivity(
+                        submission.activityId,
+                    );
+                    const activityName =
+                        lookups?.activityName(submission.activityId) ??
+                        submission.activityId;
+                    return moduleId ? (
+                        <Link
+                            className="underline text-buttons"
+                            to={`/module/${moduleId}`}
+                        >
+                            {activityName}
+                        </Link>
+                    ) : (
+                        activityName
+                    );
+                },
+            },
+            {
+                key: "deadline",
+                field: "deadline",
+                header: "Deadline",
+                className: "px-4 py-3",
+                render: (submission) => {
+                    const deadline = lookups?.deadlineForActivity(
+                        submission.activityId,
+                    );
+                    const lateDays = deadline
+                        ? tab === "done"
+                            ? daysLate(deadline, submission.submittedAt)
+                            : daysOverdue(deadline)
+                        : null;
+                    return deadline ? (
+                        <>
+                            {ActivityDate(deadline)} {ActivityTime(deadline)}
+                            {lateDays != null && lateDays > 0 && (
+                                <div className="text-xs opacity-70">
+                                    {lateDays} days{" "}
+                                    {tab === "done" ? "late" : "overdue"}
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        "-"
+                    );
+                },
+            },
+        ];
+
+        // Conditionally add the "reviewed" column
+        if (tab !== "not-reviewed") {
+            baseColumns.push({
+                key: "reviewed",
+                field: "reviewed",
+                header: "Reviewed",
+                className: "px-4 py-3",
+                render: (submission) =>
+                    submission.feedbackAt
+                        ? `${ActivityDate(submission.feedbackAt)} ${ActivityTime(submission.feedbackAt)}`
+                        : "-",
+            });
+        }
+
+        // Always add the "actions" column
+        baseColumns.push({
+            key: "actions",
+            header: "Interact",
+            className: "whitespace-nowrap px-4 py-3",
+            render: (submission) => (
+                <Button onClick={() => setReviewing(submission)}>
+                    {submission.reviewStatus != null ? "Edit review" : "Review"}
+                </Button>
+            ),
+        });
+
+        return baseColumns;
+    }, [tab, lookups]); // Recompute when `tab` or `lookups` changes
+
     if (role !== "Teacher") {
         return (
             <div className="p-4 text-text-dark dark:text-text-light">
@@ -242,190 +370,16 @@ export default function Submissions() {
             </div>
 
             {tab !== "overdue" && (
-                <>
-                    <div className="overflow-x-auto rounded-lg border border-accent-blue">
-                        {/* <DataTable /> */}
-                        <table className="w-full text-left text-text-dark dark:text-text-light">
-                            <thead className="bg-bg-window dark:bg-bg-window-dark">
-                                <tr>
-                                    <SortableTh
-                                        field="student"
-                                        label="Student"
-                                        sortBy={sortBy}
-                                        onSortChange={handleSortChange}
-                                        isLoading={tableLoading}
-                                    />
-                                    <SortableTh
-                                        field="course"
-                                        label="Course"
-                                        sortBy={sortBy}
-                                        onSortChange={handleSortChange}
-                                        isLoading={tableLoading}
-                                    />
-                                    <SortableTh
-                                        field="activity"
-                                        label="Activity"
-                                        sortBy={sortBy}
-                                        onSortChange={handleSortChange}
-                                        isLoading={tableLoading}
-                                    />
-                                    <SortableTh
-                                        field="deadline"
-                                        label="Deadline"
-                                        sortBy={sortBy}
-                                        onSortChange={handleSortChange}
-                                        isLoading={tableLoading}
-                                    />
-                                    {tab !== "not-reviewed" && (
-                                        <SortableTh
-                                            field="reviewed"
-                                            label="Reviewed"
-                                            sortBy={sortBy}
-                                            onSortChange={handleSortChange}
-                                            isLoading={tableLoading}
-                                        />
-                                    )}
-                                    <th className="px-4 py-3"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {pagedSubmissions.map((s) => {
-                                    const deadline =
-                                        lookups?.deadlineForActivity(
-                                            s.activityId,
-                                        );
-                                    // Done shows how late the submission itself was; the other
-                                    // tabs show how overdue it still is, growing until resolved.
-                                    const lateDays = deadline
-                                        ? tab === "done"
-                                            ? daysLate(deadline, s.submittedAt)
-                                            : daysOverdue(deadline)
-                                        : null;
-                                    return (
-                                        <tr
-                                            key={s.submissionId}
-                                            className="border-t border-accent-blue hover:bg-bg-window/40 dark:hover:bg-bg-window-dark/40"
-                                        >
-                                            <td className="px-4 py-3">
-                                                {lookups?.studentName(
-                                                    s.studentId,
-                                                )}
-                                                {s.resubmittedAt != null && (
-                                                    <span className="ml-2 rounded-full bg-accent-blue/30 px-2 py-0.5 text-xs">
-                                                        Resubmitted
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {lookups?.courseIdForActivity(
-                                                    s.activityId,
-                                                ) ? (
-                                                    <Link
-                                                        className="underline text-buttons"
-                                                        to={`/courses/${lookups?.courseIdForActivity(s.activityId)}`}
-                                                    >
-                                                        {lookups?.courseNameForActivity(
-                                                            s.activityId,
-                                                        ) || "-"}
-                                                    </Link>
-                                                ) : (
-                                                    (lookups?.courseNameForActivity(
-                                                        s.activityId,
-                                                    ) ?? "-")
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {lookups?.moduleIdForActivity(
-                                                    s.activityId,
-                                                ) ? (
-                                                    <Link
-                                                        className="underline text-buttons"
-                                                        to={`/module/${lookups?.moduleIdForActivity(s.activityId)}`}
-                                                    >
-                                                        {lookups?.activityName(
-                                                            s.activityId,
-                                                        ) ?? s.activityId}
-                                                    </Link>
-                                                ) : (
-                                                    (lookups?.activityName(
-                                                        s.activityId,
-                                                    ) ?? s.activityId)
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {deadline ? (
-                                                    <>
-                                                        {ActivityDate(deadline)}{" "}
-                                                        {ActivityTime(deadline)}
-                                                        {lateDays != null &&
-                                                            lateDays > 0 && (
-                                                                <div className="text-xs opacity-70">
-                                                                    {lateDays}{" "}
-                                                                    days{" "}
-                                                                    {tab ===
-                                                                    "done"
-                                                                        ? "late"
-                                                                        : "overdue"}
-                                                                </div>
-                                                            )}
-                                                    </>
-                                                ) : (
-                                                    "-"
-                                                )}
-                                            </td>
-                                            {tab !== "not-reviewed" && (
-                                                <td className="px-4 py-3">
-                                                    {s.feedbackAt
-                                                        ? `${ActivityDate(s.feedbackAt)} ${ActivityTime(s.feedbackAt)}`
-                                                        : "-"}
-                                                </td>
-                                            )}
-                                            <td className="px-4 py-3">
-                                                <Button
-                                                    onClick={() =>
-                                                        setReviewing(s)
-                                                    }
-                                                >
-                                                    {s.reviewStatus != null
-                                                        ? "Edit review"
-                                                        : "Review"}
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                                {tableLoading && (
-                                    <tr>
-                                        <td
-                                            colSpan={
-                                                tab === "not-reviewed" ? 5 : 6
-                                            }
-                                            className="px-4 py-3 text-center"
-                                        >
-                                            Loading...
-                                        </td>
-                                    </tr>
-                                )}
-                                {!tableLoading &&
-                                    pagedSubmissions.length === 0 && (
-                                        <tr>
-                                            <td
-                                                colSpan={
-                                                    tab === "not-reviewed"
-                                                        ? 5
-                                                        : 6
-                                                }
-                                                className="px-4 py-3 text-center"
-                                            >
-                                                {submissions.length === 0
-                                                    ? "No submissions yet."
-                                                    : "No submissions match your search."}
-                                            </td>
-                                        </tr>
-                                    )}
-                            </tbody>
-                        </table>
-                    </div>
+                <div>
+                    <DataTable
+                        items={pagedSubmissions}
+                        columns={submissionColumns}
+                        getKey={(submission) => submission.submissionId}
+                        sortBy={sortBy}
+                        isLoading={tableLoading}
+                        onSortChange={handleSortChange}
+                        bodyClassName="text-text-dark dark:text-text-light"
+                    />
 
                     <Pagination
                         page={page}
@@ -433,7 +387,7 @@ export default function Submissions() {
                         totalCount={totalCount}
                         onPageChange={setPage}
                     />
-                </>
+                </div>
             )}
 
             {tab === "overdue" &&
