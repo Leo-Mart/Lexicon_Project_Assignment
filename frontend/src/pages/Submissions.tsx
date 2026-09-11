@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import Button from "../components/Button";
-import Pagination from "../components/Pagination";
-import SortableTh from "../components/SortableTableHead";
 import ReviewSubmissionModal from "../components/ReviewSubmissionModal";
+import SubmissionTabs, {
+    type SubmissionTab,
+} from "../components/submissions/SubmissionTabs";
+import SubmissionsTable from "../components/submissions/SubmissionsTable";
+import OverdueTable from "../components/submissions/OverdueTable";
 import {
     fetchAllSubmissions,
     fetchSubmissionsPage,
@@ -12,29 +13,18 @@ import {
 } from "../services/submissionService";
 import { fetchActivitys } from "../services/activityService";
 import { ActivityDate, ActivityTime } from "../constants/ActivityTimeConverter";
+import { daysOverdue } from "../constants/SubmissionDates";
 import { fetchUsers } from "../services/userService";
 import { fetchCourses } from "../services/courseService";
 import { useAuth } from "../hooks/useAuth";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import type { OverdueSubmission } from "../interfaces/submission/OverdueSubmission";
 import type { FeedbackRequest } from "../interfaces/submission/FeedbackRequest";
+import type { SubmissionLookups } from "../interfaces/submission/SubmissionLookups";
 import { SubmissionReviewStatus } from "../constants/SubmissionReviewStatus";
 
 const PAGE_SIZE = 10;
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const DEFAULT_SORT = "review-asc";
-
-// Whole days between a deadline and a later point in time.
-const daysSince = (deadline: string, at: number): number =>
-    Math.floor((at - new Date(deadline).getTime()) / MS_PER_DAY);
-
-// How many whole days ago a deadline passed. Only meaningful once it's past.
-const daysOverdue = (deadline: string): number =>
-    daysSince(deadline, Date.now());
-
-// How many whole days after the deadline a submission came in.
-const daysLate = (deadline: string, submittedAt: string): number =>
-    daysSince(deadline, new Date(submittedAt).getTime());
 
 // Mock teacher review page: everything fetched and joined client-side.
 export default function Submissions() {
@@ -63,9 +53,7 @@ export default function Submissions() {
     const [sortBy, setSortBy] = useState(DEFAULT_SORT);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
-    const [tab, setTab] = useState<
-        "not-reviewed" | "overdue" | "needs-completion" | "done"
-    >("not-reviewed");
+    const [tab, setTab] = useState<SubmissionTab>("not-reviewed");
 
     // The Submissions tab's table: one page at a time, searched/sorted on
     // the server. Separate from `submissions` above, which stays a full
@@ -205,7 +193,7 @@ export default function Submissions() {
         setPage(1);
     };
 
-    const handleTabChange = (value: typeof tab) => {
+    const handleTabChange = (value: SubmissionTab) => {
         setTab(value);
         setPage(1);
     };
@@ -247,10 +235,17 @@ export default function Submissions() {
         const moduleId = activityModuleById.get(activityId);
         return moduleId ? courseIdByModuleId.get(moduleId) : undefined;
     };
-    const courseName = (s: SubmissionResponse) =>
-        courseNameForActivity(s.activityId);
-    const studentName = (s: SubmissionResponse) =>
-        studentNameById.get(s.studentId) ?? s.studentId;
+    const studentName = (studentId: string) =>
+        studentNameById.get(studentId) ?? studentId;
+
+    const lookups: SubmissionLookups = {
+        activityNameById,
+        activityModuleById,
+        activityDeadlineById,
+        courseNameForActivity,
+        courseIdForActivity,
+        studentName,
+    };
 
     const totalOverdue = [...overdueByActivity.values()].reduce(
         (sum, list) => sum + list.length,
@@ -288,415 +283,43 @@ export default function Submissions() {
                     />
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                        variant="primary"
-                        className={
-                            tab === "not-reviewed" ? "bg-accent-blue" : ""
-                        }
-                        onClick={() => handleTabChange("not-reviewed")}
-                    >
-                        Not reviewed
-                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
-                            {notReviewedCount}
-                        </span>
-                    </Button>
-                    <Button
-                        variant="primary"
-                        className={tab === "overdue" ? "bg-accent-blue" : ""}
-                        onClick={() => handleTabChange("overdue")}
-                    >
-                        Overdue
-                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
-                            {overdueChecked ? totalOverdue : "…"}
-                        </span>
-                    </Button>
-                    <Button
-                        variant="primary"
-                        className={
-                            tab === "needs-completion" ? "bg-accent-blue" : ""
-                        }
-                        onClick={() => handleTabChange("needs-completion")}
-                    >
-                        Needs completion
-                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
-                            {needsCompletionCount}
-                        </span>
-                    </Button>
-                    <Button
-                        variant="primary"
-                        className={tab === "done" ? "bg-accent-blue" : ""}
-                        onClick={() => handleTabChange("done")}
-                    >
-                        Done
-                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
-                            {doneCount}
-                        </span>
-                    </Button>
-                </div>
+                <SubmissionTabs
+                    tab={tab}
+                    onChange={handleTabChange}
+                    notReviewedCount={notReviewedCount}
+                    overdueCount={overdueChecked ? totalOverdue : null}
+                    needsCompletionCount={needsCompletionCount}
+                    doneCount={doneCount}
+                />
             </div>
 
-            {tab !== "overdue" && (
-                <>
-                    <div className="overflow-x-auto rounded-lg border border-accent-blue">
-                        <table className="w-full text-left text-text-dark dark:text-text-light">
-                            <thead className="bg-bg-window dark:bg-bg-window-dark">
-                                <tr>
-                                    <SortableTh
-                                        field="student"
-                                        label="Student"
-                                        sortBy={sortBy}
-                                        onSortChange={handleSortChange}
-                                        isLoading={tableLoading}
-                                    />
-                                    <SortableTh
-                                        field="course"
-                                        label="Course"
-                                        sortBy={sortBy}
-                                        onSortChange={handleSortChange}
-                                        isLoading={tableLoading}
-                                    />
-                                    <SortableTh
-                                        field="activity"
-                                        label="Activity"
-                                        sortBy={sortBy}
-                                        onSortChange={handleSortChange}
-                                        isLoading={tableLoading}
-                                    />
-                                    <SortableTh
-                                        field="deadline"
-                                        label="Deadline"
-                                        sortBy={sortBy}
-                                        onSortChange={handleSortChange}
-                                        isLoading={tableLoading}
-                                    />
-                                    {tab !== "not-reviewed" && (
-                                        <SortableTh
-                                            field="reviewed"
-                                            label="Reviewed"
-                                            sortBy={sortBy}
-                                            onSortChange={handleSortChange}
-                                            isLoading={tableLoading}
-                                        />
-                                    )}
-                                    <th className="px-4 py-3"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {pagedSubmissions.map((s) => {
-                                    const deadline = activityDeadlineById.get(
-                                        s.activityId,
-                                    );
-                                    // Done shows how late the submission itself was; the other
-                                    // tabs show how overdue it still is, growing until resolved.
-                                    const lateDays = deadline
-                                        ? tab === "done"
-                                            ? daysLate(deadline, s.submittedAt)
-                                            : daysOverdue(deadline)
-                                        : null;
-                                    return (
-                                        <tr
-                                            key={s.submissionId}
-                                            className="border-t border-accent-blue hover:bg-bg-window/40 dark:hover:bg-bg-window-dark/40"
-                                        >
-                                            <td className="px-4 py-3">
-                                                {studentName(s)}
-                                                {s.resubmittedAt != null && (
-                                                    <span className="ml-2 rounded-full bg-accent-blue/30 px-2 py-0.5 text-xs">
-                                                        Resubmitted
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {courseIdForActivity(
-                                                    s.activityId,
-                                                ) ? (
-                                                    <Link
-                                                        className="underline text-buttons"
-                                                        to={`/courses/${courseIdForActivity(s.activityId)}`}
-                                                    >
-                                                        {courseName(s) || "-"}
-                                                    </Link>
-                                                ) : (
-                                                    (courseName(s) ?? "-")
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {activityModuleById.get(
-                                                    s.activityId,
-                                                ) ? (
-                                                    <Link
-                                                        className="underline text-buttons"
-                                                        to={`/module/${activityModuleById.get(s.activityId)}`}
-                                                    >
-                                                        {activityNameById.get(
-                                                            s.activityId,
-                                                        ) ?? s.activityId}
-                                                    </Link>
-                                                ) : (
-                                                    (activityNameById.get(
-                                                        s.activityId,
-                                                    ) ?? s.activityId)
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {deadline ? (
-                                                    <>
-                                                        {ActivityDate(deadline)}{" "}
-                                                        {ActivityTime(deadline)}
-                                                        {lateDays != null &&
-                                                            lateDays > 0 && (
-                                                                <div className="text-xs opacity-70">
-                                                                    {lateDays}{" "}
-                                                                    days{" "}
-                                                                    {tab ===
-                                                                    "done"
-                                                                        ? "late"
-                                                                        : "overdue"}
-                                                                </div>
-                                                            )}
-                                                    </>
-                                                ) : (
-                                                    "-"
-                                                )}
-                                            </td>
-                                            {tab !== "not-reviewed" && (
-                                                <td className="px-4 py-3">
-                                                    {s.feedbackAt
-                                                        ? `${ActivityDate(s.feedbackAt)} ${ActivityTime(s.feedbackAt)}`
-                                                        : "-"}
-                                                </td>
-                                            )}
-                                            <td className="px-4 py-3">
-                                                <Button
-                                                    onClick={() =>
-                                                        setReviewing(s)
-                                                    }
-                                                >
-                                                    {s.reviewStatus != null
-                                                        ? "Edit review"
-                                                        : "Review"}
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                                {tableLoading && (
-                                    <tr>
-                                        <td
-                                            colSpan={
-                                                tab === "not-reviewed" ? 5 : 6
-                                            }
-                                            className="px-4 py-3 text-center"
-                                        >
-                                            Loading...
-                                        </td>
-                                    </tr>
-                                )}
-                                {!tableLoading &&
-                                    pagedSubmissions.length === 0 && (
-                                        <tr>
-                                            <td
-                                                colSpan={
-                                                    tab === "not-reviewed"
-                                                        ? 5
-                                                        : 6
-                                                }
-                                                className="px-4 py-3 text-center"
-                                            >
-                                                {submissions.length === 0
-                                                    ? "No submissions yet."
-                                                    : "No submissions match your search."}
-                                            </td>
-                                        </tr>
-                                    )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <Pagination
-                        page={page}
-                        pageSize={PAGE_SIZE}
-                        totalCount={totalCount}
-                        onPageChange={setPage}
-                    />
-                </>
+            {tab === "overdue" ? (
+                <OverdueTable
+                    overdueByActivity={overdueByActivity}
+                    lookups={lookups}
+                    search={search}
+                    sortBy={overdueSortBy}
+                    onSortChange={handleOverdueSortChange}
+                    page={overduePage}
+                    pageSize={PAGE_SIZE}
+                    onPageChange={setOverduePage}
+                />
+            ) : (
+                <SubmissionsTable
+                    tab={tab}
+                    submissions={pagedSubmissions}
+                    lookups={lookups}
+                    sortBy={sortBy}
+                    onSortChange={handleSortChange}
+                    tableLoading={tableLoading}
+                    hasAnySubmissions={submissions.length > 0}
+                    page={page}
+                    pageSize={PAGE_SIZE}
+                    totalCount={totalCount}
+                    onPageChange={setPage}
+                    onReview={setReviewing}
+                />
             )}
-
-            {tab === "overdue" &&
-                (() => {
-                    const rows = [...overdueByActivity.entries()].flatMap(
-                        ([activityId, students]) =>
-                            students.map((u) => ({
-                                ...u,
-                                activityId,
-                                moduleId: activityModuleById.get(activityId),
-                                activityName:
-                                    activityNameById.get(activityId) ??
-                                    activityId,
-                                courseName:
-                                    courseNameForActivity(activityId) ||
-                                    "Unknown course",
-                                courseId: courseIdForActivity(activityId),
-                                deadline:
-                                    activityDeadlineById.get(activityId) ??
-                                    null,
-                            })),
-                    );
-
-                    const filteredRows = search.trim()
-                        ? rows.filter((row) =>
-                              row.studentName
-                                  .toLowerCase()
-                                  .includes(search.trim().toLowerCase()),
-                          )
-                        : rows;
-
-                    const [sortField, sortDirection = "asc"] =
-                        overdueSortBy.split("-");
-                    const sortedRows = [...filteredRows].sort((a, b) => {
-                        let cmp = 0;
-                        if (sortField === "student") {
-                            cmp = a.studentName.localeCompare(b.studentName);
-                        } else if (sortField === "course") {
-                            cmp = a.courseName.localeCompare(b.courseName);
-                        } else if (sortField === "activity") {
-                            cmp = a.activityName.localeCompare(b.activityName);
-                        } else if (sortField === "deadline") {
-                            // Days overdue is derived from the deadline, so one sort covers both columns.
-                            const timeA = a.deadline
-                                ? new Date(a.deadline).getTime()
-                                : 0;
-                            const timeB = b.deadline
-                                ? new Date(b.deadline).getTime()
-                                : 0;
-                            cmp = timeA - timeB;
-                        }
-                        return sortDirection === "desc" ? -cmp : cmp;
-                    });
-
-                    const pagedRows = sortedRows.slice(
-                        (overduePage - 1) * PAGE_SIZE,
-                        overduePage * PAGE_SIZE,
-                    );
-
-                    return (
-                        <>
-                            {filteredRows.length === 0 ? (
-                                <p className="text-text-dark dark:text-text-light">
-                                    Nobody's overdue.
-                                </p>
-                            ) : (
-                                <div className="overflow-x-auto rounded-lg border border-accent-blue">
-                                    <table className="w-full text-left text-text-dark dark:text-text-light">
-                                        <thead className="bg-bg-window dark:bg-bg-window-dark">
-                                            <tr>
-                                                <SortableTh
-                                                    field="student"
-                                                    label="Student"
-                                                    sortBy={overdueSortBy}
-                                                    onSortChange={
-                                                        handleOverdueSortChange
-                                                    }
-                                                />
-                                                <SortableTh
-                                                    field="course"
-                                                    label="Course"
-                                                    sortBy={overdueSortBy}
-                                                    onSortChange={
-                                                        handleOverdueSortChange
-                                                    }
-                                                />
-                                                <SortableTh
-                                                    field="activity"
-                                                    label="Activity"
-                                                    sortBy={overdueSortBy}
-                                                    onSortChange={
-                                                        handleOverdueSortChange
-                                                    }
-                                                />
-                                                <SortableTh
-                                                    field="deadline"
-                                                    label="Deadline"
-                                                    sortBy={overdueSortBy}
-                                                    onSortChange={
-                                                        handleOverdueSortChange
-                                                    }
-                                                />
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {pagedRows.map((row, i) => (
-                                                <tr
-                                                    key={`${row.studentId}-${i}`}
-                                                    className="border-t border-accent-blue hover:bg-bg-window/40 dark:hover:bg-bg-window-dark/40"
-                                                >
-                                                    <td className="px-4 py-3">
-                                                        {row.studentName}
-                                                    </td>
-                                                    <td className="px-4 py-3">
-                                                        {row.courseId ? (
-                                                            <Link
-                                                                className="underline text-buttons"
-                                                                to={`/courses/${row.courseId}`}
-                                                            >
-                                                                {row.courseName}
-                                                            </Link>
-                                                        ) : (
-                                                            row.courseName
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 py-3">
-                                                        {row.moduleId ? (
-                                                            <Link
-                                                                className="underline text-buttons"
-                                                                to={`/module/${row.moduleId}`}
-                                                            >
-                                                                {
-                                                                    row.activityName
-                                                                }
-                                                            </Link>
-                                                        ) : (
-                                                            row.activityName
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 py-3">
-                                                        {row.deadline ? (
-                                                            <>
-                                                                {ActivityDate(
-                                                                    row.deadline,
-                                                                )}{" "}
-                                                                {ActivityTime(
-                                                                    row.deadline,
-                                                                )}
-                                                                <div className="text-xs opacity-70">
-                                                                    {daysOverdue(
-                                                                        row.deadline,
-                                                                    )}{" "}
-                                                                    days overdue
-                                                                </div>
-                                                            </>
-                                                        ) : (
-                                                            "-"
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                            {filteredRows.length > 0 && (
-                                <Pagination
-                                    page={overduePage}
-                                    pageSize={PAGE_SIZE}
-                                    totalCount={filteredRows.length}
-                                    onPageChange={setOverduePage}
-                                />
-                            )}
-                        </>
-                    );
-                })()}
 
             {reviewing &&
                 (() => {
@@ -714,8 +337,10 @@ export default function Submissions() {
                     return (
                         <ReviewSubmissionModal
                             submission={reviewing}
-                            studentName={studentName(reviewing)}
-                            courseName={courseName(reviewing) || "-"}
+                            studentName={studentName(reviewing.studentId)}
+                            courseName={
+                                courseNameForActivity(reviewing.activityId) || "-"
+                            }
                             activityName={
                                 activityNameById.get(reviewing.activityId) ??
                                 reviewing.activityId
