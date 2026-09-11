@@ -21,22 +21,11 @@ import type { FeedbackRequest } from "../interfaces/submission/FeedbackRequest";
 import { SubmissionReviewStatus } from "../constants/SubmissionReviewStatus";
 import SubmissionCategoryButtons from "../components/SubmissionCategoryButtons";
 import type { SubmissionTabs } from "../types/SubmissionTabs";
+import { daysLate, daysOverdue } from "../utils/deadlines.ts";
 
 const PAGE_SIZE = 10;
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
 const DEFAULT_SORT = "review-asc";
-
-// Whole days between a deadline and a later point in time.
-const daysSince = (deadline: string, at: number): number =>
-    Math.floor((at - new Date(deadline).getTime()) / MS_PER_DAY);
-
-// How many whole days ago a deadline passed. Only meaningful once it's past.
-const daysOverdue = (deadline: string): number =>
-    daysSince(deadline, Date.now());
-
-// How many whole days after the deadline a submission came in.
-const daysLate = (deadline: string, submittedAt: string): number =>
-    daysSince(deadline, new Date(submittedAt).getTime());
 
 // Mock teacher review page: everything fetched and joined client-side.
 export default function Submissions() {
