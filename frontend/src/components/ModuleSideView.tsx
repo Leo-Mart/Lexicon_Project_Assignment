@@ -71,6 +71,24 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
                             <ModuleSideViewPart module={module} />
                         </div>
 
+                        <div className="border-b-4 border-dotted py-4">
+                            <h3 className="px-2">Upcoming Modules:</h3>
+                            {upcomingModules.map((m) => (
+                                <ModuleSideViewPart
+                                    module={m}
+                                    key={m.moduleId}
+                                />
+                            ))}
+                        </div>
+                        <div className="border-b-4 border-dotted py-4">
+                            <h3 className="px-2">Current Module:</h3>
+                            {currentModule.map((m) => (
+                                <ModuleSideViewPart
+                                    module={m}
+                                    key={m.moduleId}
+                                />
+                            ))}
+                        </div>
                         {pastModules.length > 0 ? (
                             <div className="border-b-4 border-dotted py-4">
                                 <h3 className="px-2">Completed Modules:</h3>
@@ -85,25 +103,6 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
                         ) : (
                             ""
                         )}
-
-                        <div className="border-b-4 border-dotted py-4">
-                            <h3 className="px-2">Current Module:</h3>
-                            {currentModule.map((m) => (
-                                <ModuleSideViewPart
-                                    module={m}
-                                    key={m.moduleId}
-                                />
-                            ))}
-                        </div>
-                        <div className="border-b-4 border-dotted py-4">
-                            <h3 className="px-2">Upcoming Modules:</h3>
-                            {upcomingModules.map((m) => (
-                                <ModuleSideViewPart
-                                    module={m}
-                                    key={m.moduleId}
-                                />
-                            ))}
-                        </div>
                     </div>
                 )}
                 <button

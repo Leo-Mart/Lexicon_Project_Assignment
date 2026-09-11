@@ -4,13 +4,28 @@ import { ClipboardCheck } from "lucide-react";
 
 interface ActivityScheduleProps {
     activities: ActivityResponse[];
+    // Quick-glance strip, not the full list - cap it so a module with many
+    // activities doesn't blow up the layout.
+    limit?: number;
 }
 
-const ActivitySchedule = ({ activities }: ActivityScheduleProps) => {
+const ActivitySchedule = ({ activities, limit = 5 }: ActivityScheduleProps) => {
+    const now = new Date();
+
+    // Only what's ongoing or still to come - past activities aren't a
+    // "schedule" anymore.
+    const shown = (activities ?? [])
+        .filter((activity) => new Date(activity.endAt) >= now)
+        .sort(
+            (a, b) =>
+                new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
+        )
+        .slice(0, limit);
+
     return (
-        <div className="bg-buttons rounded-md col-span-2 p-2">
+        <div className="bg-buttons rounded-md col-span-2 p-2 overflow-x-auto self-start">
             <ol className="items-center sm:flex">
-                {activities?.map((activity) => (
+                {shown.map((activity) => (
                     <li
                         key={activity.activityId}
                         className="relative mb-6 sm:mb-0"
