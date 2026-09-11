@@ -152,6 +152,7 @@ public class SubmissionsService(
             StudentId = command.StudentId,
             Text = command.Text,
             CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
             SubmittedAt = submittedAt,
         };
 
@@ -183,6 +184,7 @@ public class SubmissionsService(
         submission.Text = command.Text;
         submission.SubmittedAt = DateTime.UtcNow;
         submission.UpdatedAt = DateTime.UtcNow;
+        submission.ResubmittedAt = DateTime.UtcNow;
 
         // A fresh submission clears the old review - the teacher hasn't seen this version yet.
         submission.ReviewStatus = null;
