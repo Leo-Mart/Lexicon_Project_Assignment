@@ -619,6 +619,13 @@ public static class SubmissionSeeder
                 "Used LINQ to filter, sort and group the sample data set - examples with Where, OrderBy, GroupBy and Select in Program.cs, each with a comment explaining what it's doing. Sorry this is late, got stuck on the pagination task first.",
                 "This was late, but the LINQ queries are well done and the code is easy to read. Try to submit on time next round.",
                 -16, -13),
+            // Deadline 11 days ago - 2 stragglers, plus Erik (he demoes the
+            // overdue/never-submitted state on this one).
+            (ActivitySeeder.AspNetCorePracticeId,
+                new[] { T2, Student(4), Student(6), Student(8), Student(10), Student(12), Student(14), Student(16), Student(18), Student(20), Student(22), Student(24), Student(28) },
+                "Set up a couple of route groups with attribute routing and registered a scoped service in Program.cs to use through constructor injection.",
+                "Clean routes and correct use of DI. Nice work.",
+                -12, -9),
             // Deadline 9 days ago - 2 stragglers.
             (ActivitySeeder.LoggingTaskId,
                 new[] { T2, Student(4), Student(6), Student(10), Student(12), Student(14), Student(16), Student(18), Student(20), Student(22), Student(24), Student(26) },
