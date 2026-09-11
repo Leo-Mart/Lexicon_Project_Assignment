@@ -12,6 +12,7 @@ import Spinner from "../components/Spinner";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser } from "../services/authService";
 import { fetchStudentCourse } from "../services/enrollmentService";
+import { fetchModulesForCourse } from "../services/courseService";
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const token = useSyncExternalStore(
@@ -25,6 +26,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [name, setName] = useState<string | null>(null);
     const [role, setRole] = useState<"Teacher" | "Student" | null>(null);
     const [courseId, setCourseId] = useState<string | null>(null);
+    const [currentModuleId, setCurrentModuleId] = useState<string | null>(null);
 
     useEffect(() => {
         const loadUser = async () => {
@@ -65,7 +67,24 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             } else if (userRole === "Student") {
                 const course = await fetchStudentCourse();
                 setCourseId(course.courseId);
-                nav(`/courses/${course.courseId}`);
+
+                const modules = await fetchModulesForCourse(course.courseId);
+                const today = new Intl.DateTimeFormat("sv-SE").format(
+                    new Date(),
+                );
+
+                const currentModule = modules.find(
+                    (module) =>
+                        module.startDate <= today && module.endDate >= today,
+                );
+
+                if (currentModule) {
+                    setCurrentModuleId(currentModule.moduleId);
+                    nav(`/module/${currentModule.moduleId}`);
+                } else {
+                    setCurrentModuleId(null);
+                    nav(`/courses/${course.courseId}`);
+                }
             }
         } catch (error) {
             if (error instanceof Error) {
@@ -79,6 +98,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setName(null);
         setRole(null);
         setCourseId(null);
+        setCurrentModuleId(null);
     };
 
     return (
@@ -92,6 +112,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 name,
                 role,
                 courseId,
+                currentModuleId,
             }}
         >
             {isLoading ? <Spinner /> : children}

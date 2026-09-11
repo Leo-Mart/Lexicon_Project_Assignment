@@ -11,6 +11,7 @@ type AuthContext = {
     name: string | null;
     role: UserRole | null;
     courseId: string | null;
+    currentModuleId: string | null;
 };
 
 export const AuthContext = createContext<AuthContext | undefined>(undefined);
