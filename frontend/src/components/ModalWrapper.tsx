@@ -30,7 +30,11 @@ const ModalWrapper = (props: ModalProps) => {
                                 {props.titleBadge}
                             </span>
                         )}
-                        <span className="truncate">{props.titleSuffix}</span>
+                        {props.titleSuffix && (
+                            <span className="truncate">
+                                {props.titleSuffix}
+                            </span>
+                        )}
                     </h2>
                     <button
                         className="bg-btn-cancel py-1 px-2 hover:brightness-110 hover:cursor-pointer rounded-full text-sm shrink-0"
