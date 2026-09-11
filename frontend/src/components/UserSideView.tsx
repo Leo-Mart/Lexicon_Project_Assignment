@@ -71,13 +71,30 @@ export default function UserSideView({ courseId }: { courseId: string }) {
                                     : "People in this course:"}
                             </h3>
                             <ul>
-                                {users.map((user) => (
-                                    <li key={user.studentId}>
-                                        {name === user.student.name
-                                            ? user.student.name + "*"
-                                            : user.student.name}
-                                    </li>
-                                ))}
+                                {users
+                                    .filter(
+                                        (user) => user.student.name === name,
+                                    )
+                                    .map((user) => (
+                                        <li className="mb-3">
+                                            {user.student.name}
+                                        </li>
+                                    ))}
+
+                                {users
+                                    .filter(
+                                        (user) => user.student.name !== name,
+                                    )
+                                    .sort((a, b) =>
+                                        a.student.name.localeCompare(
+                                            b.student.name,
+                                        ),
+                                    )
+                                    .map((user) => (
+                                        <li className="" key={user.studentId}>
+                                            {user.student.name}
+                                        </li>
+                                    ))}
                             </ul>
                         </div>
                     </div>
