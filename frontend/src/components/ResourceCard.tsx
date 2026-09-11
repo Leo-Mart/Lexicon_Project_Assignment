@@ -72,9 +72,15 @@ const ResourceCard = ({
                     </div>
                     {isExpanded && (
                         <div className="bg-bg-window text-text-dark w-full">
-                            <p className="text-m p-3 text-center">
-                                {resource.description}
-                            </p>
+                            <div className="text-m p-3 flex justify-between">
+                                <p>{resource.description}</p>
+                                <p>
+                                    <span className="font-semibold">
+                                        Created by:{" "}
+                                    </span>
+                                    {resource.createdByTeacher.name}
+                                </p>
+                            </div>
                             <hr className="h-px border-t-0 bg-linear-to-r from-transparent via-accent-blue to-transparent opacity-75"></hr>
                             <div className="flex flex-col justify-between">
                                 {resource.content && (
