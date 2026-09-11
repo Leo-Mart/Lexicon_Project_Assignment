@@ -7,6 +7,8 @@ import type { UserStatusUpdateDto } from "../interfaces/user/UserStatusUpdateDto
 import type { UserWithCourseResponse } from "../interfaces/user/UserWithCourseResponse";
 import type { PagedResponse } from "../interfaces/common/PagedResponse";
 import type { QueryParameters } from "../interfaces/common/QueryParameters";
+import { BadRequestError } from "../errors/BadRequestError";
+import type { PasswordErrorsResponse } from "../interfaces/error/PasswordErrorsResponse";
 
 const API_URL = API_BASE_URL + "/users";
 
@@ -48,6 +50,14 @@ export const createUser = async (
         headers: JSON_HEADERS,
         body: JSON.stringify(newUser),
     });
+
+    if (response.status === 400) {
+        const json = (await response.json()) as PasswordErrorsResponse[];
+        const pwErrors: string[] = json.map((err) => {
+            return err.description;
+        });
+        throw new BadRequestError("Could not create user", pwErrors);
+    }
 
     if (!response.ok) {
         throw new Error(`Could not create the user: ${response.status}`);

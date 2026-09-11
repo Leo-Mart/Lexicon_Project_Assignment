@@ -2,6 +2,7 @@ import { authFetch } from "./authService";
 import { API_BASE_URL, HttpMethod, JSON_HEADERS } from "../constants/Constants";
 import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 import type { ModuleRequest } from "../interfaces/module/ModuleRequest";
+import type { ErrorResponse } from "../interfaces/error/ErrorResponse";
 
 const API_URL = API_BASE_URL + "/modules";
 
@@ -45,6 +46,11 @@ export const createModule = async (
         headers: JSON_HEADERS,
         body: JSON.stringify(newModule),
     });
+
+    if (response.status === 400) {
+        const err = (await response.json()) as ErrorResponse;
+        throw new Error(err.detail);
+    }
 
     if (!response.ok) {
         throw new Error(`Could not create the module: ${response.status}`);

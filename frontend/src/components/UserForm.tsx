@@ -8,6 +8,8 @@ import TextInput from "./form/TextInput";
 import SelectInput from "./form/SelectInput";
 import FormActions from "./form/FormActions";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
+import type { ErrorMessage } from "../interfaces/error/ErrorMessage";
+import ErrorDisplay from "./ErrorDisplay";
 
 export interface UserFormValues {
     name: string;
@@ -23,7 +25,7 @@ interface UserFormProps {
     initialValues?: Partial<UserFormValues>;
     onSubmit: (values: UserFormValues) => void;
     onCancel: () => void;
-    submitError?: string;
+    submitError?: string | ErrorMessage;
     courses?: CourseResponse[];
 }
 
@@ -172,9 +174,7 @@ export default function UserForm({
                 />
             )}
 
-            {submitError && (
-                <p className="mb-4 text-sm text-red-600">{submitError}</p>
-            )}
+            {submitError && <ErrorDisplay errorResp={submitError} />}
 
             <FormActions
                 submitLabel={mode === "create" ? "Create user" : "Save"}

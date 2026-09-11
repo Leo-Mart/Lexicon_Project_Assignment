@@ -13,7 +13,8 @@ namespace LMS.Api.Controllers;
 [Route("/api/modules")]
 [ApiController]
 [Authorize]
-public class ModuleController(IModuleService moduleService, IEnrollmentService enrollmentService) : ControllerBase
+public class ModuleController(IModuleService moduleService, IEnrollmentService enrollmentService)
+    : ControllerBase
 {
     private readonly IModuleService _moduleService = moduleService;
     private readonly IEnrollmentService _enrollmentService = enrollmentService;
@@ -80,27 +81,12 @@ public class ModuleController(IModuleService moduleService, IEnrollmentService e
         [FromBody] CreateNewModuleDto newModuleDto
     )
     {
-        try
-        {
-            var savedModule = await _moduleService.CreateNewModule(newModuleDto);
-            return CreatedAtAction(
-                "GetmoduleById",
-                new { moduleId = savedModule.ModuleId },
-                savedModule
-            );
-        }
-        catch (InvalidDateException exc)
-        {
-            return BadRequest(
-                new ErrorResponse { Message = exc.Message, StatusCode = exc.StatusCode }
-            );
-        }
-        catch (OverlappingDateException exc)
-        {
-            return BadRequest(
-                new ErrorResponse { Message = exc.Message, StatusCode = exc.StatusCode }
-            );
-        }
+        var savedModule = await _moduleService.CreateNewModule(newModuleDto);
+        return CreatedAtAction(
+            "GetmoduleById",
+            new { moduleId = savedModule.ModuleId },
+            savedModule
+        );
     }
 
     /// <summary>

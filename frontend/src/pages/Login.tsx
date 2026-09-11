@@ -1,4 +1,5 @@
 import Button from "../components/Button";
+import ErrorDisplay from "../components/ErrorDisplay";
 import { useAuth } from "../hooks/useAuth";
 import type { LoginDto } from "../interfaces/auth/LoginDto";
 
@@ -55,9 +56,7 @@ export default function Login() {
                             placeholder="Enter your password"
                             required
                         />
-                        {loginError && (
-                            <span className="text-red-700">{loginError}</span>
-                        )}
+                        {loginError && <ErrorDisplay errorResp={loginError} />}
                         <Button
                             variant="confirm"
                             className="hover:cursor-pointer mx-auto w-full"

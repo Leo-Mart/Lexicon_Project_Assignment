@@ -22,7 +22,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
     const nav = useNavigate();
     const [isLoading, setIsLoading] = useState(true);
-    const [loginError, setLoginError] = useState<string>();
+    const [loginError, setLoginError] = useState<string | undefined>(undefined);
     const [name, setName] = useState<string | null>(null);
     const [role, setRole] = useState<"Teacher" | "Student" | null>(null);
     const [courseId, setCourseId] = useState<string | null>(null);
@@ -69,7 +69,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }, []);
 
     const loginUser = async (loginPayload: LoginDto) => {
-        setLoginError("");
+        setLoginError(undefined);
         try {
             await login(loginPayload);
 

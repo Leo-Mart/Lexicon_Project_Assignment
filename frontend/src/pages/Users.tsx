@@ -31,6 +31,8 @@ import {
     UserStatus,
     type UserStatus as UserStatusType,
 } from "../constants/UserConstant";
+import { BadRequestError } from "../errors/BadRequestError";
+import type { ErrorMessage } from "../interfaces/error/ErrorMessage";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 20;
@@ -57,7 +59,7 @@ export default function Users() {
     const [sortBy, setSortBy] = useState(DEFAULT_SORT);
     const [showUserForm, setShowUserForm] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
-    const [userFormError, setUserFormError] = useState<string>();
+    const [userFormError, setUserFormError] = useState<string | ErrorMessage>();
     const [editingUser, setEditingUser] =
         useState<UserWithCourseResponse | null>(null);
     const [userToDelete, setUserToDelete] =
@@ -89,11 +91,19 @@ export default function Users() {
             setShowUserForm(false);
             setRefreshKey((current) => current + 1);
         } catch (error) {
-            setUserFormError(
-                error instanceof Error
-                    ? error.message
-                    : "Could not create user.",
-            );
+            if (error instanceof BadRequestError) {
+                const errResp: ErrorMessage = {
+                    message: error.message,
+                    errors: undefined,
+                };
+                if (error.errors !== undefined) {
+                    if (Array.isArray(error.errors)) {
+                        errResp.errors = error.errors;
+                    }
+
+                    setUserFormError(errResp);
+                }
+            }
         }
     };
 
