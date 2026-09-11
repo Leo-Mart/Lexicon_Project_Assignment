@@ -404,7 +404,7 @@ export default function Submissions() {
                                                     s.activityId,
                                                 ) ? (
                                                     <Link
-                                                        className="hover:underline"
+                                                        className="underline text-buttons"
                                                         to={`/courses/${courseIdForActivity(s.activityId)}`}
                                                     >
                                                         {courseName(s) || "-"}
@@ -418,7 +418,7 @@ export default function Submissions() {
                                                     s.activityId,
                                                 ) ? (
                                                     <Link
-                                                        className="hover:underline"
+                                                        className="underline text-buttons"
                                                         to={`/module/${activityModuleById.get(s.activityId)}`}
                                                     >
                                                         {activityNameById.get(
@@ -642,7 +642,7 @@ export default function Submissions() {
                                                     <td className="px-4 py-3">
                                                         {row.courseId ? (
                                                             <Link
-                                                                className="hover:underline"
+                                                                className="underline text-buttons"
                                                                 to={`/courses/${row.courseId}`}
                                                             >
                                                                 {row.courseName}
@@ -654,7 +654,7 @@ export default function Submissions() {
                                                     <td className="px-4 py-3">
                                                         {row.moduleId ? (
                                                             <Link
-                                                                className="hover:underline"
+                                                                className="underline text-buttons"
                                                                 to={`/module/${row.moduleId}`}
                                                             >
                                                                 {
