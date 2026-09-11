@@ -1,10 +1,19 @@
 import { Link } from "react-router-dom";
 import Pagination from "../Pagination";
-import SortableTh from "../SortableTableHead";
+import DataTable from "../DataTable";
 import { ActivityDate, ActivityTime } from "../../constants/ActivityTimeConverter";
 import { daysOverdue } from "../../constants/SubmissionDates";
+import type { Column } from "../../types/Column";
 import type { OverdueSubmission } from "../../interfaces/submission/OverdueSubmission";
 import type { SubmissionLookups } from "../../interfaces/submission/SubmissionLookups";
+
+interface OverdueRow extends OverdueSubmission {
+    moduleId: string | undefined;
+    activityName: string;
+    courseName: string;
+    courseId: string | undefined;
+    deadline: string | null;
+}
 
 interface OverdueTableProps {
     overdueByActivity: Map<string, OverdueSubmission[]>;
@@ -33,7 +42,7 @@ export default function OverdueTable({
     const { activityNameById, activityModuleById, activityDeadlineById, courseNameForActivity, courseIdForActivity } =
         lookups;
 
-    const rows = [...overdueByActivity.entries()].flatMap(
+    const rows: OverdueRow[] = [...overdueByActivity.entries()].flatMap(
         ([activityId, students]) =>
             students.map((u) => ({
                 ...u,
@@ -70,8 +79,6 @@ export default function OverdueTable({
         return sortDirection === "desc" ? -cmp : cmp;
     });
 
-    const pagedRows = sortedRows.slice((page - 1) * pageSize, page * pageSize);
-
     if (filteredRows.length === 0) {
         return (
             <p className="text-text-dark dark:text-text-light">
@@ -80,88 +87,69 @@ export default function OverdueTable({
         );
     }
 
+    const pagedRows = sortedRows.slice((page - 1) * pageSize, page * pageSize);
+
+    const columns: Column<OverdueRow>[] = [
+        {
+            key: "student",
+            field: "student",
+            header: "Student",
+            render: (row) => row.studentName,
+        },
+        {
+            key: "course",
+            field: "course",
+            header: "Course",
+            render: (row) =>
+                row.courseId ? (
+                    <Link className="underline text-buttons" to={`/courses/${row.courseId}`}>
+                        {row.courseName}
+                    </Link>
+                ) : (
+                    row.courseName
+                ),
+        },
+        {
+            key: "activity",
+            field: "activity",
+            header: "Activity",
+            render: (row) =>
+                row.moduleId ? (
+                    <Link className="underline text-buttons" to={`/module/${row.moduleId}`}>
+                        {row.activityName}
+                    </Link>
+                ) : (
+                    row.activityName
+                ),
+        },
+        {
+            key: "deadline",
+            field: "deadline",
+            header: "Deadline",
+            render: (row) =>
+                row.deadline ? (
+                    <>
+                        {ActivityDate(row.deadline)} {ActivityTime(row.deadline)}
+                        <div className="text-xs opacity-70">
+                            {daysOverdue(row.deadline)} days overdue
+                        </div>
+                    </>
+                ) : (
+                    "-"
+                ),
+        },
+    ];
+
     return (
         <>
-            <div className="overflow-x-auto rounded-lg border border-accent-blue">
-                <table className="w-full text-left text-text-dark dark:text-text-light">
-                    <thead className="bg-bg-window dark:bg-bg-window-dark">
-                        <tr>
-                            <SortableTh
-                                field="student"
-                                label="Student"
-                                sortBy={sortBy}
-                                onSortChange={onSortChange}
-                            />
-                            <SortableTh
-                                field="course"
-                                label="Course"
-                                sortBy={sortBy}
-                                onSortChange={onSortChange}
-                            />
-                            <SortableTh
-                                field="activity"
-                                label="Activity"
-                                sortBy={sortBy}
-                                onSortChange={onSortChange}
-                            />
-                            <SortableTh
-                                field="deadline"
-                                label="Deadline"
-                                sortBy={sortBy}
-                                onSortChange={onSortChange}
-                            />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {pagedRows.map((row, i) => (
-                            <tr
-                                key={`${row.studentId}-${i}`}
-                                className="border-t border-accent-blue hover:bg-bg-window/40 dark:hover:bg-bg-window-dark/40"
-                            >
-                                <td className="px-4 py-3">{row.studentName}</td>
-                                <td className="px-4 py-3">
-                                    {row.courseId ? (
-                                        <Link
-                                            className="underline text-buttons"
-                                            to={`/courses/${row.courseId}`}
-                                        >
-                                            {row.courseName}
-                                        </Link>
-                                    ) : (
-                                        row.courseName
-                                    )}
-                                </td>
-                                <td className="px-4 py-3">
-                                    {row.moduleId ? (
-                                        <Link
-                                            className="underline text-buttons"
-                                            to={`/module/${row.moduleId}`}
-                                        >
-                                            {row.activityName}
-                                        </Link>
-                                    ) : (
-                                        row.activityName
-                                    )}
-                                </td>
-                                <td className="px-4 py-3">
-                                    {row.deadline ? (
-                                        <>
-                                            {ActivityDate(row.deadline)}{" "}
-                                            {ActivityTime(row.deadline)}
-                                            <div className="text-xs opacity-70">
-                                                {daysOverdue(row.deadline)} days
-                                                overdue
-                                            </div>
-                                        </>
-                                    ) : (
-                                        "-"
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+            <DataTable
+                items={pagedRows}
+                columns={columns}
+                getKey={(row) => `${row.studentId}-${row.activityId}`}
+                sortBy={sortBy}
+                isLoading={false}
+                onSortChange={onSortChange}
+            />
             <Pagination
                 page={page}
                 pageSize={pageSize}
