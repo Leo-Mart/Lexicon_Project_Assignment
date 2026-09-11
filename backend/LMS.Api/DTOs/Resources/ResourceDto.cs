@@ -1,3 +1,5 @@
+using LMS.Api.DTOs.Users;
+
 namespace LMS.Api.DTOs.Resources;
 
 public class ResourceDto
@@ -17,4 +19,6 @@ public class ResourceDto
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }
+
+    public UserDto CreatedByTeacher { get; set; } = null!;
 }
