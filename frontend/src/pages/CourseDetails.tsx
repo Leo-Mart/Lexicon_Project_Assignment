@@ -219,7 +219,7 @@ export default function CoursesDetails() {
                     </div>
 
                     <div className="flex flex-col items-center p-2 m-2 rounded-md col-span-2">
-                        <div className="flex w-full text-text-light">
+                        <div className="flex w-full">
                             <h2 className="font-bold grow text-center text-text-dark dark:text-text-light">
                                 Course resources:{" "}
                             </h2>

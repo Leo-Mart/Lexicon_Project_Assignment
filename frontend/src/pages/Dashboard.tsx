@@ -37,7 +37,7 @@ export default function Dashboard() {
             </nav>
             <div className="w-full">
                 {activeTab === 1 && (
-                    <div className="text-text-light">
+                    <div className=" text-text-dark dark:text-text-light">
                         Maybe some overview fields here?
                     </div>
                 )}
