@@ -1,4 +1,4 @@
-import { ActivityDate, ActivityTime } from "../constants/ActivityTimeConverter";
+import { ActivityDate, ActivityTime } from "../utils/ActivityTimeConverter";
 import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
 import { ClipboardCheck } from "lucide-react";
 

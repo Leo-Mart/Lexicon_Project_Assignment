@@ -49,27 +49,48 @@ export default function DataTable<T>({
                         )}
                     </tr>
                 </thead>
-
                 <tbody className={bodyClassName}>
-                    {items.map((item, index) => (
-                        <tr
-                            key={getKey(item)}
-                            className={
-                                index % 2 === 0
-                                    ? "bg-white dark:bg-bg-window-dark text-text-dark"
-                                    : "bg-bg dark:bg-bg-dark text-text-dark"
-                            }
-                        >
-                            {columns.map((column) => (
-                                <td
-                                    key={column.key}
-                                    className={column.className ?? "px-4 py-3"}
-                                >
-                                    {column.render(item, index)}
-                                </td>
-                            ))}
+                    {isLoading ? (
+                        <tr>
+                            <td
+                                colSpan={columns.length}
+                                className="px-4 py-3 text-center"
+                            >
+                                Loading...
+                            </td>
                         </tr>
-                    ))}
+                    ) : items.length === 0 ? (
+                        <tr>
+                            <td
+                                colSpan={columns.length}
+                                className="px-4 py-3 text-center"
+                            >
+                                No data available.
+                            </td>
+                        </tr>
+                    ) : (
+                        items.map((item, index) => (
+                            <tr
+                                key={getKey(item)}
+                                className={
+                                    index % 2 === 0
+                                        ? "bg-white dark:bg-bg-window-dark text-text-dark"
+                                        : "bg-bg dark:bg-bg-dark text-text-dark"
+                                }
+                            >
+                                {columns.map((column) => (
+                                    <td
+                                        key={column.key}
+                                        className={
+                                            column.className ?? "px-4 py-3"
+                                        }
+                                    >
+                                        {column.render(item, index)}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))
+                    )}
                 </tbody>
             </table>
         </div>

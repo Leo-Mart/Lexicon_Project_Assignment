@@ -1,5 +1,5 @@
 import Button from "./Button";
-import { ActivityDate, ActivityTime } from "../constants/ActivityTimeConverter";
+import { ActivityDate, ActivityTime } from "../utils/ActivityTimeConverter";
 import { SubmissionReviewStatusNames } from "../constants/SubmissionReviewStatus";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import { ActivityType, ActivityTypeNames } from "../constants/ActivityType";

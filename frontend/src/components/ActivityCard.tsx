@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ActivityTime, ActivityDate } from "../constants/ActivityTimeConverter";
+import { ActivityTime, ActivityDate } from "../utils/ActivityTimeConverter";
 import { ActivityType, ActivityTypeNames } from "../constants/ActivityType";
 import Button from "../components/Button";
 import FormModal, { type EntityFormConfig } from "../components/FormModal";

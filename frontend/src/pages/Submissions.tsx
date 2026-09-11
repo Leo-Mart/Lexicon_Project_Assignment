@@ -1,71 +1,52 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Button from "../components/Button";
 import Pagination from "../components/Pagination";
 import SortableTh from "../components/SortableTableHead";
 import ReviewSubmissionModal from "../components/ReviewSubmissionModal";
 import {
-    fetchAllSubmissions,
     fetchSubmissionsPage,
     fetchOverdueByActivityId,
     setFeedback,
+    fetchAllSubmissions,
 } from "../services/submissionService";
-import { fetchActivitys } from "../services/activityService";
-import { ActivityDate, ActivityTime } from "../constants/ActivityTimeConverter";
-import { fetchUsers } from "../services/userService";
-import { fetchCourses } from "../services/courseService";
+import { ActivityDate, ActivityTime } from "../utils/ActivityTimeConverter.ts";
 import { useAuth } from "../hooks/useAuth";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import type { OverdueSubmission } from "../interfaces/submission/OverdueSubmission";
 import type { FeedbackRequest } from "../interfaces/submission/FeedbackRequest";
 import { SubmissionReviewStatus } from "../constants/SubmissionReviewStatus";
+import SubmissionCategoryButtons from "../components/SubmissionCategoryButtons";
+import type { SubmissionTabs } from "../types/SubmissionTabs";
+import { daysLate, daysOverdue } from "../utils/deadlines.ts";
+import {
+    createActivityLookups,
+    type ActivityLookups,
+} from "../utils/IdsFromActivity.ts";
+import { fetchActivities } from "../services/activityService.ts";
+import { fetchCourses } from "../services/courseService.ts";
+import { fetchUsers } from "../services/userService.ts";
+import TableSearchBar from "../components/TableSearchBar.tsx";
+import DataTable from "../components/DataTable.tsx";
+import type { Column } from "../types/Column.ts";
+/* import DataTable from "../components/DataTable";
+import type { Column } from "../types/Column.ts"; */
 
 const PAGE_SIZE = 10;
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
 const DEFAULT_SORT = "review-asc";
-
-// Whole days between a deadline and a later point in time.
-const daysSince = (deadline: string, at: number): number =>
-    Math.floor((at - new Date(deadline).getTime()) / MS_PER_DAY);
-
-// How many whole days ago a deadline passed. Only meaningful once it's past.
-const daysOverdue = (deadline: string): number =>
-    daysSince(deadline, Date.now());
-
-// How many whole days after the deadline a submission came in.
-const daysLate = (deadline: string, submittedAt: string): number =>
-    daysSince(deadline, new Date(submittedAt).getTime());
 
 // Mock teacher review page: everything fetched and joined client-side.
 export default function Submissions() {
     const { role } = useAuth();
     const [submissions, setSubmissions] = useState<SubmissionResponse[]>([]);
-    const [activityNameById, setActivityNameById] = useState<
-        Map<string, string>
-    >(new Map());
-    const [courseNameByModuleId, setCourseNameByModuleId] = useState<
-        Map<string, string>
-    >(new Map());
-    const [courseIdByModuleId, setCourseIdByModuleId] = useState<
-        Map<string, string>
-    >(new Map());
-    const [studentNameById, setStudentNameById] = useState<Map<string, string>>(
-        new Map(),
-    );
-    const [activityModuleById, setActivityModuleById] = useState<
-        Map<string, string>
-    >(new Map());
-    const [activityDeadlineById, setActivityDeadlineById] = useState<
-        Map<string, string | null>
-    >(new Map());
     const [loading, setLoading] = useState(true);
     const [reviewing, setReviewing] = useState<SubmissionResponse | null>(null);
     const [sortBy, setSortBy] = useState(DEFAULT_SORT);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
-    const [tab, setTab] = useState<
-        "not-reviewed" | "overdue" | "needs-completion" | "done"
-    >("not-reviewed");
+    const [tab, setTab] = useState<SubmissionTabs>("not-reviewed");
+    const [lookups, setLookups] = useState<ActivityLookups | null>(null);
 
     // The Submissions tab's table: one page at a time, searched/sorted on
     // the server. Separate from `submissions` above, which stays a full
@@ -91,53 +72,31 @@ export default function Submissions() {
     useEffect(() => {
         if (role !== "Teacher") return;
 
-        const load = async () => {
+        void (async () => {
             setLoading(true);
+            try {
+                const [submissionData, activities, users, courses] =
+                    await Promise.all([
+                        fetchAllSubmissions(),
+                        fetchActivities(),
+                        fetchUsers(),
+                        fetchCourses({
+                            search: "",
+                            sortBy: "name",
+                            direction: "asc",
+                            page: 1,
+                            pageSize: 200,
+                        }),
+                    ]);
 
-            const [submissionData, activities, users, courses] =
-                await Promise.all([
-                    fetchAllSubmissions(),
-                    fetchActivitys(),
-                    fetchUsers(),
-                    fetchCourses({
-                        search: "",
-                        sortBy: "name",
-                        direction: "asc",
-                        page: 1,
-                        pageSize: 200,
-                    }),
-                ]);
-
-            setSubmissions(submissionData);
-            setActivityNameById(
-                new Map(activities.map((a) => [a.activityId, a.name])),
-            );
-            setActivityModuleById(
-                new Map(activities.map((a) => [a.activityId, a.moduleId])),
-            );
-            setActivityDeadlineById(
-                new Map(activities.map((a) => [a.activityId, a.deadline])),
-            );
-            setStudentNameById(new Map(users.map((u) => [u.id, u.name])));
-            setCourseNameByModuleId(
-                new Map(
-                    courses.items.flatMap((c) =>
-                        c.modules.map((m) => [m.moduleId, c.name] as const),
-                    ),
-                ),
-            );
-            setCourseIdByModuleId(
-                new Map(
-                    courses.items.flatMap((c) =>
-                        c.modules.map((m) => [m.moduleId, c.courseId] as const),
-                    ),
-                ),
-            );
-
-            setLoading(false);
-        };
-
-        void load();
+                setSubmissions(submissionData);
+                setLookups(
+                    createActivityLookups(activities, courses.items, users),
+                );
+            } finally {
+                setLoading(false);
+            }
+        })();
     }, [role]);
 
     // Bumped after a review is saved to force the page below to re-fetch, so
@@ -181,13 +140,16 @@ export default function Submissions() {
     // Overdue students for every activity, so the picker can flag which ones
     // need attention and the summary bar/"All activities" need no extra fetch.
     useEffect(() => {
-        if (overdueChecked || activityNameById.size === 0) {
+        if (overdueChecked || !lookups || submissions.length === 0) {
             return;
         }
 
         const check = async () => {
+            const activityIds = [
+                ...new Set(submissions.map(({ activityId }) => activityId)),
+            ];
             const entries = await Promise.all(
-                [...activityNameById.keys()].map(async (id) => {
+                activityIds.map(async (id) => {
                     const overdue = await fetchOverdueByActivityId(id);
                     return [id, overdue] as const;
                 }),
@@ -198,7 +160,7 @@ export default function Submissions() {
         };
 
         void check();
-    }, [overdueChecked, activityNameById]);
+    }, [overdueChecked, lookups, submissions]);
 
     const handleSortChange = (value: string) => {
         setSortBy(value);
@@ -229,6 +191,138 @@ export default function Submissions() {
         setReviewing(null);
     };
 
+    const onSearchChange = (value: string) => {
+        setSearch(value);
+        setPage(1);
+        setOverduePage(1);
+    };
+
+    const submissionColumns: Column<SubmissionResponse>[] = useMemo(() => {
+        const baseColumns: Column<SubmissionResponse>[] = [
+            {
+                key: "student",
+                field: "student",
+                header: "Student",
+                className: "px-4 py-3",
+                render: (submission) => (
+                    <>
+                        {lookups?.studentName(submission.studentId)}
+                        {submission.resubmittedAt != null && (
+                            <span className="ml-2 rounded-full bg-accent-blue/30 px-2 py-0.5 text-xs">
+                                Resubmitted
+                            </span>
+                        )}
+                    </>
+                ),
+            },
+            {
+                key: "course",
+                field: "course",
+                header: "Course",
+                className: "px-4 py-3",
+                render: (submission) => {
+                    const courseId = lookups?.courseIdForActivity(
+                        submission.activityId,
+                    );
+                    const courseName =
+                        lookups?.courseNameForActivity(submission.activityId) ||
+                        "-";
+                    return courseId ? (
+                        <Link
+                            className="underline text-buttons"
+                            to={`/courses/${courseId}`}
+                        >
+                            {courseName}
+                        </Link>
+                    ) : (
+                        courseName
+                    );
+                },
+            },
+            {
+                key: "activity",
+                field: "activity",
+                header: "Activity",
+                className: "px-4 py-3",
+                render: (submission) => {
+                    const moduleId = lookups?.moduleIdForActivity(
+                        submission.activityId,
+                    );
+                    const activityName =
+                        lookups?.activityName(submission.activityId) ??
+                        submission.activityId;
+                    return moduleId ? (
+                        <Link
+                            className="underline text-buttons"
+                            to={`/module/${moduleId}`}
+                        >
+                            {activityName}
+                        </Link>
+                    ) : (
+                        activityName
+                    );
+                },
+            },
+            {
+                key: "deadline",
+                field: "deadline",
+                header: "Deadline",
+                className: "px-4 py-3",
+                render: (submission) => {
+                    const deadline = lookups?.deadlineForActivity(
+                        submission.activityId,
+                    );
+                    const lateDays = deadline
+                        ? tab === "done"
+                            ? daysLate(deadline, submission.submittedAt)
+                            : daysOverdue(deadline)
+                        : null;
+                    return deadline ? (
+                        <>
+                            {ActivityDate(deadline)} {ActivityTime(deadline)}
+                            {lateDays != null && lateDays > 0 && (
+                                <div className="text-xs opacity-70">
+                                    {lateDays} days{" "}
+                                    {tab === "done" ? "late" : "overdue"}
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        "-"
+                    );
+                },
+            },
+        ];
+
+        // Conditionally add the "reviewed" column
+        if (tab !== "not-reviewed") {
+            baseColumns.push({
+                key: "reviewed",
+                field: "reviewed",
+                header: "Reviewed",
+                className: "px-4 py-3",
+                render: (submission) =>
+                    submission.feedbackAt
+                        ? `${ActivityDate(submission.feedbackAt)} ${ActivityTime(submission.feedbackAt)}`
+                        : "-",
+            });
+        }
+
+        // Always add the "actions" column
+        baseColumns.push({
+            key: "actions",
+            header: "Interact",
+            className: "whitespace-nowrap px-4 py-3",
+            render: (submission) => (
+                <Button onClick={() => setReviewing(submission)}>
+                    {submission.reviewStatus != null ? "Edit review" : "Review"}
+                </Button>
+            ),
+        });
+
+        return baseColumns;
+    }, [tab, lookups]); // Recompute when `tab` or `lookups` changes
+
     if (role !== "Teacher") {
         return (
             <div className="p-4 text-text-dark dark:text-text-light">
@@ -238,19 +332,6 @@ export default function Submissions() {
     }
 
     if (loading) return <div className="p-4">Loading...</div>;
-
-    const courseNameForActivity = (activityId: string) => {
-        const moduleId = activityModuleById.get(activityId);
-        return (moduleId && courseNameByModuleId.get(moduleId)) ?? "";
-    };
-    const courseIdForActivity = (activityId: string) => {
-        const moduleId = activityModuleById.get(activityId);
-        return moduleId ? courseIdByModuleId.get(moduleId) : undefined;
-    };
-    const courseName = (s: SubmissionResponse) =>
-        courseNameForActivity(s.activityId);
-    const studentName = (s: SubmissionResponse) =>
-        studentNameById.get(s.studentId) ?? s.studentId;
 
     const totalOverdue = [...overdueByActivity.values()].reduce(
         (sum, list) => sum + list.length,
@@ -272,247 +353,33 @@ export default function Submissions() {
                 Submissions
             </h1>
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                <div className="flex items-center gap-3">
-                    <input
-                        id="student-search"
-                        type="search"
-                        aria-label="Search for student"
-                        placeholder="Search for student..."
-                        className="bg-slate-700 text-white placeholder:text-slate-400 border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
-                        value={search}
-                        onChange={(e) => {
-                            setSearch(e.target.value);
-                            setPage(1);
-                            setOverduePage(1);
-                        }}
-                    />
-                </div>
+                <TableSearchBar
+                    search={search}
+                    onSearchChange={onSearchChange}
+                />
 
-                <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                        variant="primary"
-                        className={
-                            tab === "not-reviewed" ? "bg-accent-blue" : ""
-                        }
-                        onClick={() => handleTabChange("not-reviewed")}
-                    >
-                        Not reviewed
-                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
-                            {notReviewedCount}
-                        </span>
-                    </Button>
-                    <Button
-                        variant="primary"
-                        className={tab === "overdue" ? "bg-accent-blue" : ""}
-                        onClick={() => handleTabChange("overdue")}
-                    >
-                        Overdue
-                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
-                            {overdueChecked ? totalOverdue : "…"}
-                        </span>
-                    </Button>
-                    <Button
-                        variant="primary"
-                        className={
-                            tab === "needs-completion" ? "bg-accent-blue" : ""
-                        }
-                        onClick={() => handleTabChange("needs-completion")}
-                    >
-                        Needs completion
-                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
-                            {needsCompletionCount}
-                        </span>
-                    </Button>
-                    <Button
-                        variant="primary"
-                        className={tab === "done" ? "bg-accent-blue" : ""}
-                        onClick={() => handleTabChange("done")}
-                    >
-                        Done
-                        <span className="ml-2 rounded-full bg-white/30 px-2 text-xs">
-                            {doneCount}
-                        </span>
-                    </Button>
-                </div>
+                <SubmissionCategoryButtons
+                    notReviewedCount={notReviewedCount}
+                    overdueChecked={overdueChecked}
+                    totalOverdue={totalOverdue}
+                    needsCompletionCount={needsCompletionCount}
+                    doneCount={doneCount}
+                    tab={tab}
+                    handleTabChange={handleTabChange}
+                />
             </div>
 
             {tab !== "overdue" && (
-                <>
-                    <div className="overflow-x-auto rounded-lg border border-accent-blue">
-                        <table className="w-full text-left text-text-dark dark:text-text-light">
-                            <thead className="bg-bg-window dark:bg-bg-window-dark">
-                                <tr>
-                                    <SortableTh
-                                        field="student"
-                                        label="Student"
-                                        sortBy={sortBy}
-                                        onSortChange={handleSortChange}
-                                        isLoading={tableLoading}
-                                    />
-                                    <SortableTh
-                                        field="course"
-                                        label="Course"
-                                        sortBy={sortBy}
-                                        onSortChange={handleSortChange}
-                                        isLoading={tableLoading}
-                                    />
-                                    <SortableTh
-                                        field="activity"
-                                        label="Activity"
-                                        sortBy={sortBy}
-                                        onSortChange={handleSortChange}
-                                        isLoading={tableLoading}
-                                    />
-                                    <SortableTh
-                                        field="deadline"
-                                        label="Deadline"
-                                        sortBy={sortBy}
-                                        onSortChange={handleSortChange}
-                                        isLoading={tableLoading}
-                                    />
-                                    {tab !== "not-reviewed" && (
-                                        <SortableTh
-                                            field="reviewed"
-                                            label="Reviewed"
-                                            sortBy={sortBy}
-                                            onSortChange={handleSortChange}
-                                            isLoading={tableLoading}
-                                        />
-                                    )}
-                                    <th className="px-4 py-3"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {pagedSubmissions.map((s) => {
-                                    const deadline = activityDeadlineById.get(
-                                        s.activityId,
-                                    );
-                                    // Done shows how late the submission itself was; the other
-                                    // tabs show how overdue it still is, growing until resolved.
-                                    const lateDays = deadline
-                                        ? tab === "done"
-                                            ? daysLate(deadline, s.submittedAt)
-                                            : daysOverdue(deadline)
-                                        : null;
-                                    return (
-                                        <tr
-                                            key={s.submissionId}
-                                            className="border-t border-accent-blue hover:bg-bg-window/40 dark:hover:bg-bg-window-dark/40"
-                                        >
-                                            <td className="px-4 py-3">
-                                                {studentName(s)}
-                                                {s.resubmittedAt != null && (
-                                                    <span className="ml-2 rounded-full bg-accent-blue/30 px-2 py-0.5 text-xs">
-                                                        Resubmitted
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {courseIdForActivity(
-                                                    s.activityId,
-                                                ) ? (
-                                                    <Link
-                                                        className="underline text-buttons"
-                                                        to={`/courses/${courseIdForActivity(s.activityId)}`}
-                                                    >
-                                                        {courseName(s) || "-"}
-                                                    </Link>
-                                                ) : (
-                                                    (courseName(s) ?? "-")
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {activityModuleById.get(
-                                                    s.activityId,
-                                                ) ? (
-                                                    <Link
-                                                        className="underline text-buttons"
-                                                        to={`/module/${activityModuleById.get(s.activityId)}`}
-                                                    >
-                                                        {activityNameById.get(
-                                                            s.activityId,
-                                                        ) ?? s.activityId}
-                                                    </Link>
-                                                ) : (
-                                                    (activityNameById.get(
-                                                        s.activityId,
-                                                    ) ?? s.activityId)
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {deadline ? (
-                                                    <>
-                                                        {ActivityDate(deadline)}{" "}
-                                                        {ActivityTime(deadline)}
-                                                        {lateDays != null &&
-                                                            lateDays > 0 && (
-                                                                <div className="text-xs opacity-70">
-                                                                    {lateDays}{" "}
-                                                                    days{" "}
-                                                                    {tab ===
-                                                                    "done"
-                                                                        ? "late"
-                                                                        : "overdue"}
-                                                                </div>
-                                                            )}
-                                                    </>
-                                                ) : (
-                                                    "-"
-                                                )}
-                                            </td>
-                                            {tab !== "not-reviewed" && (
-                                                <td className="px-4 py-3">
-                                                    {s.feedbackAt
-                                                        ? `${ActivityDate(s.feedbackAt)} ${ActivityTime(s.feedbackAt)}`
-                                                        : "-"}
-                                                </td>
-                                            )}
-                                            <td className="px-4 py-3">
-                                                <Button
-                                                    onClick={() =>
-                                                        setReviewing(s)
-                                                    }
-                                                >
-                                                    {s.reviewStatus != null
-                                                        ? "Edit review"
-                                                        : "Review"}
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                                {tableLoading && (
-                                    <tr>
-                                        <td
-                                            colSpan={
-                                                tab === "not-reviewed" ? 5 : 6
-                                            }
-                                            className="px-4 py-3 text-center"
-                                        >
-                                            Loading...
-                                        </td>
-                                    </tr>
-                                )}
-                                {!tableLoading &&
-                                    pagedSubmissions.length === 0 && (
-                                        <tr>
-                                            <td
-                                                colSpan={
-                                                    tab === "not-reviewed"
-                                                        ? 5
-                                                        : 6
-                                                }
-                                                className="px-4 py-3 text-center"
-                                            >
-                                                {submissions.length === 0
-                                                    ? "No submissions yet."
-                                                    : "No submissions match your search."}
-                                            </td>
-                                        </tr>
-                                    )}
-                            </tbody>
-                        </table>
-                    </div>
+                <div>
+                    <DataTable
+                        items={pagedSubmissions}
+                        columns={submissionColumns}
+                        getKey={(submission) => submission.submissionId}
+                        sortBy={sortBy}
+                        isLoading={tableLoading}
+                        onSortChange={handleSortChange}
+                        bodyClassName="text-text-dark dark:text-text-light"
+                    />
 
                     <Pagination
                         page={page}
@@ -520,7 +387,7 @@ export default function Submissions() {
                         totalCount={totalCount}
                         onPageChange={setPage}
                     />
-                </>
+                </div>
             )}
 
             {tab === "overdue" &&
@@ -530,16 +397,19 @@ export default function Submissions() {
                             students.map((u) => ({
                                 ...u,
                                 activityId,
-                                moduleId: activityModuleById.get(activityId),
+                                moduleId:
+                                    lookups?.moduleIdForActivity(activityId),
                                 activityName:
-                                    activityNameById.get(activityId) ??
+                                    lookups?.activityName(activityId) ??
                                     activityId,
                                 courseName:
-                                    courseNameForActivity(activityId) ||
-                                    "Unknown course",
-                                courseId: courseIdForActivity(activityId),
+                                    lookups?.courseNameForActivity(
+                                        activityId,
+                                    ) || "Unknown course",
+                                courseId:
+                                    lookups?.courseIdForActivity(activityId),
                                 deadline:
-                                    activityDeadlineById.get(activityId) ??
+                                    lookups?.deadlineForActivity(activityId) ??
                                     null,
                             })),
                     );
@@ -700,7 +570,7 @@ export default function Submissions() {
 
             {reviewing &&
                 (() => {
-                    const deadline = activityDeadlineById.get(
+                    const deadline = lookups?.deadlineForActivity(
                         reviewing.activityId,
                     );
                     const deadlineText = deadline
@@ -714,10 +584,17 @@ export default function Submissions() {
                     return (
                         <ReviewSubmissionModal
                             submission={reviewing}
-                            studentName={studentName(reviewing)}
-                            courseName={courseName(reviewing) || "-"}
+                            studentName={
+                                lookups?.studentName(reviewing.studentId) ??
+                                reviewing.studentId
+                            }
+                            courseName={
+                                lookups?.courseNameForActivity(
+                                    reviewing.activityId,
+                                ) || "-"
+                            }
                             activityName={
-                                activityNameById.get(reviewing.activityId) ??
+                                lookups?.activityName(reviewing.activityId) ??
                                 reviewing.activityId
                             }
                             deadlineText={deadlineText}
