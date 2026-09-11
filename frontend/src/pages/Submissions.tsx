@@ -24,16 +24,17 @@ const PAGE_SIZE = 10;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const DEFAULT_SORT = "review-asc";
 
+// Whole days between a deadline and a later point in time.
+const daysSince = (deadline: string, at: number): number =>
+    Math.floor((at - new Date(deadline).getTime()) / MS_PER_DAY);
+
 // How many whole days ago a deadline passed. Only meaningful once it's past.
 const daysOverdue = (deadline: string): number =>
-    Math.floor((Date.now() - new Date(deadline).getTime()) / MS_PER_DAY);
+    daysSince(deadline, Date.now());
 
 // How many whole days after the deadline a submission came in.
 const daysLate = (deadline: string, submittedAt: string): number =>
-    Math.floor(
-        (new Date(submittedAt).getTime() - new Date(deadline).getTime()) /
-            MS_PER_DAY,
-    );
+    daysSince(deadline, new Date(submittedAt).getTime());
 
 // Mock teacher review page: everything fetched and joined client-side.
 export default function Submissions() {
@@ -386,6 +387,13 @@ export default function Submissions() {
                                     const deadline = activityDeadlineById.get(
                                         s.activityId,
                                     );
+                                    // Done shows how late the submission itself was; the other
+                                    // tabs show how overdue it still is, growing until resolved.
+                                    const lateDays = deadline
+                                        ? tab === "done"
+                                            ? daysLate(deadline, s.submittedAt)
+                                            : daysOverdue(deadline)
+                                        : null;
                                     return (
                                         <tr
                                             key={s.submissionId}
@@ -436,30 +444,17 @@ export default function Submissions() {
                                                     <>
                                                         {ActivityDate(deadline)}{" "}
                                                         {ActivityTime(deadline)}
-                                                        {tab === "done"
-                                                            ? daysLate(
-                                                                  deadline,
-                                                                  s.submittedAt,
-                                                              ) > 0 && (
-                                                                  <div className="text-xs opacity-70">
-                                                                      {daysLate(
-                                                                          deadline,
-                                                                          s.submittedAt,
-                                                                      )}{" "}
-                                                                      days late
-                                                                  </div>
-                                                              )
-                                                            : daysOverdue(
-                                                                  deadline,
-                                                              ) > 0 && (
-                                                                  <div className="text-xs opacity-70">
-                                                                      {daysOverdue(
-                                                                          deadline,
-                                                                      )}{" "}
-                                                                      days
-                                                                      overdue
-                                                                  </div>
-                                                              )}
+                                                        {lateDays != null &&
+                                                            lateDays > 0 && (
+                                                                <div className="text-xs opacity-70">
+                                                                    {lateDays}{" "}
+                                                                    days{" "}
+                                                                    {tab ===
+                                                                    "done"
+                                                                        ? "late"
+                                                                        : "overdue"}
+                                                                </div>
+                                                            )}
                                                     </>
                                                 ) : (
                                                     "-"
