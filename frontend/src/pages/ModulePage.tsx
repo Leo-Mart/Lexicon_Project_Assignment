@@ -18,7 +18,6 @@ import {
     addResourceToModule,
     createResource,
     deleteResource,
-    fetchResourcesForModule,
     updateResource,
 } from "../services/resourceService";
 import type { ResourceResponse } from "../interfaces/resource/ResourceResponse";
@@ -68,6 +67,7 @@ export default function ModulePage() {
                 const moduleData = await fetchModuleById(moduleId);
                 setModule(moduleData);
                 setModuleActivities(moduleData.activities);
+                setModuleResources(moduleData.moduleResources);
 
                 if (role === "Student") {
                     const submissions = await getCurrentUserSubmissions();
@@ -95,29 +95,7 @@ export default function ModulePage() {
             }
         };
 
-        const getResourcesForModule = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                if (moduleId === undefined) {
-                    throw new Error("Could not find Id for module");
-                }
-                const resourceData = await fetchResourcesForModule(moduleId);
-                setModuleResources(resourceData);
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : "Failed to fetch resources",
-                );
-                console.error("Error fetching resources: ", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchModule();
-        getResourcesForModule();
     }, [moduleId, role]);
 
     const handleResourceEdit = async (

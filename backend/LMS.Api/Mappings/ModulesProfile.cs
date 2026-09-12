@@ -8,7 +8,11 @@ public class ModuleProfile : Profile
 {
     public ModuleProfile()
     {
-        CreateMap<Module, ModuleDto>();
+        CreateMap<Module, ModuleDto>()
+            .ForMember(
+                dto => dto.ModuleResources,
+                opt => opt.MapFrom(x => x.ModuleResources.Select(cr => cr.Resource))
+            );
         CreateMap<CreateNewModuleDto, Module>();
         CreateMap<UpdateModuleDto, Module>();
     }
