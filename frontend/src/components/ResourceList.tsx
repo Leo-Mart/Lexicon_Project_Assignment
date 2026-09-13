@@ -131,7 +131,7 @@ const ResourceList = () => {
         {
             key: "actions",
             header: "Actions",
-            className: "whitespace-nowrap",
+            className: "whitespace-nowrap pr-4",
             render: (resource) => (
                 <div className="flex items-center gap-2">
                     <Button onClick={() => setEditingResource(resource)}>
