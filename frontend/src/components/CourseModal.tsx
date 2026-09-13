@@ -25,6 +25,7 @@ export default function CourseModal({
         startDate: selectedCourse.startDate,
         endDate: selectedCourse.endDate,
         modules: [],
+        courseResources: [],
     });
 
     const handleOnSubmit = async (e: React.SubmitEvent) => {
@@ -54,6 +55,7 @@ export default function CourseModal({
             startDate: "",
             endDate: "",
             modules: [],
+            courseResources: [],
         });
     }
 
