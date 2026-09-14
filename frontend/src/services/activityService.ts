@@ -2,6 +2,7 @@ import { authFetch } from "./authService";
 import { API_BASE_URL, HttpMethod, JSON_HEADERS } from "../constants/Constants";
 import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
+import type { ErrorResponse } from "../interfaces/error/ErrorResponse";
 
 const API_URL = API_BASE_URL + "/activity";
 
@@ -43,6 +44,11 @@ export const createActivity = async (
         headers: JSON_HEADERS,
         body: JSON.stringify(newActivity),
     });
+
+    if (response.status === 400) {
+        const err = (await response.json()) as ErrorResponse;
+        throw new Error(err.detail);
+    }
 
     if (!response.ok) {
         throw new Error(`Could not create the activity: ${response.status}`);
