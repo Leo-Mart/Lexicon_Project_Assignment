@@ -341,6 +341,110 @@ export default function Submissions() {
         return baseColumns;
     }, [tab, lookups]);
 
+    const overdueColumns: Column<OverdueSubmission & { activityId: string }>[] =
+        useMemo(
+            () => [
+                {
+                    key: "student",
+                    field: "student",
+                    header: "Student",
+                    className: "px-4 py-3",
+                    render: (item) => item.studentName,
+                },
+                {
+                    key: "course",
+                    field: "course",
+                    header: "Course",
+                    className: "px-4 py-3",
+                    render: (item) => {
+                        const courseId = lookups?.courseIdForActivity(
+                            item.activityId,
+                        );
+                        const courseName =
+                            lookups?.courseNameForActivity(item.activityId) ||
+                            "-";
+                        return courseId ? (
+                            <Link
+                                className="underline text-buttons dark:text-buttons-dark"
+                                to={`/courses/${courseId}`}
+                            >
+                                {courseName}
+                            </Link>
+                        ) : (
+                            courseName
+                        );
+                    },
+                },
+                {
+                    key: "activity",
+                    field: "activity",
+                    header: "Activity",
+                    className: "px-4 py-3",
+                    render: (item) => {
+                        const activityName =
+                            lookups?.activityName(item.activityId) ??
+                            item.activityId;
+                        return activityName;
+                    },
+                },
+                {
+                    key: "deadline",
+                    field: "deadline",
+                    header: "Deadline",
+                    className: "px-4 py-3",
+                    render: (item) => {
+                        const deadline = lookups?.deadlineForActivity(
+                            item.activityId,
+                        );
+                        if (!deadline) return "-";
+
+                        return (
+                            <>
+                                {ActivityDate(deadline)}{" "}
+                                {ActivityTime(deadline)}
+                                <div className="text-xs opacity-70">
+                                    {daysOverdue(deadline)} days overdue
+                                </div>
+                            </>
+                        );
+                    },
+                },
+            ],
+            [lookups],
+        );
+
+    // Then transform the overdue data without nulling values
+    const overdueItems = useMemo(() => {
+        if (!overdueChecked || !lookups) return [];
+
+        return [...overdueByActivity.entries()].flatMap(
+            ([activityId, students]) =>
+                students.map((u) => ({
+                    ...u,
+                    activityId,
+                })),
+        );
+    }, [overdueByActivity, overdueChecked, lookups]);
+
+    // Filtered overdue items
+    const filteredOverdueItems = useMemo(() => {
+        return search.trim()
+            ? overdueItems.filter((item) =>
+                  item.studentName
+                      .toLowerCase()
+                      .includes(search.trim().toLowerCase()),
+              )
+            : overdueItems;
+    }, [overdueItems, search]);
+
+    // Paged overdue items
+    const pagedOverdueItems = useMemo(() => {
+        return filteredOverdueItems.slice(
+            (overduePage - 1) * PAGE_SIZE,
+            overduePage * PAGE_SIZE,
+        );
+    }, [filteredOverdueItems, overduePage]);
+
     if (role !== "Teacher") {
         return (
             <div className="p-4 text-text-dark dark:text-text-light">
@@ -412,11 +516,13 @@ export default function Submissions() {
                 <div>
                     <>
                         <DataTable
-                            items={pagedSubmissions}
-                            columns={submissionColumns}
-                            getKey={(item) => item.submissionId}
+                            items={pagedOverdueItems}
+                            columns={overdueColumns}
+                            getKey={(item) =>
+                                `${item.studentId}-${item.activityId}`
+                            }
                             sortBy={overdueSortBy}
-                            isLoading={false}
+                            isLoading={!overdueChecked}
                             onSortChange={handleOverdueSortChange}
                             bodyClassName="text-text-dark dark:text-text-light"
                         />
@@ -427,7 +533,6 @@ export default function Submissions() {
                             onPageChange={setOverduePage}
                         />
                     </>
-                    );
                 </div>
             )}
 
