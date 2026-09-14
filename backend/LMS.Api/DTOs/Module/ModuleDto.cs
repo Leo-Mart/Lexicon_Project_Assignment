@@ -1,5 +1,6 @@
 using LMS.Api.DTOs.Activities;
 using LMS.Api.DTOs.Course;
+using LMS.Api.DTOs.Resources;
 
 namespace LMS.Api.DTOs.Module;
 
@@ -14,4 +15,5 @@ public record ModuleDto
 
     public BasicCourseInfoDto Course { get; set; } = null!;
     public ICollection<ActivityDto> Activities { get; set; } = new List<ActivityDto>();
+    public ICollection<ResourceDto> ModuleResources { get; set; } = new List<ResourceDto>();
 }

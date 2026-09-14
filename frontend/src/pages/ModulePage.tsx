@@ -18,7 +18,6 @@ import {
     addResourceToModule,
     createResource,
     deleteResource,
-    fetchResourcesForModule,
     updateResource,
 } from "../services/resourceService";
 import type { ResourceResponse } from "../interfaces/resource/ResourceResponse";
@@ -48,6 +47,7 @@ export default function ModulePage() {
     const [activityTypeFilter, setActivityTypeFilter] = useState<
         ActivityType | "all"
     >("all");
+
     const [sortAscending, setSortAscending] = useState(true);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -68,6 +68,7 @@ export default function ModulePage() {
                 const moduleData = await fetchModuleById(moduleId);
                 setModule(moduleData);
                 setModuleActivities(moduleData.activities);
+                setModuleResources(moduleData.moduleResources);
 
                 if (role === "Student") {
                     const submissions = await getCurrentUserSubmissions();
@@ -95,29 +96,7 @@ export default function ModulePage() {
             }
         };
 
-        const getResourcesForModule = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                if (moduleId === undefined) {
-                    throw new Error("Could not find Id for module");
-                }
-                const resourceData = await fetchResourcesForModule(moduleId);
-                setModuleResources(resourceData);
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : "Failed to fetch resources",
-                );
-                console.error("Error fetching resources: ", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchModule();
-        getResourcesForModule();
     }, [moduleId, role]);
 
     const handleResourceEdit = async (
@@ -147,6 +126,55 @@ export default function ModulePage() {
             moduleResources!.filter(
                 (resource) => resource.resourceId !== resourceId,
             ),
+        );
+    };
+
+    const handleAddResourceToActivity = (resource: ResourceResponse) => {
+        setModuleActivities(
+            moduleActivities?.map((activity) => {
+                activity.activityResources = [
+                    ...activity.activityResources,
+                    resource,
+                ];
+                return activity;
+            }),
+        );
+    };
+
+    const handleResourceEditForActivity = async (
+        resourceId: string,
+        payload: ResourceRequest,
+    ) => {
+        await updateResource(resourceId, payload);
+        const updatedActivites: ActivityResponse[] = moduleActivities!.map(
+            (activity) => {
+                activity.activityResources.map((resource) => {
+                    if (resource.resourceId === resourceId) {
+                        resource.name = payload.name;
+                        resource.description = payload.description;
+                        resource.content = payload.content;
+                        resource.uri = payload.uri ?? undefined;
+
+                        return resource;
+                    } else {
+                        return resource;
+                    }
+                });
+                return activity;
+            },
+        );
+        setModuleActivities(updatedActivites);
+    };
+
+    const handleRemoveResourceFromActivity = async (resourceId: string) => {
+        await deleteResource(resourceId);
+        setModuleActivities(
+            moduleActivities?.map((activity) => {
+                activity.activityResources = activity.activityResources.filter(
+                    (resource) => resource.resourceId !== resourceId,
+                );
+                return activity;
+            }),
         );
     };
 
@@ -214,28 +242,27 @@ export default function ModulePage() {
                 {moduleActivities && (
                     <ActivitySchedule activities={moduleActivities} />
                 )}
-                <div className="row-span-2 max-h-[70vh] overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-light">
+                <div className="row-span-2 max-h-[70vh] overflow-auto rounded-md px-4 py-2 bg-bg-window  text-text-dark">
                     <div className="flex">
                         <div className="flex w-full">
                             <h1 className="text-4xl grow text-center">
                                 Module Resources
                             </h1>
-                            {isAuthenticated && role === "Teacher" ? (
-                                <button
-                                    onClick={() =>
-                                        setShowCreateResourceForm(true)
-                                    }
-                                    className="rounded-md p-2 w-10 bg-buttons border-text-light border hover:cursor-pointer"
-                                >
-                                    +
-                                </button>
-                            ) : (
-                                ""
-                            )}
                         </div>
                     </div>
+                    <div className="h-10 mt-3 mx-3 flex justify-end">
+                        {isAuthenticated && role === "Teacher" ? (
+                            <Button
+                                onClick={() => setShowCreateResourceForm(true)}
+                            >
+                                Add
+                            </Button>
+                        ) : (
+                            ""
+                        )}
+                    </div>
                     {moduleResources?.length ? (
-                        <div className="mt-5">
+                        <div className="mt-3">
                             {moduleResources.map(
                                 (resource: ResourceResponse) => (
                                     <ResourceCard
@@ -251,29 +278,17 @@ export default function ModulePage() {
                         "Module has no activities"
                     )}
                 </div>
-                <div className="row-span-2 max-h-[70vh] overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-light dark:text-text-light">
+                <div className="row-span-2 max-h-[70vh] overflow-auto rounded-md px-4 py-2 bg-bg-window  text-text-dark ">
                     <div className="flex">
                         <div className="flex w-full ">
                             <h1 className="text-4xl grow text-center">
                                 Activities
                             </h1>
-                            {isAuthenticated && role === "Teacher" ? (
-                                <button
-                                    onClick={() =>
-                                        setShowCreateActivityForm(true)
-                                    }
-                                    className="rounded-md p-2 w-10 bg-buttons border-text-light border hover:cursor-pointer"
-                                >
-                                    +
-                                </button>
-                            ) : (
-                                ""
-                            )}
                         </div>
                     </div>
                     {moduleActivities?.length ? (
                         <>
-                            <div className="flex flex-wrap justify-center items-center gap-2 mt-3">
+                            <div className="h-10 flex justify-between gap-2 mt-3 mx-3">
                                 <div className="flex items-center gap-1">
                                     <button
                                         onClick={() =>
@@ -289,7 +304,7 @@ export default function ModulePage() {
                                             <span
                                                 className={`absolute left-0 right-0 h-1.5 ${
                                                     sortAscending
-                                                        ? "bottom-0 bg-gray-300"
+                                                        ? "bottom-0 bg-accent-blue"
                                                         : "top-0 bg-accent-blue"
                                                 }`}
                                             />
@@ -303,8 +318,8 @@ export default function ModulePage() {
                                                 : "invisible"
                                         } ${
                                             sortAscending
-                                                ? "text-gray-300"
-                                                : "text-accent-blue"
+                                                ? "text-text-dark"
+                                                : "text-text-dark"
                                         }`}
                                     >
                                         {sortAscending ? "▲" : "▼"}
@@ -343,7 +358,7 @@ export default function ModulePage() {
                                                         <span
                                                             className={`absolute left-0 right-0 h-1.5 ${
                                                                 sortAscending
-                                                                    ? "bottom-0 bg-gray-300"
+                                                                    ? "bottom-0 bg-accent-blue"
                                                                     : "top-0 bg-accent-blue"
                                                             }`}
                                                         />
@@ -357,8 +372,8 @@ export default function ModulePage() {
                                                             : "invisible"
                                                     } ${
                                                         sortAscending
-                                                            ? "text-gray-300"
-                                                            : "text-accent-blue"
+                                                            ? "text-text-dark"
+                                                            : "text-text-dark"
                                                     }`}
                                                 >
                                                     {sortAscending ? "▲" : "▼"}
@@ -367,6 +382,19 @@ export default function ModulePage() {
                                         ) : null;
                                     },
                                 )}
+                                <div className="flex justify-end">
+                                    {isAuthenticated && role === "Teacher" ? (
+                                        <Button
+                                            onClick={() =>
+                                                setShowCreateActivityForm(true)
+                                            }
+                                        >
+                                            Add
+                                        </Button>
+                                    ) : (
+                                        ""
+                                    )}
+                                </div>
                             </div>
                             <div className="mt-3">
                                 {moduleActivities
@@ -391,8 +419,14 @@ export default function ModulePage() {
                                             deleteActivity={
                                                 handleRemoveActivity
                                             }
+                                            addNewResource={
+                                                handleAddResourceToActivity
+                                            }
                                             deleteResource={
-                                                handleRemoveResource
+                                                handleRemoveResourceFromActivity
+                                            }
+                                            editResource={
+                                                handleResourceEditForActivity
                                             }
                                             submission={submissionsByActivityId.get(
                                                 activity.activityId,

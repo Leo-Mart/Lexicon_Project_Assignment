@@ -40,6 +40,12 @@ public class ModuleRepository(LMSDbContext context) : IModuleRepository
             .Modules.AsNoTracking()
             .Include(m => m.Course)
             .Include(m => m.Activities.OrderBy(a => a.StartAt).ThenBy(a => a.Type))
+                .ThenInclude(a => a.ActivityResources)
+                    .ThenInclude(ar => ar.Resource)
+                        .ThenInclude(r => r.CreatedByTeacher)
+            .Include(m => m.ModuleResources)
+                .ThenInclude(mr => mr.Resource)
+                    .ThenInclude(r => r.CreatedByTeacher)
             .FirstOrDefaultAsync((m) => m.ModuleId == moduleId);
     }
 
@@ -49,6 +55,9 @@ public class ModuleRepository(LMSDbContext context) : IModuleRepository
             .Modules.AsNoTracking()
             .Include(m => m.Course)
             .Include(m => m.Activities.OrderBy(a => a.StartAt).ThenBy(a => a.Type))
+            .Include(m => m.ModuleResources)
+                .ThenInclude(mr => mr.Resource)
+                    .ThenInclude(r => r.CreatedByTeacher)
             .OrderBy(module => module.StartDate)
             .ToListAsync();
     }

@@ -1,3 +1,4 @@
+using LMS.Api.DTOs.Resources;
 using LMS.Api.Enums.Model;
 
 namespace LMS.Api.DTOs.Activities;
@@ -23,4 +24,6 @@ public class ActivityDto
     public DateTime UpdatedAt { get; set; }
 
     public DateTime? Deadline { get; set; }
+
+    public ICollection<ResourceDto> ActivityResources { get; set; } = new List<ResourceDto>();
 }

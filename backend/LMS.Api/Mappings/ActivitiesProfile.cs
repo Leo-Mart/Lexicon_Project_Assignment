@@ -8,7 +8,11 @@ public class ActivityProfile : Profile
 {
     public ActivityProfile()
     {
-        CreateMap<Activity, ActivityDto>();
+        CreateMap<Activity, ActivityDto>()
+            .ForMember(
+                dto => dto.ActivityResources,
+                opt => opt.MapFrom(x => x.ActivityResources.Select(ar => ar.Resource))
+            );
         CreateMap<ActivityCreateDto, Activity>();
         CreateMap<ActivityUpdateDto, Activity>();
     }
