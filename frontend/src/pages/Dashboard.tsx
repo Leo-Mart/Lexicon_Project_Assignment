@@ -4,6 +4,8 @@ import CourseListPage from "./CourseListPage";
 import ResourceManagement from "./ResourceManagement";
 import Users from "./Users";
 import Submissions from "./Submissions";
+import ActivityManagement from "./ActivityManagement";
+import ModuleManagement from "./ModuleManagement";
 
 export default function Dashboard() {
     const [searchParams] = useSearchParams();

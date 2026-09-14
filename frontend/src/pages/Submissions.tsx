@@ -75,7 +75,13 @@ export default function Submissions() {
                 const [submissionData, activities, users, courses, modules] =
                     await Promise.all([
                         fetchAllSubmissions(),
-                        fetchActivities(),
+                        fetchActivities({
+                            search: "",
+                            sortBy: "name",
+                            direction: "asc",
+                            page: 1,
+                            pageSize: 200,
+                        }),
                         fetchUsers(),
                         fetchCourses({
                             search: "",
@@ -84,16 +90,22 @@ export default function Submissions() {
                             page: 1,
                             pageSize: 200,
                         }),
-                        fetchModules(),
+                        fetchModules({
+                            search: "",
+                            sortBy: "name",
+                            direction: "asc",
+                            page: 1,
+                            pageSize: 200,
+                        }),
                     ]);
 
                 setSubmissions(submissionData);
                 setLookups(
                     createActivityLookups(
-                        activities,
+                        activities.items,
                         courses.items,
                         users,
-                        modules,
+                        modules.items,
                     ),
                 );
             } finally {

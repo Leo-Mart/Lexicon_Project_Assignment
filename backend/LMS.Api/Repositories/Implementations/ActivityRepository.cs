@@ -1,4 +1,5 @@
 using LMS.Api.Data;
+using LMS.Api.DTOs.Common;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -14,9 +15,51 @@ public class ActivityRepository : IActivityRepository
         _context = context;
     }
 
-    public async Task<List<Activity>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<Activity>> GetAllAsync(
+        QueryParametersDto query,
+        CancellationToken cancellationToken = default
+    )
     {
-        return await _context.Activities.AsNoTracking().ToListAsync(cancellationToken);
+        IQueryable<Activity> activitiesQuery = _context.Activities.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            string search = query.Search.Trim();
+
+            activitiesQuery = activitiesQuery.Where(activity =>
+                activity.Name.Contains(search) || activity.Description.Contains(search)
+            );
+        }
+
+        activitiesQuery = query.SortBy.ToLowerInvariant() switch
+        {
+            "createdat" => query.Direction == "desc"
+                ? activitiesQuery.OrderByDescending(activity => activity.CreatedAt)
+                : activitiesQuery.OrderBy(activity => activity.CreatedAt),
+
+            "updatedat" => query.Direction == "desc"
+                ? activitiesQuery.OrderByDescending(activity => activity.UpdatedAt)
+                : activitiesQuery.OrderBy(activity => activity.UpdatedAt),
+
+            _ => query.Direction == "desc"
+                ? activitiesQuery.OrderByDescending(activity => activity.Name)
+                : activitiesQuery.OrderBy(activity => activity.Name),
+        };
+
+        int totalCount = await activitiesQuery.CountAsync(cancellationToken);
+
+        List<Activity> activities = await activitiesQuery
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResponse<Activity>
+        {
+            Items = activities,
+            TotalCount = totalCount,
+            Page = query.Page,
+            PageSize = query.PageSize,
+        };
     }
 
     public async Task<Activity?> GetByIdAsync(

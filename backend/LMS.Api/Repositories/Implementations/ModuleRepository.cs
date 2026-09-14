@@ -1,4 +1,5 @@
 using LMS.Api.Data;
+using LMS.Api.DTOs.Common;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -50,17 +51,66 @@ public class ModuleRepository(LMSDbContext context) : IModuleRepository
             .FirstOrDefaultAsync((m) => m.ModuleId == moduleId);
     }
 
-    public async Task<IEnumerable<Module>> GetModulesAsync()
+    public async Task<PagedResponse<Module>> GetModulesAsync(
+        QueryParametersDto query,
+        CancellationToken cancellationToken = default
+    )
     {
-        return await _context
-            .Modules.AsNoTracking()
-            .Include(m => m.Course)
+        // return await _context
+        //     .Modules.AsNoTracking()
+        //     .Include(m => m.Course)
+        //     .Include(m => m.Activities.OrderBy(a => a.StartAt).ThenBy(a => a.Type))
+        //     .Include(m => m.ModuleResources)
+        //         .ThenInclude(mr => mr.Resource)
+        //             .ThenInclude(r => r.CreatedByTeacher)
+        //     .OrderBy(module => module.StartDate)
+        //     .ToListAsync();
+        IQueryable<Module> modulesQuery = _context
+            .Modules.Include(m => m.Course)
             .Include(m => m.Activities.OrderBy(a => a.StartAt).ThenBy(a => a.Type))
             .Include(m => m.ModuleResources)
                 .ThenInclude(mr => mr.Resource)
                     .ThenInclude(r => r.CreatedByTeacher)
-            .OrderBy(module => module.StartDate)
-            .ToListAsync();
+            .OrderBy(module => module.StartDate);
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            string search = query.Search.Trim();
+
+            modulesQuery = modulesQuery.Where(module =>
+                module.Name.Contains(search) || module.Description.Contains(search)
+            );
+        }
+
+        modulesQuery = query.SortBy.ToLowerInvariant() switch
+        {
+            "createdat" => query.Direction == "desc"
+                ? modulesQuery.OrderByDescending(resource => resource.CreatedAt)
+                : modulesQuery.OrderBy(resource => resource.CreatedAt),
+
+            "updatedat" => query.Direction == "desc"
+                ? modulesQuery.OrderByDescending(resource => resource.UpdatedAt)
+                : modulesQuery.OrderBy(resource => resource.UpdatedAt),
+
+            _ => query.Direction == "desc"
+                ? modulesQuery.OrderByDescending(resource => resource.Name)
+                : modulesQuery.OrderBy(resource => resource.Name),
+        };
+
+        int totalCount = await modulesQuery.CountAsync(cancellationToken);
+
+        List<Module> modules = await modulesQuery
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResponse<Module>
+        {
+            Items = modules,
+            TotalCount = totalCount,
+            Page = query.Page,
+            PageSize = query.PageSize,
+        };
     }
 
     // The module is already tracked by the service, so only the timestamp is set here.

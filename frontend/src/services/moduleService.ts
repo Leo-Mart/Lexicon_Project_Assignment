@@ -3,6 +3,8 @@ import { API_BASE_URL, HttpMethod, JSON_HEADERS } from "../constants/Constants";
 import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 import type { ModuleRequest } from "../interfaces/module/ModuleRequest";
 import type { ErrorResponse } from "../interfaces/error/ErrorResponse";
+import type { QueryParameters } from "../interfaces/common/QueryParameters";
+import type { PagedResponse } from "../interfaces/common/PagedResponse";
 
 const API_URL = API_BASE_URL + "/modules";
 
@@ -18,14 +20,24 @@ export const fetchModuleById = async (
     return (await response.json()) as ModuleResponse;
 };
 
-export const fetchModules = async (): Promise<ModuleResponse[]> => {
-    const response = await authFetch(API_URL);
+export const fetchModules = async (
+    query: QueryParameters,
+): Promise<PagedResponse<ModuleResponse>> => {
+    const params = new URLSearchParams({
+        search: query.search,
+        sortBy: query.sortBy,
+        direction: query.direction,
+        page: query.page.toString(),
+        pageSize: query.pageSize.toString(),
+    });
+
+    const response = await authFetch(`${API_URL}?${params.toString()}`);
 
     if (!response.ok) {
         throw new Error(`Failed to fetch module: ${response.status}`);
     }
 
-    return (await response.json()) as ModuleResponse[];
+    return (await response.json()) as PagedResponse<ModuleResponse>;
 };
 
 export const deleteModule = async (id: string): Promise<void> => {

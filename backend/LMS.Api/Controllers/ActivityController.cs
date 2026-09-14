@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using LMS.Api.Constants;
 using LMS.Api.DTOs.Activities;
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Course;
 using LMS.Api.DTOs.Module;
 using LMS.Api.Services.Interfaces;
@@ -22,7 +23,8 @@ public class ActivityController : ControllerBase
     public ActivityController(
         IActivityService activityService,
         IModuleService moduleService,
-        IEnrollmentService enrollmentService)
+        IEnrollmentService enrollmentService
+    )
     {
         _activityService = activityService;
         _moduleService = moduleService;
@@ -30,18 +32,25 @@ public class ActivityController : ControllerBase
     }
 
     /// <summary>
-    /// Gets all activities.
+    /// Gets a paginated list of activities with optinal search and sorting.
     /// </summary>
+    /// <param name="query">
+    /// Query parameters for search, sorting, page number, and page size.
+    /// </param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of activities.</returns>
     [HttpGet]
     [ProducesResponseType(typeof(List<ActivityDto>), StatusCodes.Status200OK)]
     [Authorize(Roles = RoleConstants.Teacher)]
-    public async Task<ActionResult<List<ActivityDto>>> GetAllActivities(
+    public async Task<ActionResult<PagedResponse<ActivityDto>>> GetAllActivities(
+        [FromQuery] QueryParametersDto query,
         CancellationToken cancellationToken
     )
     {
-        List<ActivityDto> activities = await _activityService.GetAllAsync(cancellationToken);
+        PagedResponse<ActivityDto> activities = await _activityService.GetAllAsync(
+            query,
+            cancellationToken
+        );
 
         return Ok(activities);
     }
@@ -67,7 +76,10 @@ public class ActivityController : ControllerBase
             return NotFound();
         }
 
-        ActionResult? accessResult = await ValidateModuleAccessAsync(activity.ModuleId, cancellationToken);
+        ActionResult? accessResult = await ValidateModuleAccessAsync(
+            activity.ModuleId,
+            cancellationToken
+        );
 
         if (accessResult is not null)
         {
@@ -179,7 +191,10 @@ public class ActivityController : ControllerBase
         );
     }
 
-    private async Task<ActionResult?> ValidateModuleAccessAsync(Guid moduleId, CancellationToken cancellationToken)
+    private async Task<ActionResult?> ValidateModuleAccessAsync(
+        Guid moduleId,
+        CancellationToken cancellationToken
+    )
     {
         if (!User.IsInRole(RoleConstants.Student))
         {
@@ -193,7 +208,10 @@ public class ActivityController : ControllerBase
             return Unauthorized();
         }
 
-        CourseDto? studentCourse = await _enrollmentService.GetStudentCourseAsync(studentId, cancellationToken);
+        CourseDto? studentCourse = await _enrollmentService.GetStudentCourseAsync(
+            studentId,
+            cancellationToken
+        );
 
         if (studentCourse is null)
         {

@@ -1,4 +1,5 @@
 using AutoMapper;
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Module;
 using LMS.Api.Exceptions;
 using LMS.Api.Models;
@@ -49,15 +50,20 @@ public class ModuleService(
         return _mapper.Map<ModuleDto>(deletedModule);
     }
 
-    public async Task<IEnumerable<ModuleDto>?> GetAllModules()
+    public async Task<PagedResponse<ModuleDto>> GetAllModules(
+        QueryParametersDto query,
+        CancellationToken cancellationToken = default
+    )
     {
-        var modules = await _moduleRepo.GetModulesAsync();
-        if (modules == null)
-        {
-            return null;
-        }
+        PagedResponse<Module> result = await _moduleRepo.GetModulesAsync(query, cancellationToken);
 
-        return _mapper.Map<IEnumerable<ModuleDto>>(modules);
+        return new PagedResponse<ModuleDto>
+        {
+            Items = _mapper.Map<List<ModuleDto>>(result.Items),
+            TotalCount = result.TotalCount,
+            Page = result.Page,
+            PageSize = result.PageSize,
+        };
     }
 
     public async Task<ModuleDto?> GetModuleById(Guid moduleId)
