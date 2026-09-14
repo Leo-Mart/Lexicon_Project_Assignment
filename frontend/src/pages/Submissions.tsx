@@ -327,18 +327,20 @@ export default function Submissions() {
             });
         }
 
-        // Always add the "actions" column
-        baseColumns.push({
-            key: "actions",
-            header: "Interact",
-            className: "whitespace-nowrap px-4 py-3",
-            render: (submission) => (
-                <Button onClick={() => setReviewing(submission)}>
-                    {submission.reviewStatus != null ? "Edit review" : "Review"}
-                </Button>
-            ),
-        });
-
+        if (tab !== "overdue") {
+            baseColumns.push({
+                key: "actions",
+                header: "Interact",
+                className: "whitespace-nowrap px-4 py-3",
+                render: (submission) => (
+                    <Button onClick={() => setReviewing(submission)}>
+                        {submission.reviewStatus != null
+                            ? "Edit review"
+                            : "Review"}
+                    </Button>
+                ),
+            });
+        }
         return baseColumns;
     }, [tab, lookups]); // Recompute when `tab` or `lookups` changes
 
