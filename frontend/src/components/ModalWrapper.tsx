@@ -43,7 +43,9 @@ const ModalWrapper = (props: ModalProps) => {
                         &#10005;
                     </button>
                 </nav>
-                <div className="bg-bg py-3 px-3">{props.children}</div>
+                <div className="bg-bg dark:bg-bg-dark py-3 px-3">
+                    {props.children}
+                </div>
                 {props.footer && <div>{props.footer}</div>}
             </dialog>
         </>
