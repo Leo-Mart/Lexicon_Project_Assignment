@@ -40,6 +40,9 @@ public class CourseRepository(LMSDbContext context) : ICourseRepository
         return await _context
             .Courses.AsNoTracking()
             .Include(c => c.Modules)
+            .Include(c => c.CourseResources)
+                .ThenInclude(cr => cr.Resource)
+                    .ThenInclude(r => r.CreatedByTeacher)
             .FirstOrDefaultAsync(c => c.CourseId == courseId);
     }
 
@@ -50,7 +53,10 @@ public class CourseRepository(LMSDbContext context) : ICourseRepository
     {
         IQueryable<Course> coursesQuery = _context
             .Courses.AsNoTracking()
-            .Include(course => course.Modules);
+            .Include(course => course.Modules)
+            .Include(course => course.CourseResources)
+                .ThenInclude(cr => cr.Resource)
+                    .ThenInclude(r => r.CreatedByTeacher);
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {

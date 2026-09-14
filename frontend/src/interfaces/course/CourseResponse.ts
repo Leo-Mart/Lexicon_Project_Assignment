@@ -1,4 +1,5 @@
 import type { ModuleResponse } from "../module/ModuleResponse";
+import type { ResourceResponse } from "../resource/ResourceResponse";
 
 export interface CourseResponse {
     courseId: string;
@@ -7,4 +8,5 @@ export interface CourseResponse {
     startDate: string;
     endDate: string;
     modules: ModuleResponse[];
+    courseResources: ResourceResponse[];
 }

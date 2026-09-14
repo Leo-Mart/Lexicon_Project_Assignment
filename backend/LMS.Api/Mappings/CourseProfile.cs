@@ -11,7 +11,11 @@ public class CourseProfile : Profile
 {
     public CourseProfile()
     {
-        CreateMap<Course, CourseDto>();
+        CreateMap<Course, CourseDto>()
+            .ForMember(
+                dto => dto.CourseResources,
+                opt => opt.MapFrom(x => x.CourseResources.Select(cr => cr.Resource))
+            );
         CreateMap<Course, BasicCourseInfoDto>();
         CreateMap<CreateNewCourseDto, Course>();
         CreateMap<UpdateCourseDto, Course>();

@@ -112,7 +112,10 @@ const ResourceCard = ({
                         title="Delete Resource"
                         message={`Are you sure you want to delete the resource: ${resource.name}`}
                         onCancel={() => setConfirmDeleteOpen(false)}
-                        onConfirm={() => deleteResource(resource.resourceId)}
+                        onConfirm={() => {
+                            deleteResource(resource.resourceId);
+                            setConfirmDeleteOpen(false);
+                        }}
                     />
                 )}
                 {showEditResourceForm && (
