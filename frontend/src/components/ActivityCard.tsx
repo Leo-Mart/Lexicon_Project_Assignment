@@ -185,7 +185,9 @@ export default function ActivityCard({
                         <h3 className="font-bold text-l bg-bg-window text-text-dark p-1.5 rounded">
                             {ActivityTypeNames[activity.type]}
                         </h3>
-                        <h2 className="font-bold text-xl">{activity.name}</h2>
+                        <h2 className="font-bold text-text-light text-xl">
+                            {activity.name}
+                        </h2>
                     </div>
                     <div className="flex flex-row justify-end items-center gap-2">
                         {activity.type === ActivityType.Lecture && (
