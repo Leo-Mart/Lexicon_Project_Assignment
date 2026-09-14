@@ -216,7 +216,7 @@ const ModalCreateResource = (props: CreateResourceModalProps) => {
             onClose={props.onClose}
             title="Create new Resource"
         >
-            <div className="bg-bg py-3 px-3">
+            <div className="bg-bg dark:bg-bg-dark text-text-dark dark:text-text-light py-3 px-3">
                 <form
                     className="px-8 pt-2 pb-8 mb-4 flex flex-col gap-2"
                     onSubmit={handleSubmit}
@@ -224,7 +224,7 @@ const ModalCreateResource = (props: CreateResourceModalProps) => {
                     <div>
                         <label htmlFor="name">Name</label>
                         <input
-                            className="shadow appearance-none border rounded w-full bg-white p-2"
+                            className="shadow appearance-none border rounded w-full bg-white text-text-dark p-2"
                             type="text"
                             id="name"
                             name="name"
@@ -236,7 +236,7 @@ const ModalCreateResource = (props: CreateResourceModalProps) => {
                     <div>
                         <label htmlFor="description">Description</label>
                         <textarea
-                            className="shadow appearance-none border rounded w-full bg-white p-2"
+                            className="shadow appearance-none border rounded w-full bg-white text-text-dark p-2"
                             id="description"
                             name="description"
                             placeholder="Resource description"
@@ -248,7 +248,7 @@ const ModalCreateResource = (props: CreateResourceModalProps) => {
                     <div>
                         <label htmlFor="description">Content</label>
                         <textarea
-                            className="shadow appearance-none border rounded w-full bg-white p-2"
+                            className="shadow appearance-none border rounded w-full bg-white text-text-dark p-2"
                             id="content"
                             name="content"
                             placeholder="Resource Content"
@@ -259,7 +259,7 @@ const ModalCreateResource = (props: CreateResourceModalProps) => {
                     <div>
                         <label htmlFor="name">URL</label>
                         <input
-                            className="shadow appearance-none border rounded w-full bg-white p-2"
+                            className="shadow appearance-none border rounded w-full bg-white text-text-dark p-2"
                             type="url"
                             id="uri"
                             name="uri"

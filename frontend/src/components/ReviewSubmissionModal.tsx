@@ -57,13 +57,13 @@ export default function ReviewSubmissionModal({
             heightClass="h-[85vh]"
             onSubmit={handleSubmit}
         >
-            <p className="text-sm text-text-dark mb-2">
+            <p className="text-sm text-text-dark dark:text-text-light mb-2">
                 {studentName} &middot; {courseName} &middot; {activityName}{" "}
                 &middot; Deadline: {deadlineText}
             </p>
 
             <div className="flex justify-end mb-1">
-                <span className="text-sm text-text-dark">
+                <span className="text-sm text-text-dark dark:text-text-light">
                     {submission.text.length} chars
                 </span>
             </div>
@@ -74,7 +74,7 @@ export default function ReviewSubmissionModal({
 
             <label
                 htmlFor="feedback"
-                className="text-sm font-semibold text-text-dark mb-1"
+                className="text-sm font-semibold text-text-dark dark:text-text-light mb-1"
             >
                 Feedback
             </label>
@@ -98,7 +98,7 @@ export default function ReviewSubmissionModal({
                 <div className="flex items-center gap-2">
                     <label
                         htmlFor="reviewStatus"
-                        className="text-sm font-semibold text-text-dark"
+                        className="text-sm font-semibold text-text-dark dark:text-text-light"
                     >
                         Outcome
                     </label>
