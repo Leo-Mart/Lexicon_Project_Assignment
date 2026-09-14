@@ -29,6 +29,7 @@ import { fetchUsers } from "../services/userService.ts";
 import TableSearchBar from "../components/TableSearchBar.tsx";
 import DataTable from "../components/DataTable.tsx";
 import type { Column } from "../types/Column.ts";
+import { fetchModules } from "../services/moduleService.ts";
 /* import DataTable from "../components/DataTable";
 import type { Column } from "../types/Column.ts"; */
 
@@ -75,7 +76,7 @@ export default function Submissions() {
         void (async () => {
             setLoading(true);
             try {
-                const [submissionData, activities, users, courses] =
+                const [submissionData, activities, users, courses, modules] =
                     await Promise.all([
                         fetchAllSubmissions(),
                         fetchActivities(),
@@ -87,11 +88,17 @@ export default function Submissions() {
                             page: 1,
                             pageSize: 200,
                         }),
+                        fetchModules(),
                     ]);
 
                 setSubmissions(submissionData);
                 setLookups(
-                    createActivityLookups(activities, courses.items, users),
+                    createActivityLookups(
+                        activities,
+                        courses.items,
+                        users,
+                        modules,
+                    ),
                 );
             } finally {
                 setLoading(false);
@@ -240,27 +247,39 @@ export default function Submissions() {
                 },
             },
             {
-                key: "activity",
-                field: "activity",
-                header: "Activity",
+                key: "module",
+                field: "module",
+                header: "Module",
                 className: "px-4 py-3",
                 render: (submission) => {
                     const moduleId = lookups?.moduleIdForActivity(
                         submission.activityId,
                     );
-                    const activityName =
-                        lookups?.activityName(submission.activityId) ??
-                        submission.activityId;
+                    const moduleName = lookups?.moduleNameForActivity(
+                        submission.activityId,
+                    );
                     return moduleId ? (
                         <Link
                             className="underline text-buttons dark:text-buttons-dark"
                             to={`/module/${moduleId}`}
                         >
-                            {activityName}
+                            {moduleName}
                         </Link>
                     ) : (
-                        activityName
+                        moduleName
                     );
+                },
+            },
+            {
+                key: "activity",
+                field: "activity",
+                header: "Activity",
+                className: "px-4 py-3",
+                render: (submission) => {
+                    const activityName =
+                        lookups?.activityName(submission.activityId) ??
+                        submission.activityId;
+                    return activityName;
                 },
             },
             {
