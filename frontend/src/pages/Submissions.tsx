@@ -157,7 +157,6 @@ export default function Submissions() {
                     return [id, overdue] as const;
                 }),
             );
-
             setOverdueByActivity(new Map(entries));
             setOverdueChecked(true);
         };
@@ -178,6 +177,7 @@ export default function Submissions() {
     const handleOverdueSortChange = (value: string) => {
         setOverdueSortBy(value);
         setOverduePage(1);
+        console.log("Sorting overdue pages by ", value);
     };
 
     const handleReview = async (data: FeedbackRequest) => {
@@ -289,19 +289,9 @@ export default function Submissions() {
                     );
                     if (!deadline) return "-";
 
-                    const lateDays = daysOverdue(deadline);
-                    /* const isOverdueTab = tab === "overdue"; */
-                    const isDoneTab = tab === "done";
-
                     return (
                         <>
                             {ActivityDate(deadline)} {ActivityTime(deadline)}
-                            {lateDays > 0 && (
-                                <div className="text-xs opacity-70">
-                                    {lateDays} days{" "}
-                                    {isDoneTab ? "late" : "overdue"}
-                                </div>
-                            )}
                         </>
                     );
                 },
@@ -461,13 +451,46 @@ export default function Submissions() {
             : overdueItems;
     }, [overdueItems, search]);
 
+    // Add sorting here - apply AFTER filtering but BEFORE pagination
+    const sortedOverdueItems = useMemo(() => {
+        if (!filteredOverdueItems.length) return [];
+
+        const [sortField, direction = "asc"] = overdueSortBy.split("-");
+
+        return [...filteredOverdueItems].sort((a, b) => {
+            let comparison = 0;
+
+            switch (sortField) {
+                case "student":
+                    comparison = a.studentName.localeCompare(b.studentName);
+                    break;
+                case "deadline": {
+                    const deadlineA = lookups?.deadlineForActivity(
+                        a.activityId,
+                    );
+                    const deadlineB = lookups?.deadlineForActivity(
+                        b.activityId,
+                    );
+                    if (deadlineA && deadlineB) {
+                        comparison =
+                            new Date(deadlineA).getTime() -
+                            new Date(deadlineB).getTime();
+                    }
+                    break;
+                }
+            }
+
+            return direction === "asc" ? comparison : -comparison;
+        });
+    }, [filteredOverdueItems, overdueSortBy, lookups]);
+
     // Paged overdue items
     const pagedOverdueItems = useMemo(() => {
-        return filteredOverdueItems.slice(
+        return sortedOverdueItems.slice(
             (overduePage - 1) * PAGE_SIZE,
             overduePage * PAGE_SIZE,
         );
-    }, [filteredOverdueItems, overduePage]);
+    }, [sortedOverdueItems, overduePage]);
 
     if (role !== "Teacher") {
         return (
