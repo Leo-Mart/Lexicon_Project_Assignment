@@ -141,7 +141,7 @@ export default function ActivityCard({
     } else if (reviewStatusText === "Approved") {
         cornerBadge = {
             text: "Graded",
-            color: "bg-green-500",
+            color: "bg-btn-confirm",
             textColor: "text-white",
         };
     } else if (reviewStatusText === "Needs completion") {
@@ -153,13 +153,13 @@ export default function ActivityCard({
     } else if (missingAndLate) {
         cornerBadge = {
             text: "Overdue",
-            color: "bg-red-500",
+            color: "bg-btn-cancel",
             textColor: "text-white",
         };
     } else if (submission) {
         cornerBadge = {
             text: submissionStatusText,
-            color: "bg-blue-400",
+            color: "bg-accent-blue",
             textColor: "text-white",
         };
     } else if (

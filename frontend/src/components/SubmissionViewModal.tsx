@@ -15,7 +15,7 @@ interface SubmissionViewModalProps {
 // Same color scheme as ActivityCard's corner badge, so a status reads the
 // same way everywhere in the app.
 const reviewBadge: Record<string, string> = {
-    Approved: "bg-green-500 text-white",
+    Approved: "bg-btn-confirm text-white",
     "Needs completion": "bg-bg-warning text-text-dark",
     "Not reviewed": "bg-gray-400 text-white",
 };
