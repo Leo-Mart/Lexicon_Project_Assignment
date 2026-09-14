@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Button from "../components/Button";
-import Schedule from "../components/Schedule";
 import CourseListPage from "./CourseListPage";
 import ResourceManagement from "./ResourceManagement";
 import Users from "./Users";
@@ -11,7 +10,6 @@ const tabs = [
     { label: "Course Management" },
     { label: "User Management" },
     { label: "Resource Management" },
-    { label: "Schedule" },
     { label: "Submissions" },
 ];
 
@@ -59,12 +57,7 @@ export default function Dashboard() {
                         <ResourceManagement />
                     </div>
                 )}
-                {activeTab === 5 && (
-                    <div className="text-text-light">
-                        <Schedule />
-                    </div>
-                )}
-                {activeTab === 6 && <Submissions />}
+                {activeTab === 5 && <Submissions />}
             </div>
         </div>
     );
