@@ -4,10 +4,12 @@ import CourseListPage from "./CourseListPage";
 import ResourceManagement from "./ResourceManagement";
 import Users from "./Users";
 import Submissions from "./Submissions";
+import ModuleListPage from "./ModuleListPage";
 
 const tabs = [
     { label: "Overview" },
     { label: "Course Management" },
+    { label: "Activity Management" },
     { label: "User Management" },
     { label: "Resource Management" },
     { label: "Submissions" },
@@ -45,6 +47,11 @@ export default function Dashboard() {
                     </div>
                 )}
                 {activeTab === 3 && (
+                    <div>
+                        <ModuleListPage />
+                    </div>
+                )}
+                {activeTab === 4 && (
                     <div className="text-text-light">
                         <div>
                             {" "}
@@ -52,12 +59,12 @@ export default function Dashboard() {
                         </div>
                     </div>
                 )}
-                {activeTab === 4 && (
+                {activeTab === 5 && (
                     <div className="text-text-light">
                         <ResourceManagement />
                     </div>
                 )}
-                {activeTab === 5 && <Submissions />}
+                {activeTab === 6 && <Submissions />}
             </div>
         </div>
     );
