@@ -14,6 +14,7 @@ import {
     updateActivity,
 } from "../services/activityService";
 import { ActivityType, ActivityTypeNames } from "../constants/ActivityType";
+import { SubmissionReviewStatus } from "../constants/SubmissionReviewStatus";
 import {
     addResourceToModule,
     createResource,
@@ -181,6 +182,51 @@ export default function ModulePage() {
                 (activity) => activity.activityId !== activityId,
             ),
         );
+    };
+
+    // Overdue < due today < needs completion < due soon < submitted/other <
+    // approved. Flipped together with the deadline order when sortAscending
+    // is off.
+    const urgency = (activity: ActivityResponse) => {
+        if (
+            role !== "Student" ||
+            (activity.type !== ActivityType.Task &&
+                activity.type !== ActivityType.Practice)
+        ) {
+            return 4;
+        }
+        const submission = submissionsByActivityId.get(activity.activityId);
+        const isPastDeadline =
+            activity.deadline != null &&
+            new Date() > new Date(activity.deadline);
+        if (!submission && isPastDeadline) return 0;
+        if (submission?.reviewStatus === SubmissionReviewStatus.Approved)
+            return 5;
+        if (submission?.reviewStatus === SubmissionReviewStatus.NeedsCompletion)
+            return 2;
+
+        // Calendar-day gap to the deadline, same as ActivityCard's badge.
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const deadlineDay =
+            activity.deadline != null ? new Date(activity.deadline) : null;
+        deadlineDay?.setHours(0, 0, 0, 0);
+        const daysUntilDeadline = deadlineDay
+            ? Math.round(
+                  (deadlineDay.getTime() - today.getTime()) /
+                      (1000 * 60 * 60 * 24),
+              )
+            : null;
+        if (!submission && daysUntilDeadline === 0) return 1;
+        if (
+            !submission &&
+            daysUntilDeadline != null &&
+            daysUntilDeadline > 0 &&
+            daysUntilDeadline <= 5
+        )
+            return 3;
+
+        return 4;
     };
 
     if (loading) return <div>Loading...</div>;
@@ -377,9 +423,20 @@ export default function ModulePage() {
                                                 activityTypeFilter,
                                     )
                                     .sort((a, b) => {
+                                        const urgencyDiff =
+                                            urgency(a) - urgency(b);
+
+                                        // Lectures/practices have no deadline - fall back to startAt.
+                                        const aKey = new Date(
+                                            a.deadline ?? a.startAt,
+                                        ).getTime();
+                                        const bKey = new Date(
+                                            b.deadline ?? b.startAt,
+                                        ).getTime();
                                         const diff =
-                                            new Date(a.startAt).getTime() -
-                                            new Date(b.startAt).getTime();
+                                            urgencyDiff !== 0
+                                                ? urgencyDiff
+                                                : aKey - bKey;
                                         return sortAscending ? diff : -diff;
                                     })
                                     .map((activity: ActivityResponse) => (

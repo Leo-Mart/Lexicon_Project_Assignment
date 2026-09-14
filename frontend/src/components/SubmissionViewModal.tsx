@@ -4,7 +4,7 @@ import { SubmissionReviewStatusNames } from "../constants/SubmissionReviewStatus
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
 import { ActivityType, ActivityTypeNames } from "../constants/ActivityType";
 import { SUBMISSION_MAX_LENGTH } from "./ActivityCard";
-
+import StatusBadge from "./StatusBadge";
 interface SubmissionViewModalProps {
     submission: SubmissionResponse;
     activityName: string;
@@ -14,11 +14,6 @@ interface SubmissionViewModalProps {
 
 // Same color scheme as ActivityCard's corner badge, so a status reads the
 // same way everywhere in the app.
-const reviewBadge: Record<string, string> = {
-    Approved: "bg-btn-confirm text-white",
-    "Needs completion": "bg-bg-warning text-text-dark",
-    "Not reviewed": "bg-gray-400 text-white",
-};
 
 // Its own modal chrome instead of ModalWrapper - this one wants to be much
 // bigger than every other modal, and ModalWrapper is shared by several that
@@ -50,11 +45,8 @@ export default function SubmissionViewModal({
                         {submittedSuffix}
                     </h2>
                     <div className="flex items-center gap-2">
-                        <span
-                            className={`text-sm font-bold px-3 py-1.5 rounded ${reviewBadge[reviewStatusText]}`}
-                        >
-                            {reviewStatusText}
-                        </span>
+                        {StatusBadge(reviewStatusText)}
+
                         <button
                             className="bg-btn-cancel py-1 px-2 hover:brightness-110 hover:cursor-pointer rounded-full text-sm"
                             onClick={onClose}
@@ -74,17 +66,19 @@ export default function SubmissionViewModal({
 
                     {submission.feedback && (
                         <>
-                            <span
+                            {/* {StatusBadge(reviewStatusText, "self-start")} */}
+                            {/* <span
                                 className={`self-start text-sm font-bold px-3 py-1.5 rounded mb-1 ${reviewBadge[reviewStatusText]}`}
                             >
                                 {reviewStatusText}
-                            </span>
+                            </span> */}
                             <p className="text-sm font-semibold text-text-dark mb-1">
                                 Feedback from teacher
                             </p>
                             <p className="whitespace-pre-wrap bg-bg-window dark:bg-bg-window-dark text-text-dark dark:text-text-light rounded p-2 mb-4 max-h-32 overflow-y-auto">
                                 {submission.feedback}
                             </p>
+                            {StatusBadge(reviewStatusText, "self-start")}
                         </>
                     )}
 
