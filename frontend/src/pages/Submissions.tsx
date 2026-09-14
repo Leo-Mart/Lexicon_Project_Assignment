@@ -464,6 +464,23 @@ export default function Submissions() {
                 case "student":
                     comparison = a.studentName.localeCompare(b.studentName);
                     break;
+                case "course":
+                    comparison = (
+                        lookups?.courseIdForActivity(a.activityId) ?? ""
+                    ).localeCompare(
+                        lookups?.courseIdForActivity(b.activityId) ?? "",
+                    );
+                    break;
+                case "module":
+                    comparison = (
+                        lookups?.moduleIdForActivity(a.activityId) ?? ""
+                    ).localeCompare(
+                        lookups?.moduleIdForActivity(b.activityId) ?? "",
+                    );
+                    break;
+                case "activity":
+                    comparison = a.activityId.localeCompare(b.activityId);
+                    break;
                 case "deadline": {
                     const deadlineA = lookups?.deadlineForActivity(
                         a.activityId,
