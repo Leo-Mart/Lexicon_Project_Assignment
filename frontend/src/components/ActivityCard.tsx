@@ -308,23 +308,6 @@ export default function ActivityCard({
                             )}
                         </div>
                         <div className="flex flex-row justify-between items-center p-2">
-                            {activity.activityResources.length > 0 ? (
-                                <>
-                                    <div className="flex justify-end">
-                                        {/* <Button */}
-                                        {/*     variant="confirm" */}
-                                        {/*     className="hover:cursor-pointer" */}
-                                        {/*     onClick={() => */}
-                                        {/*         setShowDetailsModal(true) */}
-                                        {/*     } */}
-                                        {/* > */}
-                                        {/*     {`Resources (${activity.activityResources.length + 1})`} */}
-                                        {/* </Button> */}
-                                    </div>
-                                </>
-                            ) : (
-                                ""
-                            )}
                             <div>
                                 {isAuthenticated && role === "Teacher" ? (
                                     <button
