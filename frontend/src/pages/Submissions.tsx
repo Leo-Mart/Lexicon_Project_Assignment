@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Button from "../components/Button";
 import Pagination from "../components/Pagination";
-import SortableTh from "../components/SortableTableHead";
 import ReviewSubmissionModal from "../components/ReviewSubmissionModal";
 import {
     fetchSubmissionsPage,
@@ -18,7 +17,7 @@ import type { FeedbackRequest } from "../interfaces/submission/FeedbackRequest";
 import { SubmissionReviewStatus } from "../constants/SubmissionReviewStatus";
 import SubmissionCategoryButtons from "../components/SubmissionCategoryButtons";
 import type { SubmissionTabs } from "../types/SubmissionTabs";
-import { daysLate, daysOverdue } from "../utils/deadlines.ts";
+import { daysOverdue } from "../utils/deadlines.ts";
 import {
     createActivityLookups,
     type ActivityLookups,
@@ -30,14 +29,11 @@ import TableSearchBar from "../components/TableSearchBar.tsx";
 import DataTable from "../components/DataTable.tsx";
 import type { Column } from "../types/Column.ts";
 import { fetchModules } from "../services/moduleService.ts";
-/* import DataTable from "../components/DataTable";
-import type { Column } from "../types/Column.ts"; */
 
 const PAGE_SIZE = 10;
 
 const DEFAULT_SORT = "review-asc";
 
-// Mock teacher review page: everything fetched and joined client-side.
 export default function Submissions() {
     const { role } = useAuth();
     const [submissions, setSubmissions] = useState<SubmissionResponse[]>([]);
@@ -291,30 +287,29 @@ export default function Submissions() {
                     const deadline = lookups?.deadlineForActivity(
                         submission.activityId,
                     );
-                    const lateDays = deadline
-                        ? tab === "done"
-                            ? daysLate(deadline, submission.submittedAt)
-                            : daysOverdue(deadline)
-                        : null;
-                    return deadline ? (
+                    if (!deadline) return "-";
+
+                    const lateDays = daysOverdue(deadline);
+                    /* const isOverdueTab = tab === "overdue"; */
+                    const isDoneTab = tab === "done";
+
+                    return (
                         <>
                             {ActivityDate(deadline)} {ActivityTime(deadline)}
-                            {lateDays != null && lateDays > 0 && (
+                            {lateDays > 0 && (
                                 <div className="text-xs opacity-70">
                                     {lateDays} days{" "}
-                                    {tab === "done" ? "late" : "overdue"}
+                                    {isDoneTab ? "late" : "overdue"}
                                 </div>
                             )}
                         </>
-                    ) : (
-                        "-"
                     );
                 },
             },
         ];
 
         // Conditionally add the "reviewed" column
-        if (tab !== "not-reviewed") {
+        if (tab !== "not-reviewed" && tab !== "overdue") {
             baseColumns.push({
                 key: "reviewed",
                 field: "reviewed",
@@ -327,6 +322,7 @@ export default function Submissions() {
             });
         }
 
+        // Only add the "actions" column for non-overdue tabs
         if (tab !== "overdue") {
             baseColumns.push({
                 key: "actions",
@@ -341,8 +337,9 @@ export default function Submissions() {
                 ),
             });
         }
+
         return baseColumns;
-    }, [tab, lookups]); // Recompute when `tab` or `lookups` changes
+    }, [tab, lookups]);
 
     if (role !== "Teacher") {
         return (
@@ -411,183 +408,28 @@ export default function Submissions() {
                 </div>
             )}
 
-            {tab === "overdue" &&
-                (() => {
-                    const rows = [...overdueByActivity.entries()].flatMap(
-                        ([activityId, students]) =>
-                            students.map((u) => ({
-                                ...u,
-                                activityId,
-                                moduleId:
-                                    lookups?.moduleIdForActivity(activityId),
-                                activityName:
-                                    lookups?.activityName(activityId) ??
-                                    activityId,
-                                courseName:
-                                    lookups?.courseNameForActivity(
-                                        activityId,
-                                    ) || "Unknown course",
-                                courseId:
-                                    lookups?.courseIdForActivity(activityId),
-                                deadline:
-                                    lookups?.deadlineForActivity(activityId) ??
-                                    null,
-                            })),
+            {tab === "overdue" && (
+                <div>
+                    <>
+                        <DataTable
+                            items={pagedSubmissions}
+                            columns={submissionColumns}
+                            getKey={(item) => item.submissionId}
+                            sortBy={overdueSortBy}
+                            isLoading={false}
+                            onSortChange={handleOverdueSortChange}
+                            bodyClassName="text-text-dark dark:text-text-light"
+                        />
+                        <Pagination
+                            page={overduePage}
+                            pageSize={PAGE_SIZE}
+                            totalCount={pagedSubmissions.length}
+                            onPageChange={setOverduePage}
+                        />
+                    </>
                     );
-
-                    const filteredRows = search.trim()
-                        ? rows.filter((row) =>
-                              row.studentName
-                                  .toLowerCase()
-                                  .includes(search.trim().toLowerCase()),
-                          )
-                        : rows;
-
-                    const [sortField, sortDirection = "asc"] =
-                        overdueSortBy.split("-");
-                    const sortedRows = [...filteredRows].sort((a, b) => {
-                        let cmp = 0;
-                        if (sortField === "student") {
-                            cmp = a.studentName.localeCompare(b.studentName);
-                        } else if (sortField === "course") {
-                            cmp = a.courseName.localeCompare(b.courseName);
-                        } else if (sortField === "activity") {
-                            cmp = a.activityName.localeCompare(b.activityName);
-                        } else if (sortField === "deadline") {
-                            // Days overdue is derived from the deadline, so one sort covers both columns.
-                            const timeA = a.deadline
-                                ? new Date(a.deadline).getTime()
-                                : 0;
-                            const timeB = b.deadline
-                                ? new Date(b.deadline).getTime()
-                                : 0;
-                            cmp = timeA - timeB;
-                        }
-                        return sortDirection === "desc" ? -cmp : cmp;
-                    });
-
-                    const pagedRows = sortedRows.slice(
-                        (overduePage - 1) * PAGE_SIZE,
-                        overduePage * PAGE_SIZE,
-                    );
-
-                    return (
-                        <>
-                            {filteredRows.length === 0 ? (
-                                <p className="text-text-dark dark:text-text-light">
-                                    Nobody's overdue.
-                                </p>
-                            ) : (
-                                <div className="overflow-x-auto rounded-lg border border-accent-blue">
-                                    <table className="w-full text-left text-text-dark dark:text-text-light">
-                                        <thead className="bg-bg-window dark:bg-bg-window-dark">
-                                            <tr>
-                                                <SortableTh
-                                                    field="student"
-                                                    label="Student"
-                                                    sortBy={overdueSortBy}
-                                                    onSortChange={
-                                                        handleOverdueSortChange
-                                                    }
-                                                />
-                                                <SortableTh
-                                                    field="course"
-                                                    label="Course"
-                                                    sortBy={overdueSortBy}
-                                                    onSortChange={
-                                                        handleOverdueSortChange
-                                                    }
-                                                />
-                                                <SortableTh
-                                                    field="activity"
-                                                    label="Activity"
-                                                    sortBy={overdueSortBy}
-                                                    onSortChange={
-                                                        handleOverdueSortChange
-                                                    }
-                                                />
-                                                <SortableTh
-                                                    field="deadline"
-                                                    label="Deadline"
-                                                    sortBy={overdueSortBy}
-                                                    onSortChange={
-                                                        handleOverdueSortChange
-                                                    }
-                                                />
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {pagedRows.map((row, i) => (
-                                                <tr
-                                                    key={`${row.studentId}-${i}`}
-                                                    className="border-t border-accent-blue hover:bg-bg-window/40 dark:hover:bg-bg-window-dark/40"
-                                                >
-                                                    <td className="px-4 py-3">
-                                                        {row.studentName}
-                                                    </td>
-                                                    <td className="px-4 py-3">
-                                                        {row.courseId ? (
-                                                            <Link
-                                                                className="underline text-buttons dark:text-buttons-dark"
-                                                                to={`/courses/${row.courseId}`}
-                                                            >
-                                                                {row.courseName}
-                                                            </Link>
-                                                        ) : (
-                                                            row.courseName
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 py-3">
-                                                        {row.moduleId ? (
-                                                            <Link
-                                                                className="underline text-buttons dark:text-buttons-dark"
-                                                                to={`/module/${row.moduleId}`}
-                                                            >
-                                                                {
-                                                                    row.activityName
-                                                                }
-                                                            </Link>
-                                                        ) : (
-                                                            row.activityName
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 py-3">
-                                                        {row.deadline ? (
-                                                            <>
-                                                                {ActivityDate(
-                                                                    row.deadline,
-                                                                )}{" "}
-                                                                {ActivityTime(
-                                                                    row.deadline,
-                                                                )}
-                                                                <div className="text-xs opacity-70">
-                                                                    {daysOverdue(
-                                                                        row.deadline,
-                                                                    )}{" "}
-                                                                    days overdue
-                                                                </div>
-                                                            </>
-                                                        ) : (
-                                                            "-"
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                            {filteredRows.length > 0 && (
-                                <Pagination
-                                    page={overduePage}
-                                    pageSize={PAGE_SIZE}
-                                    totalCount={filteredRows.length}
-                                    onPageChange={setOverduePage}
-                                />
-                            )}
-                        </>
-                    );
-                })()}
+                </div>
+            )}
 
             {reviewing &&
                 (() => {
