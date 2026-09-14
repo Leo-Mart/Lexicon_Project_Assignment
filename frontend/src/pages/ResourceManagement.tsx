@@ -187,6 +187,7 @@ const ResourceManagement = () => {
         {
             key: "createdAt",
             header: "Created At",
+            field: "createdat",
             render: (r) => ActivityDate(r.createdAt),
         },
         {
@@ -195,14 +196,21 @@ const ResourceManagement = () => {
             className: "whitespace-nowrap pr-4",
             render: (resource) => (
                 <div className="flex items-center gap-2">
-                    <Button onClick={() => setEditingResource(resource)}>
+                    <Button
+                        className="hover:cursor-pointer"
+                        onClick={() => setEditingResource(resource)}
+                    >
                         Edit
                     </Button>
-                    <Button onClick={() => setAddingResourceToEntity(resource)}>
+                    <Button
+                        className="hover:cursor-pointer"
+                        onClick={() => setAddingResourceToEntity(resource)}
+                    >
                         Add to Entity
                     </Button>
                     <Button
                         variant="cancel"
+                        className="hover:cursor-pointer"
                         onClick={() => setDeletingResource(resource)}
                     >
                         Delete
