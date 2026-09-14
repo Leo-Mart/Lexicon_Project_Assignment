@@ -82,11 +82,22 @@ export default function Users() {
 
     const [assignCourseError, setAssignCourseError] = useState<string>();
 
-    const handleCreateUser = async (values: UserCreateRequest) => {
+    const handleCreateUser = async (values: UserFormValues) => {
         try {
             setUserFormError(undefined);
 
-            await createUser(values);
+            const userCreate: UserCreateRequest = {
+                name: values.name,
+                email: values.email,
+                password: values.password,
+                role: values.role,
+            };
+
+            const newUser = await createUser(userCreate);
+
+            if (values.role === "Student" && values.courseId) {
+                await assignOrChangeCourse(newUser.id, values.courseId);
+            }
 
             setShowUserForm(false);
             setRefreshKey((current) => current + 1);
@@ -96,6 +107,7 @@ export default function Users() {
                     message: error.message,
                     errors: undefined,
                 };
+
                 if (error.errors !== undefined) {
                     if (Array.isArray(error.errors)) {
                         errResp.errors = error.errors;
@@ -103,6 +115,12 @@ export default function Users() {
 
                     setUserFormError(errResp);
                 }
+            } else {
+                setUserFormError(
+                    error instanceof Error
+                        ? error.message
+                        : "Could not create user.",
+                );
             }
         }
     };
