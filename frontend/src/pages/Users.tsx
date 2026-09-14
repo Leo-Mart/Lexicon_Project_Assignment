@@ -343,6 +343,7 @@ export default function Users() {
                 >
                     <UserForm
                         mode="create"
+                        courses={courses}
                         onSubmit={handleCreateUser}
                         onCancel={() => setShowUserForm(false)}
                         submitError={userFormError}

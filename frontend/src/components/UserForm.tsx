@@ -153,7 +153,7 @@ export default function UserForm({
                 />
             )}
 
-            {mode === "edit" && formData.role === "Student" && (
+            {formData.role === "Student" && (
                 <SelectInput
                     label="Course"
                     name="courseId"
