@@ -33,6 +33,7 @@ export default function CourseListPage() {
         startDate: "",
         endDate: "",
         modules: [],
+        courseResources: [],
     };
 
     const [courses, setCourses] = useState<CourseResponse[]>([]);

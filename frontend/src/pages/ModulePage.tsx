@@ -19,7 +19,6 @@ import {
     addResourceToModule,
     createResource,
     deleteResource,
-    fetchResourcesForModule,
     updateResource,
 } from "../services/resourceService";
 import type { ResourceResponse } from "../interfaces/resource/ResourceResponse";
@@ -49,6 +48,7 @@ export default function ModulePage() {
     const [activityTypeFilter, setActivityTypeFilter] = useState<
         ActivityType | "all"
     >("all");
+
     const [sortAscending, setSortAscending] = useState(true);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -69,6 +69,7 @@ export default function ModulePage() {
                 const moduleData = await fetchModuleById(moduleId);
                 setModule(moduleData);
                 setModuleActivities(moduleData.activities);
+                setModuleResources(moduleData.moduleResources);
 
                 if (role === "Student") {
                     const submissions = await getCurrentUserSubmissions();
@@ -96,29 +97,7 @@ export default function ModulePage() {
             }
         };
 
-        const getResourcesForModule = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                if (moduleId === undefined) {
-                    throw new Error("Could not find Id for module");
-                }
-                const resourceData = await fetchResourcesForModule(moduleId);
-                setModuleResources(resourceData);
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : "Failed to fetch resources",
-                );
-                console.error("Error fetching resources: ", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchModule();
-        getResourcesForModule();
     }, [moduleId, role]);
 
     const handleResourceEdit = async (
@@ -148,6 +127,55 @@ export default function ModulePage() {
             moduleResources!.filter(
                 (resource) => resource.resourceId !== resourceId,
             ),
+        );
+    };
+
+    const handleAddResourceToActivity = (resource: ResourceResponse) => {
+        setModuleActivities(
+            moduleActivities?.map((activity) => {
+                activity.activityResources = [
+                    ...activity.activityResources,
+                    resource,
+                ];
+                return activity;
+            }),
+        );
+    };
+
+    const handleResourceEditForActivity = async (
+        resourceId: string,
+        payload: ResourceRequest,
+    ) => {
+        await updateResource(resourceId, payload);
+        const updatedActivites: ActivityResponse[] = moduleActivities!.map(
+            (activity) => {
+                activity.activityResources.map((resource) => {
+                    if (resource.resourceId === resourceId) {
+                        resource.name = payload.name;
+                        resource.description = payload.description;
+                        resource.content = payload.content;
+                        resource.uri = payload.uri ?? undefined;
+
+                        return resource;
+                    } else {
+                        return resource;
+                    }
+                });
+                return activity;
+            },
+        );
+        setModuleActivities(updatedActivites);
+    };
+
+    const handleRemoveResourceFromActivity = async (resourceId: string) => {
+        await deleteResource(resourceId);
+        setModuleActivities(
+            moduleActivities?.map((activity) => {
+                activity.activityResources = activity.activityResources.filter(
+                    (resource) => resource.resourceId !== resourceId,
+                );
+                return activity;
+            }),
         );
     };
 
@@ -448,8 +476,14 @@ export default function ModulePage() {
                                             deleteActivity={
                                                 handleRemoveActivity
                                             }
+                                            addNewResource={
+                                                handleAddResourceToActivity
+                                            }
                                             deleteResource={
-                                                handleRemoveResource
+                                                handleRemoveResourceFromActivity
+                                            }
+                                            editResource={
+                                                handleResourceEditForActivity
                                             }
                                             submission={submissionsByActivityId.get(
                                                 activity.activityId,

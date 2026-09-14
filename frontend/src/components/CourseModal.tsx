@@ -25,6 +25,7 @@ export default function CourseModal({
         startDate: selectedCourse.startDate,
         endDate: selectedCourse.endDate,
         modules: [],
+        courseResources: [],
     });
 
     const handleOnSubmit = async (e: React.SubmitEvent) => {
@@ -54,6 +55,7 @@ export default function CourseModal({
             startDate: "",
             endDate: "",
             modules: [],
+            courseResources: [],
         });
     }
 
@@ -74,9 +76,9 @@ export default function CourseModal({
                             &#10005;
                         </button>
                     </nav>
-                    <div className="bg-bg py-3 px-3">
+                    <div className="bg-bg dark:bg-bg-dark text-text-dark dark:text-text-light py-3 px-3">
                         <form
-                            className="px-8 pt-6 pb-8 mb-4"
+                            className="px-8 pt-6 pb-8 mb-4 text-text-dark dark:text-text-light"
                             onSubmit={handleOnSubmit}
                         >
                             <div>

@@ -11,77 +11,87 @@ namespace LMS.Api.Services.Implementations;
 public class ResourceService : IResourceService
 {
     private readonly IResourceRepository _resourceRepository;
+    private readonly IUserService _userService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
     public ResourceService(
         IResourceRepository resourceRepository,
+        IUserService userService,
         IUnitOfWork unitOfWork,
-        IMapper mapper)
+        IMapper mapper
+    )
     {
         _resourceRepository = resourceRepository;
+        _userService = userService;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
 
-    public async Task<PagedResponse<ResourceDto>> GetAllAsync(QueryParametersDto query, CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<ResourceDto>> GetAllAsync(
+        QueryParametersDto query,
+        CancellationToken cancellationToken = default
+    )
     {
-        PagedResponse<Resource> result =
-            await _resourceRepository.GetAllAsync(
-                query,
-                cancellationToken);
+        PagedResponse<Resource> result = await _resourceRepository.GetAllAsync(
+            query,
+            cancellationToken
+        );
 
         return new PagedResponse<ResourceDto>
         {
             Items = _mapper.Map<List<ResourceDto>>(result.Items),
             TotalCount = result.TotalCount,
             Page = result.Page,
-            PageSize = result.PageSize
+            PageSize = result.PageSize,
         };
     }
 
-    public async Task<ResourceDto?> GetByIdAsync(Guid resourceId, CancellationToken cancellationToken = default)
+    public async Task<ResourceDto?> GetByIdAsync(
+        Guid resourceId,
+        CancellationToken cancellationToken = default
+    )
     {
-        Resource? resource =
-            await _resourceRepository.GetByIdAsync(
-                resourceId,
-                cancellationToken
-            );
+        Resource? resource = await _resourceRepository.GetByIdAsync(resourceId, cancellationToken);
 
-        return resource is null
-            ? null
-            : _mapper.Map<ResourceDto>(resource);
+        return resource is null ? null : _mapper.Map<ResourceDto>(resource);
     }
 
-    public async Task<List<ResourceDto>> GetByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default)
+    public async Task<List<ResourceDto>> GetByCourseIdAsync(
+        Guid courseId,
+        CancellationToken cancellationToken = default
+    )
     {
-        List<Resource> resources =
-            await _resourceRepository.GetByCourseIdAsync(
-                courseId,
-                cancellationToken
-            );
+        List<Resource> resources = await _resourceRepository.GetByCourseIdAsync(
+            courseId,
+            cancellationToken
+        );
 
         return _mapper.Map<List<ResourceDto>>(resources);
     }
 
-    public async Task<List<ResourceDto>> GetByModuleIdAsync(Guid moduleId, CancellationToken cancellationToken = default)
+    public async Task<List<ResourceDto>> GetByModuleIdAsync(
+        Guid moduleId,
+        CancellationToken cancellationToken = default
+    )
     {
-        List<Resource> resources =
-            await _resourceRepository.GetByModuleIdAsync(
-                moduleId,
-                cancellationToken
-            );
+        List<Resource> resources = await _resourceRepository.GetByModuleIdAsync(
+            moduleId,
+            cancellationToken
+        );
 
         return _mapper.Map<List<ResourceDto>>(resources);
     }
 
-    public async Task<List<ResourceDto>> GetByActivityIdAsync(Guid activityId, CancellationToken cancellationToken = default)
+    public async Task<List<ResourceDto>> GetByActivityIdAsync(
+        Guid activityId,
+        CancellationToken cancellationToken = default
+    )
     {
-        List<Resource> resources =
-            await _resourceRepository.GetByActivityIdAsync(
-                activityId,
-                cancellationToken
-            );
+        List<Resource> resources = await _resourceRepository.GetByActivityIdAsync(
+            activityId,
+            cancellationToken
+        );
 
         return _mapper.Map<List<ResourceDto>>(resources);
     }
@@ -89,21 +99,27 @@ public class ResourceService : IResourceService
     public async Task<ResourceDto> CreateAsync(
         Guid createdByTeacherId,
         ResourceCreateDto request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         DateTime now = DateTime.UtcNow;
 
         Resource resource = _mapper.Map<Resource>(request);
 
+        User? teacher = await _userService.GetUserByIdAsync(createdByTeacherId);
+
+        if (teacher is null)
+        {
+            throw new ArgumentException("Teacher not found");
+        }
+
         resource.ResourceId = Guid.NewGuid();
         resource.CreatedByTeacherId = createdByTeacherId;
+        resource.CreatedByTeacher = teacher;
         resource.CreatedAt = now;
         resource.UpdatedAt = now;
 
-        await _resourceRepository.AddAsync(
-            resource,
-            cancellationToken
-        );
+        await _resourceRepository.AddAsync(resource, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -113,13 +129,10 @@ public class ResourceService : IResourceService
     public async Task<bool> UpdateAsync(
         Guid resourceId,
         ResourceUpdateDto request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        Resource? resource =
-            await _resourceRepository.GetByIdAsync(
-                resourceId,
-                cancellationToken
-            );
+        Resource? resource = await _resourceRepository.GetByIdAsync(resourceId, cancellationToken);
 
         if (resource is null)
         {
@@ -139,13 +152,10 @@ public class ResourceService : IResourceService
 
     public async Task<bool> DeleteAsync(
         Guid resourceId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        Resource? resource =
-            await _resourceRepository.GetByIdAsync(
-                resourceId,
-                cancellationToken
-            );
+        Resource? resource = await _resourceRepository.GetByIdAsync(resourceId, cancellationToken);
 
         if (resource is null)
         {
@@ -159,7 +169,11 @@ public class ResourceService : IResourceService
         return true;
     }
 
-    public async Task<bool> AddToCourseAsync(Guid resourceId, Guid courseId, CancellationToken cancellationToken = default)
+    public async Task<bool> AddToCourseAsync(
+        Guid resourceId,
+        Guid courseId,
+        CancellationToken cancellationToken = default
+    )
     {
         Resource? resource = await _resourceRepository.GetByIdAsync(resourceId, cancellationToken);
 
@@ -174,7 +188,11 @@ public class ResourceService : IResourceService
         return true;
     }
 
-    public async Task<bool> AddToModuleAsync(Guid resourceId, Guid moduleId, CancellationToken cancellationToken = default)
+    public async Task<bool> AddToModuleAsync(
+        Guid resourceId,
+        Guid moduleId,
+        CancellationToken cancellationToken = default
+    )
     {
         Resource? resource = await _resourceRepository.GetByIdAsync(resourceId, cancellationToken);
 
@@ -189,7 +207,11 @@ public class ResourceService : IResourceService
         return true;
     }
 
-    public async Task<bool> AddToActivityAsync(Guid resourceId, Guid activityId, CancellationToken cancellationToken = default)
+    public async Task<bool> AddToActivityAsync(
+        Guid resourceId,
+        Guid activityId,
+        CancellationToken cancellationToken = default
+    )
     {
         Resource? resource = await _resourceRepository.GetByIdAsync(resourceId, cancellationToken);
 

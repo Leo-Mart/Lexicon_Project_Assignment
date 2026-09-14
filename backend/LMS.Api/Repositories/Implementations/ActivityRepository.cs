@@ -37,6 +37,9 @@ public class ActivityRepository : IActivityRepository
     {
         return await _context
             .Activities.AsNoTracking()
+            .Include(a => a.ActivityResources)
+                .ThenInclude(ar => ar.Resource)
+                    .ThenInclude(r => r.CreatedByTeacher)
             .Where(activity => activity.ModuleId == moduleId)
             .OrderBy(activity => activity.StartAt)
             .ThenBy(activity => activity.Type)

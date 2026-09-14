@@ -32,7 +32,8 @@ export interface EntityFormConfig<T> {
 
 // Shared styling for every input/textarea/select rendered below.
 // Background isn't included here - textarea needs to switch it when read-only.
-const inputClass = "shadow appearance-none border rounded w-full p-2";
+const inputClass =
+    "shadow appearance-none border rounded w-full p-2 text-text-dark";
 
 interface FormModalProps<T> {
     config: EntityFormConfig<T>;
@@ -192,7 +193,7 @@ export default function FormModal<T extends Record<string, unknown>>({
                     </button>
                 </nav>
                 <form
-                    className={`bg-bg py-3 px-3 text-text-dark ${config.heightClass ? "flex-1 flex flex-col overflow-y-auto min-h-0" : ""}`}
+                    className={`bg-bg dark:bg-bg-dark py-3 px-3 text-text-dark dark:text-text-light ${config.heightClass ? "flex-1 flex flex-col overflow-y-auto min-h-0" : ""}`}
                     onSubmit={handleSubmit}
                 >
                     {context && (
@@ -208,7 +209,7 @@ export default function FormModal<T extends Record<string, unknown>>({
                         </div>
                     ))}
                     {charCountField && (
-                        <p className="text-sm text-text-dark mb-1">
+                        <p className="text-sm text-text-dark dark:text-text-light mb-1">
                             {String(formData[charCountField.name] ?? "").length}{" "}
                             / {charCountField.maxLength} chars
                         </p>

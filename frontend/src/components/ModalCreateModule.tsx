@@ -44,7 +44,7 @@ const ModalCreateModule = (props: CreateModuleModalProps) => {
             onClose={props.onClose}
             title="Create new Module"
         >
-            <div className="bg-bg py-3 px-3">
+            <div className="bg-bg dark:bg-bg-dark text-text-dark dark:text-text-light py-3 px-3">
                 <form
                     className="px-8 pt-2 pb-8 mb-4 flex flex-col gap-2"
                     onSubmit={handleSubmit}
@@ -52,7 +52,7 @@ const ModalCreateModule = (props: CreateModuleModalProps) => {
                     <div>
                         <label htmlFor="name">Name</label>
                         <input
-                            className="shadow appearance-none border rounded w-full bg-white p-2"
+                            className="shadow appearance-none border rounded w-full bg-white text-text-dark p-2"
                             type="text"
                             id="name"
                             name="name"
@@ -64,7 +64,7 @@ const ModalCreateModule = (props: CreateModuleModalProps) => {
                     <div>
                         <label htmlFor="description">Description</label>
                         <textarea
-                            className="shadow appearance-none border rounded w-full bg-white p-2"
+                            className="shadow appearance-none border rounded w-full bg-white text-text-dark p-2"
                             id="description"
                             name="description"
                             placeholder="Module description"
@@ -76,7 +76,7 @@ const ModalCreateModule = (props: CreateModuleModalProps) => {
                     <div className="mb-4">
                         <label htmlFor="startDate">Start date</label>
                         <input
-                            className="shadow appearance-none border rounded w-full bg-white p-2"
+                            className="shadow appearance-none border rounded w-full bg-white text-text-dark p-2"
                             min={today.toLocaleString()}
                             type="date"
                             id="startDate"
@@ -87,7 +87,7 @@ const ModalCreateModule = (props: CreateModuleModalProps) => {
                     <div className="mb-4">
                         <label htmlFor="endDate">End date</label>
                         <input
-                            className="shadow appearance-none border rounded w-full bg-white p-2"
+                            className="shadow appearance-none border rounded w-full bg-white text-text-dark p-2"
                             min={today.toLocaleString()}
                             type="date"
                             id="endDate"
