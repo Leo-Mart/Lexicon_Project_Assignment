@@ -376,6 +376,30 @@ export default function Submissions() {
                     },
                 },
                 {
+                    key: "module",
+                    field: "module",
+                    header: "Module",
+                    className: "px-4 py-3",
+                    render: (submission) => {
+                        const moduleId = lookups?.moduleIdForActivity(
+                            submission.activityId,
+                        );
+                        const moduleName = lookups?.moduleNameForActivity(
+                            submission.activityId,
+                        );
+                        return moduleId ? (
+                            <Link
+                                className="underline text-buttons dark:text-buttons-dark"
+                                to={`/module/${moduleId}`}
+                            >
+                                {moduleName}
+                            </Link>
+                        ) : (
+                            moduleName
+                        );
+                    },
+                },
+                {
                     key: "activity",
                     field: "activity",
                     header: "Activity",
