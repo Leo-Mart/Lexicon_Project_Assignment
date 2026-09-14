@@ -3,7 +3,7 @@ export const ActivityDate = (dateString: string): string => {
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
-    return `${day}/${month}/${year}`;
+    return `${year}/${month}/${day}`;
 };
 
 export const ActivityTime = (dateString: string): string => {
