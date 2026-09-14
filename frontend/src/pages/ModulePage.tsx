@@ -261,7 +261,7 @@ export default function ModulePage() {
                     {moduleActivities?.length ? (
                         <>
                             <div className="h-10 flex justify-between gap-2 mt-3 mx-3">
-                                <div className="flex  gap-1">
+                                <div className="flex items-center gap-1">
                                     <button
                                         onClick={() =>
                                             activityTypeFilter === "all"
