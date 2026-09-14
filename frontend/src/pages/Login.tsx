@@ -1,9 +1,40 @@
 import Button from "../components/Button";
 import { useAuth } from "../hooks/useAuth";
 import type { LoginDto } from "../interfaces/auth/LoginDto";
+import { Navigate } from "react-router-dom";
+import Spinner from "../components/Spinner";
 
 export default function Login() {
-    const { loginUser, loginError } = useAuth();
+    const {
+        isAuthenticated,
+        isLoading,
+        role,
+        courseId,
+        currentModuleId,
+        loginUser,
+        loginError,
+    } = useAuth();
+
+    if (isLoading) {
+        return <Spinner />;
+    }
+
+    if (isAuthenticated) {
+        if (role === "Teacher") {
+            return <Navigate to="/index" replace />;
+        }
+
+        if (role === "Student") {
+            if (currentModuleId) {
+                return <Navigate to={`/module/${currentModuleId}`} replace />;
+            }
+
+            if (courseId) {
+                return <Navigate to={`/courses/${courseId}`} replace />;
+            }
+        }
+    }
+
     const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
 
