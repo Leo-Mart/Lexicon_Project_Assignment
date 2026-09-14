@@ -23,8 +23,7 @@ export default function SubmissionCategoryButtons({
     return (
         <div className="flex flex-wrap items-center gap-2">
             <Button
-                variant="primary"
-                className={tab === "not-reviewed" ? "bg-accent-blue" : ""}
+                variant={tab === "not-reviewed" ? "confirm" : "primary"}
                 onClick={() => handleTabChange("not-reviewed")}
             >
                 Not reviewed
@@ -33,7 +32,7 @@ export default function SubmissionCategoryButtons({
                 </span>
             </Button>
             <Button
-                variant="primary"
+                variant={tab === "overdue" ? "confirm" : "primary"}
                 className={tab === "overdue" ? "bg-accent-blue" : ""}
                 onClick={() => handleTabChange("overdue")}
             >
@@ -43,8 +42,7 @@ export default function SubmissionCategoryButtons({
                 </span>
             </Button>
             <Button
-                variant="primary"
-                className={tab === "needs-completion" ? "bg-accent-blue" : ""}
+                variant={tab === "needs-completion" ? "confirm" : "primary"}
                 onClick={() => handleTabChange("needs-completion")}
             >
                 Needs completion
@@ -53,8 +51,7 @@ export default function SubmissionCategoryButtons({
                 </span>
             </Button>
             <Button
-                variant="primary"
-                className={tab === "done" ? "bg-accent-blue" : ""}
+                variant={tab === "done" ? "confirm" : "primary"}
                 onClick={() => handleTabChange("done")}
             >
                 Done
