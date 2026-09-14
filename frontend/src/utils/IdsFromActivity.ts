@@ -1,12 +1,14 @@
 /* activityLookups.ts */
 import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
+import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
 import type { UserResponse } from "../interfaces/user/UserResponse";
 
 export interface ActivityLookups {
     courseNameForActivity: (activityId: string) => string;
     courseIdForActivity: (activityId: string) => string | undefined;
     activityName: (activityId: string) => string;
+    moduleNameForActivity: (activityId: string) => string;
     moduleIdForActivity: (activityId: string) => string | undefined;
     deadlineForActivity: (activityId: string) => string | null;
     studentName: (studentId: string) => string;
@@ -16,12 +18,16 @@ export const createActivityLookups = (
     activities: ActivityResponse[],
     courses: CourseResponse[],
     users: UserResponse[],
+    modules: ModuleResponse[],
 ): ActivityLookups => {
     const activityNameById = new Map(
         activities.map((a) => [a.activityId, a.name]),
     );
     const activityModuleById = new Map(
         activities.map((a) => [a.activityId, a.moduleId]),
+    );
+    const moduleNameByModuleId = new Map<string, string>(
+        modules.map((m) => [m.moduleId, String(m.name)] as const),
     );
     const activityDeadlineById = new Map(
         activities.map((a) => [a.activityId, a.deadline]),
@@ -41,6 +47,10 @@ export const createActivityLookups = (
     return {
         activityName: (id) => activityNameById.get(id) ?? id,
         moduleIdForActivity: (id) => activityModuleById.get(id),
+        moduleNameForActivity: (id) => {
+            const moduleId = activityModuleById.get(id);
+            return (moduleId && moduleNameByModuleId.get(moduleId)) ?? id;
+        },
         deadlineForActivity: (id) => activityDeadlineById.get(id) ?? null,
         courseNameForActivity: (id) => {
             const moduleId = activityModuleById.get(id);

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Button from "../components/Button";
 import Pagination from "../components/Pagination";
-import SortableTh from "../components/SortableTableHead";
 import ReviewSubmissionModal from "../components/ReviewSubmissionModal";
 import {
     fetchSubmissionsPage,
@@ -18,7 +17,7 @@ import type { FeedbackRequest } from "../interfaces/submission/FeedbackRequest";
 import { SubmissionReviewStatus } from "../constants/SubmissionReviewStatus";
 import SubmissionCategoryButtons from "../components/SubmissionCategoryButtons";
 import type { SubmissionTabs } from "../types/SubmissionTabs";
-import { daysLate, daysOverdue } from "../utils/deadlines.ts";
+import { daysOverdue } from "../utils/deadlines.ts";
 import {
     createActivityLookups,
     type ActivityLookups,
@@ -29,14 +28,12 @@ import { fetchUsers } from "../services/userService.ts";
 import TableSearchBar from "../components/TableSearchBar.tsx";
 import DataTable from "../components/DataTable.tsx";
 import type { Column } from "../types/Column.ts";
-/* import DataTable from "../components/DataTable";
-import type { Column } from "../types/Column.ts"; */
+import { fetchModules } from "../services/moduleService.ts";
 
 const PAGE_SIZE = 10;
 
 const DEFAULT_SORT = "review-asc";
 
-// Mock teacher review page: everything fetched and joined client-side.
 export default function Submissions() {
     const { role } = useAuth();
     const [submissions, setSubmissions] = useState<SubmissionResponse[]>([]);
@@ -75,7 +72,7 @@ export default function Submissions() {
         void (async () => {
             setLoading(true);
             try {
-                const [submissionData, activities, users, courses] =
+                const [submissionData, activities, users, courses, modules] =
                     await Promise.all([
                         fetchAllSubmissions(),
                         fetchActivities(),
@@ -87,11 +84,17 @@ export default function Submissions() {
                             page: 1,
                             pageSize: 200,
                         }),
+                        fetchModules(),
                     ]);
 
                 setSubmissions(submissionData);
                 setLookups(
-                    createActivityLookups(activities, courses.items, users),
+                    createActivityLookups(
+                        activities,
+                        courses.items,
+                        users,
+                        modules,
+                    ),
                 );
             } finally {
                 setLoading(false);
@@ -154,7 +157,6 @@ export default function Submissions() {
                     return [id, overdue] as const;
                 }),
             );
-
             setOverdueByActivity(new Map(entries));
             setOverdueChecked(true);
         };
@@ -175,6 +177,7 @@ export default function Submissions() {
     const handleOverdueSortChange = (value: string) => {
         setOverdueSortBy(value);
         setOverduePage(1);
+        console.log("Sorting overdue pages by ", value);
     };
 
     const handleReview = async (data: FeedbackRequest) => {
@@ -240,27 +243,39 @@ export default function Submissions() {
                 },
             },
             {
-                key: "activity",
-                field: "activity",
-                header: "Activity",
+                key: "module",
+                field: "module",
+                header: "Module",
                 className: "px-4 py-3",
                 render: (submission) => {
                     const moduleId = lookups?.moduleIdForActivity(
                         submission.activityId,
                     );
-                    const activityName =
-                        lookups?.activityName(submission.activityId) ??
-                        submission.activityId;
+                    const moduleName = lookups?.moduleNameForActivity(
+                        submission.activityId,
+                    );
                     return moduleId ? (
                         <Link
                             className="underline text-buttons dark:text-buttons-dark"
                             to={`/module/${moduleId}`}
                         >
-                            {activityName}
+                            {moduleName}
                         </Link>
                     ) : (
-                        activityName
+                        moduleName
                     );
+                },
+            },
+            {
+                key: "activity",
+                field: "activity",
+                header: "Activity",
+                className: "px-4 py-3",
+                render: (submission) => {
+                    const activityName =
+                        lookups?.activityName(submission.activityId) ??
+                        submission.activityId;
+                    return activityName;
                 },
             },
             {
@@ -272,30 +287,19 @@ export default function Submissions() {
                     const deadline = lookups?.deadlineForActivity(
                         submission.activityId,
                     );
-                    const lateDays = deadline
-                        ? tab === "done"
-                            ? daysLate(deadline, submission.submittedAt)
-                            : daysOverdue(deadline)
-                        : null;
-                    return deadline ? (
+                    if (!deadline) return "-";
+
+                    return (
                         <>
                             {ActivityDate(deadline)} {ActivityTime(deadline)}
-                            {lateDays != null && lateDays > 0 && (
-                                <div className="text-xs opacity-70">
-                                    {lateDays} days{" "}
-                                    {tab === "done" ? "late" : "overdue"}
-                                </div>
-                            )}
                         </>
-                    ) : (
-                        "-"
                     );
                 },
             },
         ];
 
         // Conditionally add the "reviewed" column
-        if (tab !== "not-reviewed") {
+        if (tab !== "not-reviewed" && tab !== "overdue") {
             baseColumns.push({
                 key: "reviewed",
                 field: "reviewed",
@@ -308,20 +312,202 @@ export default function Submissions() {
             });
         }
 
-        // Always add the "actions" column
-        baseColumns.push({
-            key: "actions",
-            header: "Interact",
-            className: "whitespace-nowrap px-4 py-3",
-            render: (submission) => (
-                <Button onClick={() => setReviewing(submission)}>
-                    {submission.reviewStatus != null ? "Edit review" : "Review"}
-                </Button>
-            ),
-        });
+        // Only add the "actions" column for non-overdue tabs
+        if (tab !== "overdue") {
+            baseColumns.push({
+                key: "actions",
+                header: "Interact",
+                className: "whitespace-nowrap px-4 py-3",
+                render: (submission) => (
+                    <Button onClick={() => setReviewing(submission)}>
+                        {submission.reviewStatus != null
+                            ? "Edit review"
+                            : "Review"}
+                    </Button>
+                ),
+            });
+        }
 
         return baseColumns;
-    }, [tab, lookups]); // Recompute when `tab` or `lookups` changes
+    }, [tab, lookups]);
+
+    const overdueColumns: Column<OverdueSubmission & { activityId: string }>[] =
+        useMemo(
+            () => [
+                {
+                    key: "student",
+                    field: "student",
+                    header: "Student",
+                    className: "px-4 py-3",
+                    render: (item) => item.studentName,
+                },
+                {
+                    key: "course",
+                    field: "course",
+                    header: "Course",
+                    className: "px-4 py-3",
+                    render: (item) => {
+                        const courseId = lookups?.courseIdForActivity(
+                            item.activityId,
+                        );
+                        const courseName =
+                            lookups?.courseNameForActivity(item.activityId) ||
+                            "-";
+                        return courseId ? (
+                            <Link
+                                className="underline text-buttons dark:text-buttons-dark"
+                                to={`/courses/${courseId}`}
+                            >
+                                {courseName}
+                            </Link>
+                        ) : (
+                            courseName
+                        );
+                    },
+                },
+                {
+                    key: "module",
+                    field: "module",
+                    header: "Module",
+                    className: "px-4 py-3",
+                    render: (submission) => {
+                        const moduleId = lookups?.moduleIdForActivity(
+                            submission.activityId,
+                        );
+                        const moduleName = lookups?.moduleNameForActivity(
+                            submission.activityId,
+                        );
+                        return moduleId ? (
+                            <Link
+                                className="underline text-buttons dark:text-buttons-dark"
+                                to={`/module/${moduleId}`}
+                            >
+                                {moduleName}
+                            </Link>
+                        ) : (
+                            moduleName
+                        );
+                    },
+                },
+                {
+                    key: "activity",
+                    field: "activity",
+                    header: "Activity",
+                    className: "px-4 py-3",
+                    render: (item) => {
+                        const activityName =
+                            lookups?.activityName(item.activityId) ??
+                            item.activityId;
+                        return activityName;
+                    },
+                },
+                {
+                    key: "deadline",
+                    field: "deadline",
+                    header: "Deadline",
+                    className: "px-4 py-3",
+                    render: (item) => {
+                        const deadline = lookups?.deadlineForActivity(
+                            item.activityId,
+                        );
+                        if (!deadline) return "-";
+
+                        return (
+                            <>
+                                {ActivityDate(deadline)}{" "}
+                                {ActivityTime(deadline)}
+                                <div className="text-xs opacity-70">
+                                    {daysOverdue(deadline)} days overdue
+                                </div>
+                            </>
+                        );
+                    },
+                },
+            ],
+            [lookups],
+        );
+
+    // Then transform the overdue data without nulling values
+    const overdueItems = useMemo(() => {
+        if (!overdueChecked || !lookups) return [];
+
+        return [...overdueByActivity.entries()].flatMap(
+            ([activityId, students]) =>
+                students.map((u) => ({
+                    ...u,
+                    activityId,
+                })),
+        );
+    }, [overdueByActivity, overdueChecked, lookups]);
+
+    // Filtered overdue items
+    const filteredOverdueItems = useMemo(() => {
+        return search.trim()
+            ? overdueItems.filter((item) =>
+                  item.studentName
+                      .toLowerCase()
+                      .includes(search.trim().toLowerCase()),
+              )
+            : overdueItems;
+    }, [overdueItems, search]);
+
+    // Add sorting here - apply AFTER filtering but BEFORE pagination
+    const sortedOverdueItems = useMemo(() => {
+        if (!filteredOverdueItems.length) return [];
+
+        const [sortField, direction = "asc"] = overdueSortBy.split("-");
+
+        return [...filteredOverdueItems].sort((a, b) => {
+            let comparison = 0;
+
+            switch (sortField) {
+                case "student":
+                    comparison = a.studentName.localeCompare(b.studentName);
+                    break;
+                case "course":
+                    comparison = (
+                        lookups?.courseIdForActivity(a.activityId) ?? ""
+                    ).localeCompare(
+                        lookups?.courseIdForActivity(b.activityId) ?? "",
+                    );
+                    break;
+                case "module":
+                    comparison = (
+                        lookups?.moduleIdForActivity(a.activityId) ?? ""
+                    ).localeCompare(
+                        lookups?.moduleIdForActivity(b.activityId) ?? "",
+                    );
+                    break;
+                case "activity":
+                    comparison = a.activityId.localeCompare(b.activityId);
+                    break;
+                case "deadline": {
+                    const deadlineA = lookups?.deadlineForActivity(
+                        a.activityId,
+                    );
+                    const deadlineB = lookups?.deadlineForActivity(
+                        b.activityId,
+                    );
+                    if (deadlineA && deadlineB) {
+                        comparison =
+                            new Date(deadlineA).getTime() -
+                            new Date(deadlineB).getTime();
+                    }
+                    break;
+                }
+            }
+
+            return direction === "asc" ? comparison : -comparison;
+        });
+    }, [filteredOverdueItems, overdueSortBy, lookups]);
+
+    // Paged overdue items
+    const pagedOverdueItems = useMemo(() => {
+        return sortedOverdueItems.slice(
+            (overduePage - 1) * PAGE_SIZE,
+            overduePage * PAGE_SIZE,
+        );
+    }, [sortedOverdueItems, overduePage]);
 
     if (role !== "Teacher") {
         return (
@@ -390,183 +576,35 @@ export default function Submissions() {
                 </div>
             )}
 
-            {tab === "overdue" &&
-                (() => {
-                    const rows = [...overdueByActivity.entries()].flatMap(
-                        ([activityId, students]) =>
-                            students.map((u) => ({
-                                ...u,
-                                activityId,
-                                moduleId:
-                                    lookups?.moduleIdForActivity(activityId),
-                                activityName:
-                                    lookups?.activityName(activityId) ??
-                                    activityId,
-                                courseName:
-                                    lookups?.courseNameForActivity(
-                                        activityId,
-                                    ) || "Unknown course",
-                                courseId:
-                                    lookups?.courseIdForActivity(activityId),
-                                deadline:
-                                    lookups?.deadlineForActivity(activityId) ??
-                                    null,
-                            })),
-                    );
-
-                    const filteredRows = search.trim()
-                        ? rows.filter((row) =>
-                              row.studentName
-                                  .toLowerCase()
-                                  .includes(search.trim().toLowerCase()),
-                          )
-                        : rows;
-
-                    const [sortField, sortDirection = "asc"] =
-                        overdueSortBy.split("-");
-                    const sortedRows = [...filteredRows].sort((a, b) => {
-                        let cmp = 0;
-                        if (sortField === "student") {
-                            cmp = a.studentName.localeCompare(b.studentName);
-                        } else if (sortField === "course") {
-                            cmp = a.courseName.localeCompare(b.courseName);
-                        } else if (sortField === "activity") {
-                            cmp = a.activityName.localeCompare(b.activityName);
-                        } else if (sortField === "deadline") {
-                            // Days overdue is derived from the deadline, so one sort covers both columns.
-                            const timeA = a.deadline
-                                ? new Date(a.deadline).getTime()
-                                : 0;
-                            const timeB = b.deadline
-                                ? new Date(b.deadline).getTime()
-                                : 0;
-                            cmp = timeA - timeB;
-                        }
-                        return sortDirection === "desc" ? -cmp : cmp;
-                    });
-
-                    const pagedRows = sortedRows.slice(
-                        (overduePage - 1) * PAGE_SIZE,
-                        overduePage * PAGE_SIZE,
-                    );
-
-                    return (
+            {tab === "overdue" && (
+                <div>
+                    {filteredOverdueItems.length === 0 ? (
+                        <p className="text-text-dark dark:text-text-light">
+                            Nobody's overdue.
+                        </p>
+                    ) : (
                         <>
-                            {filteredRows.length === 0 ? (
-                                <p className="text-text-dark dark:text-text-light">
-                                    Nobody's overdue.
-                                </p>
-                            ) : (
-                                <div className="overflow-x-auto rounded-lg border border-accent-blue">
-                                    <table className="w-full text-left text-text-dark dark:text-text-light">
-                                        <thead className="bg-bg-window dark:bg-bg-window-dark">
-                                            <tr>
-                                                <SortableTh
-                                                    field="student"
-                                                    label="Student"
-                                                    sortBy={overdueSortBy}
-                                                    onSortChange={
-                                                        handleOverdueSortChange
-                                                    }
-                                                />
-                                                <SortableTh
-                                                    field="course"
-                                                    label="Course"
-                                                    sortBy={overdueSortBy}
-                                                    onSortChange={
-                                                        handleOverdueSortChange
-                                                    }
-                                                />
-                                                <SortableTh
-                                                    field="activity"
-                                                    label="Activity"
-                                                    sortBy={overdueSortBy}
-                                                    onSortChange={
-                                                        handleOverdueSortChange
-                                                    }
-                                                />
-                                                <SortableTh
-                                                    field="deadline"
-                                                    label="Deadline"
-                                                    sortBy={overdueSortBy}
-                                                    onSortChange={
-                                                        handleOverdueSortChange
-                                                    }
-                                                />
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {pagedRows.map((row, i) => (
-                                                <tr
-                                                    key={`${row.studentId}-${i}`}
-                                                    className="border-t border-accent-blue hover:bg-bg-window/40 dark:hover:bg-bg-window-dark/40"
-                                                >
-                                                    <td className="px-4 py-3">
-                                                        {row.studentName}
-                                                    </td>
-                                                    <td className="px-4 py-3">
-                                                        {row.courseId ? (
-                                                            <Link
-                                                                className="underline text-buttons dark:text-buttons-dark"
-                                                                to={`/courses/${row.courseId}`}
-                                                            >
-                                                                {row.courseName}
-                                                            </Link>
-                                                        ) : (
-                                                            row.courseName
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 py-3">
-                                                        {row.moduleId ? (
-                                                            <Link
-                                                                className="underline text-buttons dark:text-buttons-dark"
-                                                                to={`/module/${row.moduleId}`}
-                                                            >
-                                                                {
-                                                                    row.activityName
-                                                                }
-                                                            </Link>
-                                                        ) : (
-                                                            row.activityName
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 py-3">
-                                                        {row.deadline ? (
-                                                            <>
-                                                                {ActivityDate(
-                                                                    row.deadline,
-                                                                )}{" "}
-                                                                {ActivityTime(
-                                                                    row.deadline,
-                                                                )}
-                                                                <div className="text-xs opacity-70">
-                                                                    {daysOverdue(
-                                                                        row.deadline,
-                                                                    )}{" "}
-                                                                    days overdue
-                                                                </div>
-                                                            </>
-                                                        ) : (
-                                                            "-"
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                            {filteredRows.length > 0 && (
-                                <Pagination
-                                    page={overduePage}
-                                    pageSize={PAGE_SIZE}
-                                    totalCount={filteredRows.length}
-                                    onPageChange={setOverduePage}
-                                />
-                            )}
+                            <DataTable
+                                items={pagedOverdueItems}
+                                columns={overdueColumns}
+                                getKey={(item) =>
+                                    `${item.studentId}-${item.activityId}`
+                                }
+                                sortBy={overdueSortBy}
+                                isLoading={!overdueChecked}
+                                onSortChange={handleOverdueSortChange}
+                                bodyClassName="text-text-dark dark:text-text-light"
+                            />
+                            <Pagination
+                                page={overduePage}
+                                pageSize={PAGE_SIZE}
+                                totalCount={filteredOverdueItems.length}
+                                onPageChange={setOverduePage}
+                            />
                         </>
-                    );
-                })()}
+                    )}
+                </div>
+            )}
 
             {reviewing &&
                 (() => {

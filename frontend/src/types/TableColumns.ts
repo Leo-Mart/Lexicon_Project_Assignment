@@ -8,6 +8,7 @@ export type SortableColumn =
     | "startDate"
     | "endDate"
     | "student"
+    | "module"
     | "activity"
     | "deadline"
     | "submitted"
