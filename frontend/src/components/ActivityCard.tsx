@@ -18,11 +18,19 @@ import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 import { useAuth } from "../hooks/useAuth";
 import ConfirmDialog from "./ConfirmDialog";
 import SubmissionViewModal from "./SubmissionViewModal";
-import { createActivityFormConfig } from "../types/formSchemas";
+import {
+    createActivityFormConfig,
+    createResourceFormConfig,
+} from "../types/formSchemas";
 import { createPortal } from "react-dom";
 import ModalActivityDetails from "./ModalActivityDetails";
 import ResourceCard from "./ResourceCard";
 import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
+import {
+    addResourceToActivity,
+    createResource,
+} from "../services/resourceService";
+import type { ResourceResponse } from "../interfaces/resource/ResourceResponse";
 
 // Shared with SubmissionViewModal so the char count there matches this limit.
 export const SUBMISSION_MAX_LENGTH = 2000;
@@ -54,6 +62,7 @@ export default function ActivityCard({
     onSubmitted,
     editActivity,
     deleteActivity,
+    addNewResource,
     editResource,
     deleteResource,
 }: {
@@ -63,6 +72,7 @@ export default function ActivityCard({
     onSubmitted?: (submission: SubmissionResponse) => void;
     editActivity: (activityId: string, payload: ActivityRequest) => void;
     deleteActivity: (activityId: string) => void;
+    addNewResource: (resource: ResourceResponse) => void;
     editResource: (resourcerId: string, payload: ResourceRequest) => void;
     deleteResource: (resourceId: string) => void;
 }) {
@@ -73,6 +83,7 @@ export default function ActivityCard({
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [showEditActivityForm, setShowEditActivityForm] = useState(false);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [showCreateResourceForm, setShowCreateResourceForm] = useState(false);
 
     const { isAuthenticated, role } = useAuth();
 
@@ -298,17 +309,35 @@ export default function ActivityCard({
                         </div>
                         <div className="flex flex-row justify-between items-center p-2">
                             {activity.activityResources.length > 0 ? (
-                                <Button
-                                    variant="confirm"
-                                    className="hover:cursor-pointer"
-                                    onClick={() => setShowDetailsModal(true)}
-                                >
-                                    {`Resources (${activity.activityResources.length + 1})`}
-                                </Button>
+                                <>
+                                    <div className="flex justify-end">
+                                        {/* <Button */}
+                                        {/*     variant="confirm" */}
+                                        {/*     className="hover:cursor-pointer" */}
+                                        {/*     onClick={() => */}
+                                        {/*         setShowDetailsModal(true) */}
+                                        {/*     } */}
+                                        {/* > */}
+                                        {/*     {`Resources (${activity.activityResources.length + 1})`} */}
+                                        {/* </Button> */}
+                                    </div>
+                                </>
                             ) : (
                                 ""
                             )}
                             <div>
+                                {isAuthenticated && role === "Teacher" ? (
+                                    <button
+                                        onClick={() =>
+                                            setShowCreateResourceForm(true)
+                                        }
+                                        className="rounded-md p-2 w-10 border border-buttons hover:cursor-pointer"
+                                    >
+                                        +
+                                    </button>
+                                ) : (
+                                    ""
+                                )}
                                 {activity.activityResources?.map((resource) => (
                                     <ResourceCard
                                         key={resource.resourceId}
@@ -443,6 +472,31 @@ export default function ActivityCard({
                         editActivity(activity.activityId, data)
                     }
                     onClose={() => setShowEditActivityForm(false)}
+                />
+            )}
+            {showCreateResourceForm && (
+                <FormModal
+                    config={{
+                        ...createResourceFormConfig,
+                        title: `Add resource`,
+                    }}
+                    titleBadge={ActivityTypeNames[activity.type]}
+                    titleSuffix={activity.name}
+                    initialValue={{
+                        name: "",
+                        description: "",
+                        content: "",
+                        uri: undefined,
+                    }}
+                    onSave={async (data) => {
+                        const resp = await createResource(data);
+                        await addResourceToActivity(
+                            resp.resourceId,
+                            activity.activityId,
+                        );
+                        addNewResource(resp);
+                    }}
+                    onClose={() => setShowCreateResourceForm(false)}
                 />
             )}
         </div>

@@ -129,6 +129,18 @@ export default function ModulePage() {
         );
     };
 
+    const handleAddResourceToActivity = (resource: ResourceResponse) => {
+        setModuleActivities(
+            moduleActivities?.map((activity) => {
+                activity.activityResources = [
+                    ...activity.activityResources,
+                    resource,
+                ];
+                return activity;
+            }),
+        );
+    };
+
     const handleResourceEditForActivity = async (
         resourceId: string,
         payload: ResourceRequest,
@@ -406,6 +418,9 @@ export default function ModulePage() {
                                             editActivity={handleActivityEdit}
                                             deleteActivity={
                                                 handleRemoveActivity
+                                            }
+                                            addNewResource={
+                                                handleAddResourceToActivity
                                             }
                                             deleteResource={
                                                 handleRemoveResourceFromActivity
