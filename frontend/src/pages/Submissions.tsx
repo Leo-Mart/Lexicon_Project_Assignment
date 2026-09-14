@@ -514,25 +514,31 @@ export default function Submissions() {
 
             {tab === "overdue" && (
                 <div>
-                    <>
-                        <DataTable
-                            items={pagedOverdueItems}
-                            columns={overdueColumns}
-                            getKey={(item) =>
-                                `${item.studentId}-${item.activityId}`
-                            }
-                            sortBy={overdueSortBy}
-                            isLoading={!overdueChecked}
-                            onSortChange={handleOverdueSortChange}
-                            bodyClassName="text-text-dark dark:text-text-light"
-                        />
-                        <Pagination
-                            page={overduePage}
-                            pageSize={PAGE_SIZE}
-                            totalCount={pagedSubmissions.length}
-                            onPageChange={setOverduePage}
-                        />
-                    </>
+                    {filteredOverdueItems.length === 0 ? (
+                        <p className="text-text-dark dark:text-text-light">
+                            Nobody's overdue.
+                        </p>
+                    ) : (
+                        <>
+                            <DataTable
+                                items={pagedOverdueItems}
+                                columns={overdueColumns}
+                                getKey={(item) =>
+                                    `${item.studentId}-${item.activityId}`
+                                }
+                                sortBy={overdueSortBy}
+                                isLoading={!overdueChecked}
+                                onSortChange={handleOverdueSortChange}
+                                bodyClassName="text-text-dark dark:text-text-light"
+                            />
+                            <Pagination
+                                page={overduePage}
+                                pageSize={PAGE_SIZE}
+                                totalCount={filteredOverdueItems.length}
+                                onPageChange={setOverduePage}
+                            />
+                        </>
+                    )}
                 </div>
             )}
 
