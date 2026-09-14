@@ -247,8 +247,6 @@ const ResourceManagement = () => {
                     <ModalCreateResource
                         open={showCreateResourceModal}
                         onClose={() => setShowCreateResourceModal(false)}
-                        entityId="123"
-                        createFor="course"
                     />,
                     document.body,
                 )}

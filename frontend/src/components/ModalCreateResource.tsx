@@ -9,13 +9,13 @@ import {
     createResource,
 } from "../services/resourceService";
 
-type createForEntity = "course" | "module" | "activity";
+type createForEntity = "course" | "module" | "activity" | undefined;
 
 type CreateResourceModalProps = {
     open: boolean;
     onClose: () => void;
-    entityId: string;
-    createFor: createForEntity;
+    entityId?: string;
+    createFor?: createForEntity;
 };
 
 const ModalCreateResource = (props: CreateResourceModalProps) => {
@@ -39,24 +39,33 @@ const ModalCreateResource = (props: CreateResourceModalProps) => {
 
         try {
             const resp = await createResource(newResourcePayload);
-            switch (props.createFor) {
-                case "course": {
-                    await addResourceToCourse(resp.resourceId, props.entityId);
-                    break;
+
+            if (props.createFor !== undefined && props.entityId !== undefined) {
+                switch (props.createFor) {
+                    case "course": {
+                        await addResourceToCourse(
+                            resp.resourceId,
+                            props.entityId,
+                        );
+                        break;
+                    }
+                    case "module": {
+                        await addResourceToModule(
+                            resp.resourceId,
+                            props.entityId,
+                        );
+                        break;
+                    }
+                    case "activity": {
+                        await addResourceToActivity(
+                            resp.resourceId,
+                            props.entityId,
+                        );
+                        break;
+                    }
+                    default:
+                        throw new Error("Invalid resource type");
                 }
-                case "module": {
-                    await addResourceToModule(resp.resourceId, props.entityId);
-                    break;
-                }
-                case "activity": {
-                    await addResourceToActivity(
-                        resp.resourceId,
-                        props.entityId,
-                    );
-                    break;
-                }
-                default:
-                    throw new Error("Invalid resource type");
             }
             props.onClose();
         } catch (error) {

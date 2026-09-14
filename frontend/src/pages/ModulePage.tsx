@@ -47,6 +47,7 @@ export default function ModulePage() {
     const [activityTypeFilter, setActivityTypeFilter] = useState<
         ActivityType | "all"
     >("all");
+
     const [sortAscending, setSortAscending] = useState(true);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -125,6 +126,43 @@ export default function ModulePage() {
             moduleResources!.filter(
                 (resource) => resource.resourceId !== resourceId,
             ),
+        );
+    };
+
+    const handleResourceEditForActivity = async (
+        resourceId: string,
+        payload: ResourceRequest,
+    ) => {
+        await updateResource(resourceId, payload);
+        const updatedActivites: ActivityResponse[] = moduleActivities!.map(
+            (activity) => {
+                activity.activityResources.map((resource) => {
+                    if (resource.resourceId === resourceId) {
+                        resource.name = payload.name;
+                        resource.description = payload.description;
+                        resource.content = payload.content;
+                        resource.uri = payload.uri ?? undefined;
+
+                        return resource;
+                    } else {
+                        return resource;
+                    }
+                });
+                return activity;
+            },
+        );
+        setModuleActivities(updatedActivites);
+    };
+
+    const handleRemoveResourceFromActivity = async (resourceId: string) => {
+        await deleteResource(resourceId);
+        setModuleActivities(
+            moduleActivities?.map((activity) => {
+                activity.activityResources = activity.activityResources.filter(
+                    (resource) => resource.resourceId !== resourceId,
+                );
+                return activity;
+            }),
         );
     };
 
@@ -370,7 +408,10 @@ export default function ModulePage() {
                                                 handleRemoveActivity
                                             }
                                             deleteResource={
-                                                handleRemoveResource
+                                                handleRemoveResourceFromActivity
+                                            }
+                                            editResource={
+                                                handleResourceEditForActivity
                                             }
                                             submission={submissionsByActivityId.get(
                                                 activity.activityId,

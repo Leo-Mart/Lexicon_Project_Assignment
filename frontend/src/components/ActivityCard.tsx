@@ -21,6 +21,8 @@ import SubmissionViewModal from "./SubmissionViewModal";
 import { createActivityFormConfig } from "../types/formSchemas";
 import { createPortal } from "react-dom";
 import ModalActivityDetails from "./ModalActivityDetails";
+import ResourceCard from "./ResourceCard";
+import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
 
 // Shared with SubmissionViewModal so the char count there matches this limit.
 export const SUBMISSION_MAX_LENGTH = 2000;
@@ -52,6 +54,8 @@ export default function ActivityCard({
     onSubmitted,
     editActivity,
     deleteActivity,
+    editResource,
+    deleteResource,
 }: {
     activity: ActivityResponse;
     courseName: string;
@@ -59,6 +63,7 @@ export default function ActivityCard({
     onSubmitted?: (submission: SubmissionResponse) => void;
     editActivity: (activityId: string, payload: ActivityRequest) => void;
     deleteActivity: (activityId: string) => void;
+    editResource: (resourcerId: string, payload: ResourceRequest) => void;
     deleteResource: (resourceId: string) => void;
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
@@ -292,13 +297,27 @@ export default function ActivityCard({
                             )}
                         </div>
                         <div className="flex flex-row justify-between items-center p-2">
-                            <Button
-                                variant="confirm"
-                                className="hover:cursor-pointer"
-                                onClick={() => setShowDetailsModal(true)}
-                            >
-                                Resources
-                            </Button>
+                            {activity.activityResources.length > 0 ? (
+                                <Button
+                                    variant="confirm"
+                                    className="hover:cursor-pointer"
+                                    onClick={() => setShowDetailsModal(true)}
+                                >
+                                    {`Resources (${activity.activityResources.length + 1})`}
+                                </Button>
+                            ) : (
+                                ""
+                            )}
+                            <div>
+                                {activity.activityResources?.map((resource) => (
+                                    <ResourceCard
+                                        key={resource.resourceId}
+                                        resource={resource}
+                                        editResource={editResource}
+                                        deleteResource={deleteResource}
+                                    />
+                                ))}
+                            </div>
                             <div className="flex gap-2">
                                 {isStudent &&
                                     isSubmittable &&
