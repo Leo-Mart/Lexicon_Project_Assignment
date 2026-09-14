@@ -11,6 +11,12 @@ export const routes = [
         allowedRoles: teacherOnly,
     },
     {
+        path: "*",
+        component: lazy(() => import("../pages/NotFound")),
+        createHeader: false,
+        isProtected: false,
+    },
+    {
         path: "/index",
         displayName: "Dashboard",
         component: lazy(() => import("../pages/Dashboard")),
