@@ -199,7 +199,7 @@ export default function ModulePage() {
         <>
             <ModuleSideView module={module} />
             <div className="flex flex-col items-center text-text-dark dark:text-text-light">
-                <h1 className="text-4xl pt-5">Current Module: {module.name}</h1>
+                <h1 className="text-4xl pt-5">{module.name}</h1>
                 <div className="flex gap-5 pt-5">
                     <p className="text-2xl">Start: {module.startDate}</p>
                     <p className="text-2xl">End: {module.endDate}</p>
