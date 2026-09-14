@@ -214,28 +214,27 @@ export default function ModulePage() {
                 {moduleActivities && (
                     <ActivitySchedule activities={moduleActivities} />
                 )}
-                <div className="row-span-2 max-h-[70vh] overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-light">
+                <div className="row-span-2 max-h-[70vh] overflow-auto rounded-md px-4 py-2 bg-bg-window  text-text-dark">
                     <div className="flex">
                         <div className="flex w-full">
                             <h1 className="text-4xl grow text-center">
                                 Module Resources
                             </h1>
-                            {isAuthenticated && role === "Teacher" ? (
-                                <button
-                                    onClick={() =>
-                                        setShowCreateResourceForm(true)
-                                    }
-                                    className="rounded-md p-2 w-10 bg-buttons border-text-light border hover:cursor-pointer"
-                                >
-                                    +
-                                </button>
-                            ) : (
-                                ""
-                            )}
                         </div>
                     </div>
+                    <div className="h-10 mt-3 mx-3 flex justify-end">
+                        {isAuthenticated && role === "Teacher" ? (
+                            <Button
+                                onClick={() => setShowCreateResourceForm(true)}
+                            >
+                                Add
+                            </Button>
+                        ) : (
+                            ""
+                        )}
+                    </div>
                     {moduleResources?.length ? (
-                        <div className="mt-5">
+                        <div className="mt-3">
                             {moduleResources.map(
                                 (resource: ResourceResponse) => (
                                     <ResourceCard
@@ -251,30 +250,18 @@ export default function ModulePage() {
                         "Module has no activities"
                     )}
                 </div>
-                <div className="row-span-2 max-h-[70vh] overflow-scroll rounded-md px-4 py-2 bg-buttons text-text-light dark:text-text-light">
+                <div className="row-span-2 max-h-[70vh] overflow-auto rounded-md px-4 py-2 bg-bg-window  text-text-dark ">
                     <div className="flex">
                         <div className="flex w-full ">
                             <h1 className="text-4xl grow text-center">
                                 Activities
                             </h1>
-                            {isAuthenticated && role === "Teacher" ? (
-                                <button
-                                    onClick={() =>
-                                        setShowCreateActivityForm(true)
-                                    }
-                                    className="rounded-md p-2 w-10 bg-buttons border-text-light border hover:cursor-pointer"
-                                >
-                                    +
-                                </button>
-                            ) : (
-                                ""
-                            )}
                         </div>
                     </div>
                     {moduleActivities?.length ? (
                         <>
-                            <div className="flex flex-wrap justify-center items-center gap-2 mt-3">
-                                <div className="flex items-center gap-1">
+                            <div className="h-10 flex justify-between gap-2 mt-3 mx-3">
+                                <div className="flex  gap-1">
                                     <button
                                         onClick={() =>
                                             activityTypeFilter === "all"
@@ -289,7 +276,7 @@ export default function ModulePage() {
                                             <span
                                                 className={`absolute left-0 right-0 h-1.5 ${
                                                     sortAscending
-                                                        ? "bottom-0 bg-gray-300"
+                                                        ? "bottom-0 bg-accent-blue"
                                                         : "top-0 bg-accent-blue"
                                                 }`}
                                             />
@@ -303,8 +290,8 @@ export default function ModulePage() {
                                                 : "invisible"
                                         } ${
                                             sortAscending
-                                                ? "text-gray-300"
-                                                : "text-accent-blue"
+                                                ? "text-text-dark"
+                                                : "text-text-dark"
                                         }`}
                                     >
                                         {sortAscending ? "▲" : "▼"}
@@ -343,7 +330,7 @@ export default function ModulePage() {
                                                         <span
                                                             className={`absolute left-0 right-0 h-1.5 ${
                                                                 sortAscending
-                                                                    ? "bottom-0 bg-gray-300"
+                                                                    ? "bottom-0 bg-accent-blue"
                                                                     : "top-0 bg-accent-blue"
                                                             }`}
                                                         />
@@ -357,8 +344,8 @@ export default function ModulePage() {
                                                             : "invisible"
                                                     } ${
                                                         sortAscending
-                                                            ? "text-gray-300"
-                                                            : "text-accent-blue"
+                                                            ? "text-text-dark"
+                                                            : "text-text-dark"
                                                     }`}
                                                 >
                                                     {sortAscending ? "▲" : "▼"}
@@ -367,6 +354,19 @@ export default function ModulePage() {
                                         ) : null;
                                     },
                                 )}
+                                <div className="flex justify-end">
+                                    {isAuthenticated && role === "Teacher" ? (
+                                        <Button
+                                            onClick={() =>
+                                                setShowCreateActivityForm(true)
+                                            }
+                                        >
+                                            Add
+                                        </Button>
+                                    ) : (
+                                        ""
+                                    )}
+                                </div>
                             </div>
                             <div className="mt-3">
                                 {moduleActivities

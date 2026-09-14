@@ -23,7 +23,7 @@ const ActivitySchedule = ({ activities, limit = 5 }: ActivityScheduleProps) => {
         .slice(0, limit);
 
     return (
-        <div className="bg-buttons rounded-md col-span-2 p-2 overflow-x-auto self-start">
+        <div className="bg-bg-window rounded-md col-span-2 p-2 overflow-x-auto self-start">
             <ol className="items-center sm:flex">
                 {shown.map((activity) => (
                     <li
@@ -36,7 +36,7 @@ const ActivitySchedule = ({ activities, limit = 5 }: ActivityScheduleProps) => {
                             </div>
                             <div className="hiddensm:flex w-full bg-bg-dark h-px"></div>
                         </div>
-                        <div className="mt-3 sm:pe-8 text-text-dark dark:text-text-light ">
+                        <div className="mt-3 sm:pe-8 text-text-dark ">
                             <time className="text-heading text-xs font-medium px-1.5 py-0.5 rounded">
                                 <span className="text-sm">
                                     {ActivityDate(activity.startAt)}
