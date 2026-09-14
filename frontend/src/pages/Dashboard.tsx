@@ -9,7 +9,7 @@ import ModuleListPage from "./ModuleListPage";
 const tabs = [
     { label: "Overview" },
     { label: "Course Management" },
-    { label: "Activity Management" },
+    { label: "Module Management" },
     { label: "User Management" },
     { label: "Resource Management" },
     { label: "Submissions" },
@@ -19,7 +19,7 @@ export default function Dashboard() {
     const [activeTab, setActiveTab] = useState(1);
     return (
         <div className="bg-bg flex dark:bg-bg-dark min-h-screen p-10">
-            <nav className="flex flex-col w-1/7 pr-3">
+            <nav className="flex flex-col w-2/13 pr-3">
                 <ul className="flex flex-col gap-5 border-4 border-accent-teacher rounded-lg p-3 h-fit">
                     {tabs.map((tab, index) => {
                         return (
