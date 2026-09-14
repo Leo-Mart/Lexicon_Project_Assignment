@@ -21,7 +21,7 @@ export default function Button({
     return (
         <button
             type={type}
-            className={`rounded-md px-4 py-2 font-semibold hover:brightness-110 disabled:opacity-50 ${variants[variant]} ${className}`}
+            className={`rounded-md px-4 py-2 font-semibold hover:brightness-110 hover:cursor-pointer disabled:opacity-50 ${variants[variant]} ${className}`}
             {...props}
         />
     );
