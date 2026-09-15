@@ -12,6 +12,7 @@ import Pagination from "../components/Pagination";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { createPortal } from "react-dom";
 import ModalCreateModule from "../components/ModalCreateModule";
+import toast, { Toaster } from "react-hot-toast";
 
 const MODULE_SORT_OPTIONS: SortOption[] = [
     { value: "name-asc", label: "Name A-Z" },
@@ -77,6 +78,7 @@ const ModuleManagement = () => {
             }
         });
         setModules(updatedModules);
+        toast.success("Module Updated!");
     };
 
     const handleDeleteModule = async (moduleId: string) => {
@@ -86,9 +88,11 @@ const ModuleManagement = () => {
                 modules?.filter((module) => module.moduleId !== moduleId),
             );
             setDeletingModule(undefined);
+            toast.success("Module Deleted!");
         } catch (error) {
             if (error instanceof Error) {
                 setError(error.message);
+                toast.error(`Error deleting module: ${error.message}`);
             }
         } finally {
             setDeletingModule(undefined);
@@ -266,6 +270,7 @@ const ModuleManagement = () => {
                     }
                 />
             )}
+            <Toaster />
         </>
     );
 };

@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 import Button from "../components/Button";
 import ConfirmDialog from "../components/ConfirmDialog";
 import ErrorDisplay from "../components/ErrorDisplay";
+import toast, { Toaster } from "react-hot-toast";
 
 const COURSES_SORT_OPTIONS: SortOption[] = [
     { value: "name-asc", label: "Name A-Z" },
@@ -70,10 +71,12 @@ export default function CourseListPage() {
                     c.courseId === returnData.courseId ? returnData : c,
                 ),
             );
+            toast.success("Course Updated!");
         } else
         //show added course in the list
         {
             setCourses([...courses, returnData]);
+            toast.success("Course Created!");
         }
     };
 
@@ -99,9 +102,11 @@ export default function CourseListPage() {
                 courses!.filter((course) => course.courseId !== courseId),
             );
             setDeletingCourse(undefined);
+            toast.success("Course Deleted!");
         } catch (error) {
             if (error instanceof Error) {
                 setError(error.message);
+                toast.error(`Error deleting course: ${error.message}`);
             }
         } finally {
             setDeletingCourse(undefined);
@@ -257,6 +262,7 @@ export default function CourseListPage() {
                 onSortChange={handleSortChange}
             />
             {error && <ErrorDisplay errorResp={error} />}
+            <Toaster />
         </>
     );
 }
