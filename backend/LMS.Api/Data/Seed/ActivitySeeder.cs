@@ -483,8 +483,8 @@ public static class ActivitySeeder
                 Name = "Database Seeding",
                 Description = "Write an EF Core seeder that inserts sample data on startup if the database is empty.",
                 StartAt = now.AddDays(-10),
-                EndAt = now.AddDays(0).AddHours(3),
-                Deadline = now.AddDays(0).AddHours(3),
+                EndAt = now.AddDays(0).AddHours(6),
+                Deadline = now.AddDays(0).AddHours(6),
                 CreatedAt = now,
                 UpdatedAt = now
             },
