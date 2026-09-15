@@ -21,7 +21,6 @@ import { createResourceFormConfig } from "../types/formSchemas";
 import UserSideView from "../components/UserSideView";
 import Divider from "../components/Divider";
 import { UserStatus } from "../constants/UserConstant";
-import DashboardTabs from "../components/DashboardTabs";
 
 export default function CoursesDetails() {
     const { courseId } = useParams<{ courseId: string }>();
@@ -155,15 +154,7 @@ export default function CoursesDetails() {
                 </div>
                 <Divider />
                 <div className="grid grid-cols-6 gap-2">
-                    <div>
-                        {isAuthenticated && role === "Teacher" ? (
-                            <div className="flex flex-col w-70 m-4">
-                                <DashboardTabs />
-                            </div>
-                        ) : (
-                            ""
-                        )}
-                    </div>
+                    <div></div>
                     <div className="p-2 m-2 col-span-2 rounded-md">
                         <div className="flex flex-row justify-between">
                             <div></div>

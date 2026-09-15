@@ -10,7 +10,7 @@ export default function UserInfo() {
     }
 
     return (
-        <div className="flex items-center gap-2 border rounded-md px-2 py-2">
+        <div className="flex items-center gap-2 border h-13 rounded-md px-2 py-2">
             <UserBadge role={role} />
             <span>{name}</span>
             <button

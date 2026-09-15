@@ -10,11 +10,11 @@ const tabs = [
     { label: "Submissions", param: "submissions" },
 ];
 
-interface DashboardTabsProps {
-    isAbsolute?: boolean;
-}
+// interface DashboardTabsProps {
+//     isAbsolute?: boolean;
+// }
 
-export default function DashboardTabs({ isAbsolute }: DashboardTabsProps) {
+export default function DashboardTabs() {
     const { isAuthenticated, role } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -35,16 +35,12 @@ export default function DashboardTabs({ isAbsolute }: DashboardTabsProps) {
     }
 
     return (
-        <nav
-            className={`flex flex-col pr-3 w-70 ${
-                isAbsolute ? "absolute" : ""
-            }`}
-        >
-            <ul className="flex flex-col gap-5 border-4 border-accent-teacher rounded-lg p-3 h-fit">
+        <nav className={`flex flex-col`}>
+            <ul className="flex flex-row gap-x-3 rounded-lg p-3">
                 {tabs.map((tab) => {
                     const isActive = activeTabParam === tab.param;
                     return (
-                        <li key={tab.param}>
+                        <div className="" key={tab.param}>
                             <Button
                                 onClick={() => handleTabClick(tab.param)}
                                 className={`size-full hover:cursor-pointer ${
@@ -55,7 +51,7 @@ export default function DashboardTabs({ isAbsolute }: DashboardTabsProps) {
                             >
                                 {tab.label}
                             </Button>
-                        </li>
+                        </div>
                     );
                 })}
             </ul>
