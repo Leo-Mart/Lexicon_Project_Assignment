@@ -12,6 +12,7 @@ import DataTable from "../components/DataTable";
 import type { Column } from "../types/Column";
 import { Link } from "react-router-dom";
 import Button from "../components/Button";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const COURSES_SORT_OPTIONS: SortOption[] = [
     { value: "name-asc", label: "Name A-Z" },
@@ -86,6 +87,16 @@ export default function CourseListPage() {
 
     const isFirstLoad = loading && courses.length === 0;
 
+    const [deletingCourse, setDeletingCourse] = useState<
+        CourseResponse | undefined
+    >(undefined);
+
+    const handleDeleteCourse = async (courseId: string) => {
+        await deleteCourse(courseId);
+        setCourses(courses!.filter((course) => course.courseId !== courseId));
+        setDeletingCourse(undefined);
+    };
+
     // READ ALL
     useEffect(() => {
         const fetchAllCourses = async () => {
@@ -116,27 +127,6 @@ export default function CourseListPage() {
 
         fetchAllCourses();
     }, [search, sortBy]);
-
-    // DELETE
-    async function handleDelete(course: CourseResponse) {
-        if (
-            !window.confirm(
-                'Are you sure you want to delete the course "' +
-                    course.name +
-                    '"?',
-            )
-        ) {
-            return;
-        }
-
-        try {
-            await deleteCourse(course.courseId);
-            // Filter the deleted course from state
-            setCourses(courses!.filter((c) => c.courseId !== course.courseId));
-        } catch (error) {
-            console.error("Error on render:", error);
-        }
-    }
 
     const courseColumns: Column<CourseResponse>[] = [
         {
@@ -184,7 +174,7 @@ export default function CourseListPage() {
                     </Button>
                     <Button
                         variant="cancel"
-                        onClick={() => handleDelete(course)}
+                        onClick={() => setDeletingCourse(course)}
                     >
                         Delete
                     </Button>
@@ -237,6 +227,17 @@ export default function CourseListPage() {
                         />,
                         document.getElementById("root")!,
                     )}
+                {deletingCourse && (
+                    <ConfirmDialog
+                        open={true}
+                        title="Delete Resource"
+                        message={`Are you sure you want to delete the course: ${deletingCourse.name}`}
+                        onCancel={() => setDeletingCourse(undefined)}
+                        onConfirm={() =>
+                            handleDeleteCourse(deletingCourse.courseId)
+                        }
+                    />
+                )}
             </div>
             <DataTable
                 items={courses}
