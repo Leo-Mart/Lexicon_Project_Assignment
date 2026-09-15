@@ -177,7 +177,7 @@ export default function ActivityCard({
 
     return (
         <div key={activity.activityId} className="relative w-80% m-3">
-            <div className="rounded overflow-hidden shadow-lg bg-white">
+            <div className="rounded overflow-hidden shadow-lg bg-bg">
                 <div
                     className="bg-bg-header w-full p-4 flex flex-row justify-between items-center gap-2 cursor-pointer"
                     role="button"
