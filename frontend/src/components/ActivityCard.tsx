@@ -240,12 +240,12 @@ export default function ActivityCard({
                     </div>
                 </div>
                 {isExpanded && (
-                    <div className="bg-bg-window w-full">
+                    <div className="bg-bg-white w-full">
                         <p className="text-m text-text-dark  p-3">
                             {activity.description}
                         </p>
                         <div className="flex flex-row justify-between items-center">
-                            <p className="text-sm text-text-dark  p-3 pt-0">
+                            <p className="text-sm text-text-dark p-3 pt-0">
                                 {activity.deadline != null ? (
                                     <>
                                         Deadline:{" "}
@@ -281,14 +281,13 @@ export default function ActivityCard({
                         <div className="flex flex-row justify-between items-center p-2">
                             <div>
                                 {isAuthenticated && role === "Teacher" ? (
-                                    <button
+                                    <Button
                                         onClick={() =>
                                             setShowCreateResourceForm(true)
                                         }
-                                        className="rounded-md p-2 w-10 border border-buttons hover:cursor-pointer"
                                     >
-                                        +
-                                    </button>
+                                        Add resource
+                                    </Button>
                                 ) : (
                                     ""
                                 )}
