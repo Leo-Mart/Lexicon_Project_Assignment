@@ -204,10 +204,6 @@ export default function ModuleListPage() {
                     sortOptions={MODULES_SORT_OPTIONS}
                     onSearchChange={handleSearchChange}
                     onSortChange={handleSortChange}
-                    addAction={{
-                        label: "Add module",
-                        onAdd: () => handleShowModuleModal(newModule),
-                    }}
                 />
             </div>
             <DataTable
