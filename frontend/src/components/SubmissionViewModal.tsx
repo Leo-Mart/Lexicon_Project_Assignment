@@ -66,12 +66,6 @@ export default function SubmissionViewModal({
 
                     {submission.feedback && (
                         <>
-                            {/* {StatusBadge(reviewStatusText, "self-start")} */}
-                            {/* <span
-                                className={`self-start text-sm font-bold px-3 py-1.5 rounded mb-1 ${reviewBadge[reviewStatusText]}`}
-                            >
-                                {reviewStatusText}
-                            </span> */}
                             <p className="text-sm font-semibold text-text-dark mb-1">
                                 Feedback from teacher
                             </p>
