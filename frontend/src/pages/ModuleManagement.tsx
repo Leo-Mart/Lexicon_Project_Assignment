@@ -80,9 +80,19 @@ const ModuleManagement = () => {
     };
 
     const handleDeleteModule = async (moduleId: string) => {
-        await deleteModule(moduleId);
-        setModules(modules?.filter((module) => module.moduleId !== moduleId));
-        setDeletingModule(undefined);
+        try {
+            await deleteModule(moduleId);
+            setModules(
+                modules?.filter((module) => module.moduleId !== moduleId),
+            );
+            setDeletingModule(undefined);
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(error.message);
+            }
+        } finally {
+            setDeletingModule(undefined);
+        }
     };
 
     const moduleColumns: Column<ModuleResponse>[] = [
@@ -185,8 +195,6 @@ const ModuleManagement = () => {
         fetchAllModules();
     }, [sortBy, search, page, pageSize]);
 
-    if (error) return <ErrorDisplay errorResp={error} />;
-
     if (!modules)
         return (
             <div className="flex flex-col items-center">
@@ -220,6 +228,7 @@ const ModuleManagement = () => {
                 isLoading={loading}
                 onSortChange={handleSortChange}
             />
+            {error && <ErrorDisplay errorResp={error} />}
             <Pagination
                 page={page}
                 pageSize={pageSize}

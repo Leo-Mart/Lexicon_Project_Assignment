@@ -4,6 +4,7 @@ import Button from "./Button";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import { createCourse } from "../services/courseService";
 import { updateCourse } from "../services/courseService";
+import ErrorDisplay from "./ErrorDisplay";
 
 interface ModalProps {
     selectedCourse: CourseResponse;
@@ -27,8 +28,10 @@ export default function CourseModal({
         modules: [],
         courseResources: [],
     });
+    const [error, setError] = useState<string | undefined>(undefined);
 
     const handleOnSubmit = async (e: React.SubmitEvent) => {
+        setError(undefined);
         e.preventDefault();
 
         try {
@@ -43,7 +46,9 @@ export default function CourseModal({
             }
             //onClose();
         } catch (error) {
-            console.error("Error on saving:", error);
+            if (error instanceof Error) {
+                setError(error.message);
+            }
         }
     };
 
@@ -164,6 +169,7 @@ export default function CourseModal({
                                     required
                                 />
                             </div>
+                            {error && <ErrorDisplay errorResp={error} />}
                             <div className="mt-6">
                                 <Button
                                     type="submit"
