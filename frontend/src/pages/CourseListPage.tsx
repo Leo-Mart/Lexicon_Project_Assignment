@@ -13,6 +13,7 @@ import type { Column } from "../types/Column";
 import { Link } from "react-router-dom";
 import Button from "../components/Button";
 import ConfirmDialog from "../components/ConfirmDialog";
+import ErrorDisplay from "../components/ErrorDisplay";
 
 const COURSES_SORT_OPTIONS: SortOption[] = [
     { value: "name-asc", label: "Name A-Z" },
@@ -39,7 +40,7 @@ export default function CourseListPage() {
 
     const [courses, setCourses] = useState<CourseResponse[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | undefined>(undefined);
 
     const [search, setSearch] = useState("");
     const [isCourseModalVisible, setIsCourseModalVisible] = useState(false);
@@ -92,16 +93,26 @@ export default function CourseListPage() {
     >(undefined);
 
     const handleDeleteCourse = async (courseId: string) => {
-        await deleteCourse(courseId);
-        setCourses(courses!.filter((course) => course.courseId !== courseId));
-        setDeletingCourse(undefined);
+        try {
+            await deleteCourse(courseId);
+            setCourses(
+                courses!.filter((course) => course.courseId !== courseId),
+            );
+            setDeletingCourse(undefined);
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(error.message);
+            }
+        } finally {
+            setDeletingCourse(undefined);
+        }
     };
 
     // READ ALL
     useEffect(() => {
         const fetchAllCourses = async () => {
             setLoading(true);
-            setError(null);
+            setError(undefined);
             try {
                 const [sortField, sortDirection = "asc"] = sortBy.split("-");
 
@@ -183,8 +194,6 @@ export default function CourseListPage() {
         },
     ];
 
-    if (error)
-        return <div className="text-red-500 text-4xl">Error: {error}</div>;
     if (isFirstLoad) return <p>Loading...</p>;
     if (!courses)
         return (
@@ -247,6 +256,7 @@ export default function CourseListPage() {
                 isLoading={loading}
                 onSortChange={handleSortChange}
             />
+            {error && <ErrorDisplay errorResp={error} />}
         </>
     );
 }
