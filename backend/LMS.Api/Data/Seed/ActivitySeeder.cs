@@ -487,8 +487,10 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Add Identity Authentication",
                 Description = "Wire up ASP.NET Core Identity for user accounts, replacing the manual JWT login flow.",
-                StartAt = TaskStart(now, 3),
-                EndAt = TaskEnd(now, 3),
+                // StartAt/EndAt are a past marker so the task already
+                // "started" - only Deadline is the real, future due date.
+                StartAt = TaskStart(now, -1),
+                EndAt = TaskEnd(now, -1),
                 Deadline = TaskEnd(now, 3),
                 CreatedAt = now,
                 UpdatedAt = now
@@ -500,8 +502,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Database Seeding",
                 Description = "Write an EF Core seeder that inserts sample data on startup if the database is empty.",
-                StartAt = TaskStart(now, 0),
-                EndAt = TaskEnd(now, 0),
+                StartAt = TaskStart(now, -3),
+                EndAt = TaskEnd(now, -3),
                 Deadline = TaskEnd(now, 0),
                 CreatedAt = now,
                 UpdatedAt = now
@@ -569,8 +571,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Write Integration Tests",
                 Description = "Add integration tests for the Web API's endpoints.",
-                StartAt = TaskStart(now, 1),
-                EndAt = TaskEnd(now, 1),
+                StartAt = TaskStart(now, -2),
+                EndAt = TaskEnd(now, -2),
                 Deadline = TaskEnd(now, 1),
                 CreatedAt = now,
                 UpdatedAt = now
