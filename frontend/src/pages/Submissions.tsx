@@ -29,7 +29,6 @@ import TableSearchBar from "../components/TableSearchBar.tsx";
 import DataTable from "../components/DataTable.tsx";
 import type { Column } from "../types/Column.ts";
 import { fetchModules } from "../services/moduleService.ts";
-import TableToolbar from "../components/TableToolbar.tsx";
 
 const PAGE_SIZE = 10;
 
