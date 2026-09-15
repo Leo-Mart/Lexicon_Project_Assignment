@@ -21,6 +21,11 @@ public class ModuleRepository(LMSDbContext context) : IModuleRepository
         return module;
     }
 
+    public async Task<Module?> GetModuleForUpdateAsync(Guid moduleId)
+    {
+        return await _context.Modules.FirstOrDefaultAsync(module => module.ModuleId == moduleId);
+    }
+
     public async Task<Module?> DeleteModuleByIdAsync(Guid moduleId)
     {
         var foundModule = await _context.Modules.FirstOrDefaultAsync(m => m.ModuleId == moduleId);
@@ -118,7 +123,6 @@ public class ModuleRepository(LMSDbContext context) : IModuleRepository
     {
         module.UpdatedAt = DateTime.UtcNow;
 
-        _context.Modules.Update(module);
         await _context.SaveChangesAsync();
         return module;
     }

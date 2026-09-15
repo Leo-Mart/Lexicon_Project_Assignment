@@ -89,6 +89,7 @@ public class CourseServiceTests
     public async Task UpdateCourse_ShouldReturnUpdatedCourse()
     {
         Guid courseId = Guid.NewGuid();
+
         var existingCourse = new LMS.Api.Models.Course
         {
             CourseId = courseId,
@@ -97,6 +98,7 @@ public class CourseServiceTests
             StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(7)),
             EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(14)),
         };
+
         var request = new UpdateCourseDto
         {
             Name = "A course with an updated name",
@@ -104,21 +106,30 @@ public class CourseServiceTests
             StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(7)),
             EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(14)),
         };
-        _repoMock.Setup(r => r.GetCourseByIdAsync(courseId)).ReturnsAsync(existingCourse);
 
-        // The service maps the DTO onto the entity before saving, so the
-        // repository just hands back whatever it was given.
+        _repoMock
+            .Setup(r => r.GetCourseForUpdateAsync(courseId))
+            .ReturnsAsync(existingCourse);
+
         _repoMock
             .Setup(r => r.UpdateCourseAsync(It.IsAny<LMS.Api.Models.Course>()))
             .ReturnsAsync((LMS.Api.Models.Course c) => c);
 
         var result = await _service.UpdateCourse(courseId, request);
-        if (result == null)
-        {
-            return;
-        }
+
+        Assert.NotNull(result);
 
         Assert.Equal("A course with an updated name", result.Name);
         Assert.Equal(request.Description, result.Description);
+
+        _repoMock.Verify(
+            r => r.GetCourseForUpdateAsync(courseId),
+            Times.Once
+        );
+
+        _repoMock.Verify(
+            r => r.UpdateCourseAsync(existingCourse),
+            Times.Once
+        );
     }
 }

@@ -46,6 +46,11 @@ public class CourseRepository(LMSDbContext context) : ICourseRepository
             .FirstOrDefaultAsync(c => c.CourseId == courseId);
     }
 
+    public async Task<Course?> GetCourseForUpdateAsync(Guid courseId)
+    {
+        return await _context.Courses.FirstOrDefaultAsync(course => course.CourseId == courseId);
+    }
+
     public async Task<PagedResponse<Course>> GetCoursesAsync(
         QueryParametersDto query,
         CancellationToken cancellationToken = default
@@ -111,7 +116,6 @@ public class CourseRepository(LMSDbContext context) : ICourseRepository
     {
         course.UpdatedAt = DateTime.UtcNow;
 
-        _context.Courses.Update(course);
         await _context.SaveChangesAsync();
 
         return course;
