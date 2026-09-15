@@ -191,17 +191,20 @@ export default function ActivityCard({
                         }
                     }}
                 >
-                    <div className="flex flex-row items-center gap-2">
+                    <div className="flex flex-row items-center gap-2 min-w-0 flex-1">
                         <span
-                            className={`text-3xl text-text-light transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                            className={`text-3xl text-text-light transition-transform shrink-0 ${isExpanded ? "rotate-180" : ""}`}
                             aria-hidden="true"
                         >
                             ▾
                         </span>
-                        <h3 className="font-bold w-18 text-l text-center bg-bg-window text-text-dark p-1.5 rounded">
+                        <h3 className="font-bold w-18 text-l text-center bg-bg-window text-text-dark p-1.5 rounded shrink-0">
                             {ActivityTypeNames[activity.type]}
                         </h3>
-                        <h2 className="font-bold text-text-light text-xl">
+                        <h2
+                            className="font-bold text-text-light text-xl truncate min-w-0"
+                            title={activity.name}
+                        >
                             {activity.name}
                         </h2>
                     </div>
