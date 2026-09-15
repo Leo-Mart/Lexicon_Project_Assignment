@@ -54,6 +54,12 @@ const ModalCreateModule = (props: CreateModuleModalProps) => {
                         pageSize: 200,
                     });
                     setCourses(resp.items);
+                    if (resp.items.length > 0) {
+                        setFormData((prev) => ({
+                            ...prev,
+                            courseId: prev.courseId || resp.items[0].courseId,
+                        }));
+                    }
                 } catch (error) {
                     if (error instanceof Error) {
                         setError(error.message);

@@ -37,7 +37,15 @@ public class ModuleService(
         var moduleToSave = _mapper.Map<Module>(newModule);
 
         var savedModule = await _moduleRepo.CreateModuleAsync(moduleToSave);
-        return _mapper.Map<ModuleDto>(savedModule);
+
+        var createdModule = await _moduleRepo.GetModuleByIdAsync(savedModule.ModuleId);
+
+        if (createdModule == null)
+        {
+            throw new InvalidOperationException("Created module could not be loaded.");
+        }
+
+        return _mapper.Map<ModuleDto>(createdModule);
     }
 
     public async Task<ModuleDto?> DeleteModule(Guid moduleId)
