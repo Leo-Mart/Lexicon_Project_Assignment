@@ -153,8 +153,7 @@ export default function FormModal<T extends Record<string, unknown>>({
         if (
             field.type === "text" ||
             field.type === "url" ||
-            field.type === "date" ||
-            field.type === "datetime-local"
+            field.type === "date"
         ) {
             return (
                 <input
@@ -163,6 +162,23 @@ export default function FormModal<T extends Record<string, unknown>>({
                     id={field.name}
                     maxLength={field.maxLength}
                     value={value}
+                    onChange={onChange}
+                    required={field.required}
+                />
+            );
+        }
+
+        if (field.type === "datetime-local") {
+            const today = new Date();
+            const eightToday = today.toLocaleDateString() + "T00:00";
+            return (
+                <input
+                    className={`${inputClass} bg-white`}
+                    type={field.type}
+                    id={field.name}
+                    maxLength={field.maxLength}
+                    value={value}
+                    min={eightToday}
                     onChange={onChange}
                     required={field.required}
                 />

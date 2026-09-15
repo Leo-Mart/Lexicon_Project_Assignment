@@ -11,7 +11,9 @@ type CreateModuleModalProps = {
     handleUpdateState: (newModule: ModuleResponse) => void;
     courseId: string;
 };
-const today = Date.now();
+
+//const today = Date.now();
+const today = new Date();
 
 const ModalCreateModule = (props: CreateModuleModalProps) => {
     const [error, setError] = useState("");
@@ -77,7 +79,7 @@ const ModalCreateModule = (props: CreateModuleModalProps) => {
                         <label htmlFor="startDate">Start date</label>
                         <input
                             className="shadow appearance-none border rounded w-full bg-white text-text-dark p-2"
-                            min={today.toLocaleString()}
+                            min={today.toLocaleDateString()}
                             type="date"
                             id="startDate"
                             name="startDate"
@@ -88,7 +90,7 @@ const ModalCreateModule = (props: CreateModuleModalProps) => {
                         <label htmlFor="endDate">End date</label>
                         <input
                             className="shadow appearance-none border rounded w-full bg-white text-text-dark p-2"
-                            min={today.toLocaleString()}
+                            min={today.toLocaleDateString()}
                             type="date"
                             id="endDate"
                             name="endDate"
