@@ -97,7 +97,7 @@ export default function FormModal<T extends Record<string, unknown>>({
         try {
             await onSave(formData);
             setSuccess(true);
-            setTimeout(onClose, 500);
+            onClose();
         } catch (err) {
             setError(err instanceof Error ? err.message : "Could not save.");
         } finally {
