@@ -5,6 +5,8 @@ import type { CourseRequest } from "../interfaces/course/CourseRequest";
 import type { PagedResponse } from "../interfaces/common/PagedResponse";
 import type { QueryParameters } from "../interfaces/common/QueryParameters";
 import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
+import type { ErrorResponeWithoutDetails } from "../interfaces/error/ErrorResponseWithoutDetails";
+import type { ErrorResponse } from "../interfaces/error/ErrorResponse";
 
 const API_URL = API_BASE_URL + "/courses";
 
@@ -57,6 +59,14 @@ export const deleteCourse = async (id: string): Promise<void> => {
         method: HttpMethod.DELETE,
     });
 
+    if (response.status === 500) {
+        const json = (await response.json()) as ErrorResponse;
+        console.error(json);
+        throw new Error(
+            "Error Deleting Course: Cannot delete course with submissions.",
+        );
+    }
+
     if (!response.ok) {
         throw new Error(`Could not delete the course: ${response.status}`);
     }
@@ -70,6 +80,11 @@ export const createCourse = async (
         headers: JSON_HEADERS,
         body: JSON.stringify(newCourse),
     });
+
+    if (response.status === 400) {
+        const err = (await response.json()) as ErrorResponeWithoutDetails;
+        throw new Error(err.message);
+    }
 
     if (!response.ok) {
         throw new Error(`Could not create the course: ${response.status}`);
@@ -87,6 +102,11 @@ export const updateCourse = async (
         headers: JSON_HEADERS,
         body: JSON.stringify(updateCourse),
     });
+
+    if (response.status === 400) {
+        const err = (await response.json()) as ErrorResponeWithoutDetails;
+        throw new Error(err.message);
+    }
 
     if (!response.ok) {
         throw new Error(`Could not update the course: ${response.status}`);

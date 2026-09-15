@@ -21,6 +21,7 @@ import { createResourceFormConfig } from "../types/formSchemas";
 import UserSideView from "../components/UserSideView";
 import Divider from "../components/Divider";
 import { UserStatus } from "../constants/UserConstant";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function CoursesDetails() {
     const { courseId } = useParams<{ courseId: string }>();
@@ -66,6 +67,7 @@ export default function CoursesDetails() {
 
     const handleUpdateCourseState = (newModule: ModuleResponse) => {
         setCourse({ ...course, modules: [...course.modules, newModule] });
+        toast.success("Module Created!");
     };
 
     // Get CourseDetails
@@ -116,12 +118,14 @@ export default function CoursesDetails() {
             },
         );
         setResources(updatedResources);
+        toast.success("Resource Updated!");
     };
     const handleRemoveResource = async (resourceId: string) => {
         await deleteResource(resourceId);
         setResources(
             resources!.filter((resource) => resource.resourceId !== resourceId),
         );
+        toast.success("Resource Removed!");
     };
 
     // RENDER
@@ -249,6 +253,7 @@ export default function CoursesDetails() {
                                 course.courseId,
                             );
                             setResources([...resources!, resp]);
+                            toast.success("Resource Created!");
                         }}
                         onClose={() => setShowCreateResourceForm(false)}
                     />
@@ -264,6 +269,7 @@ export default function CoursesDetails() {
                         document.getElementById("root")!,
                     )}
             </div>
+            <Toaster />
         </>
     );
 }

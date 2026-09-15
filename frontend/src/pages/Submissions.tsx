@@ -29,6 +29,7 @@ import TableSearchBar from "../components/TableSearchBar.tsx";
 import DataTable from "../components/DataTable.tsx";
 import type { Column } from "../types/Column.ts";
 import { fetchModules } from "../services/moduleService.ts";
+import toast, { Toaster } from "react-hot-toast";
 
 const PAGE_SIZE = 10;
 
@@ -210,6 +211,7 @@ export default function Submissions() {
         );
         setReloadToken((t) => t + 1);
         setReviewing(null);
+        toast.success("Reviewed!");
     };
 
     const onSearchChange = (value: string) => {
@@ -661,6 +663,7 @@ export default function Submissions() {
                         />
                     );
                 })()}
+            <Toaster />
         </div>
     );
 }

@@ -16,7 +16,7 @@ export default function Pagination({
     const totalPages = Math.ceil(totalCount / pageSize);
 
     return (
-        <div className="flex items-center justify-center gap-4 mt-4">
+        <div className="flex items-center justify-center text-text-dark dark:text-text-light gap-4 mt-4">
             <Button onClick={() => onPageChange(page - 1)} disabled={page <= 1}>
                 Previous
             </Button>

@@ -32,7 +32,8 @@ import Button from "../components/Button";
 import ActivitySchedule from "../components/ActivitySchedule";
 import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
-// import DashboardTabs from "../components/DashboardTabs";
+import ErrorDisplay from "../components/ErrorDisplay";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function ModulePage() {
     const { moduleId } = useParams<{ moduleId: string }>();
@@ -121,6 +122,7 @@ export default function ModulePage() {
             },
         );
         setModuleResources(updatedResources);
+        toast.success("Resource updated!");
     };
     const handleRemoveResource = async (resourceId: string) => {
         await deleteResource(resourceId);
@@ -129,6 +131,7 @@ export default function ModulePage() {
                 (resource) => resource.resourceId !== resourceId,
             ),
         );
+        toast.success("Resource Removed!");
     };
 
     const handleAddResourceToActivity = (resource: ResourceResponse) => {
@@ -141,6 +144,7 @@ export default function ModulePage() {
                 return activity;
             }),
         );
+        toast.success("Resource added to activity!");
     };
 
     const handleResourceEditForActivity = async (
@@ -166,6 +170,7 @@ export default function ModulePage() {
             },
         );
         setModuleActivities(updatedActivites);
+        toast.success("Resource updated!");
     };
 
     const handleRemoveResourceFromActivity = async (resourceId: string) => {
@@ -178,6 +183,7 @@ export default function ModulePage() {
                 return activity;
             }),
         );
+        toast.success("Resource Removed from activity!");
     };
 
     const handleActivityEdit = async (
@@ -202,15 +208,23 @@ export default function ModulePage() {
             },
         );
         setModuleActivities(updateActivities);
+        toast.success("Activity Updated!");
     };
 
     const handleRemoveActivity = async (activityId: string) => {
-        await deleteActivity(activityId);
-        setModuleActivities(
-            moduleActivities!.filter(
-                (activity) => activity.activityId !== activityId,
-            ),
-        );
+        try {
+            await deleteActivity(activityId);
+            setModuleActivities(
+                moduleActivities!.filter(
+                    (activity) => activity.activityId !== activityId,
+                ),
+            );
+            toast.success("Activity Removed!");
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(error.message);
+            }
+        }
     };
 
     // Overdue < due today < needs completion < due soon < submitted/other <
@@ -259,8 +273,6 @@ export default function ModulePage() {
     };
 
     if (loading) return <div>Loading...</div>;
-    if (error)
-        return <div className="text-red-500 text-4xl">Error: {error}</div>;
     if (!module)
         return (
             <div className="flex flex-col items-center">
@@ -287,6 +299,9 @@ export default function ModulePage() {
                         Back to {module.course.name}
                     </Button>
                 </Link>
+            </div>
+            <div className="w-full text-center">
+                {error && <ErrorDisplay errorResp={error} />}
             </div>
             <div className="bg-bg dark:bg-bg-dark p-10 grid grid-flow-col grid-rows-[auto_1fr_1fr] grid-cols-2 gap-8 m-8">
                 {moduleActivities && (
@@ -528,6 +543,7 @@ export default function ModulePage() {
                         }
                         const resp = await createActivity(data);
                         setModuleActivities([...moduleActivities, resp]);
+                        toast.success("Activity Created!");
                     }}
                     onClose={() => setShowCreateActivityForm(false)}
                 />
@@ -548,10 +564,12 @@ export default function ModulePage() {
                         }
                         await addResourceToModule(resp.resourceId, moduleId);
                         setModuleResources([...moduleResources!, resp]);
+                        toast.success("Resource Created!");
                     }}
                     onClose={() => setShowCreateResourceForm(false)}
                 />
             )}
+            <Toaster />
         </>
     );
 }

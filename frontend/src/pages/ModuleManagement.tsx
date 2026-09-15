@@ -12,6 +12,7 @@ import Pagination from "../components/Pagination";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { createPortal } from "react-dom";
 import ModalCreateModule from "../components/ModalCreateModule";
+import toast, { Toaster } from "react-hot-toast";
 
 const MODULE_SORT_OPTIONS: SortOption[] = [
     { value: "name-asc", label: "Name A-Z" },
@@ -77,12 +78,25 @@ const ModuleManagement = () => {
             }
         });
         setModules(updatedModules);
+        toast.success("Module Updated!");
     };
 
     const handleDeleteModule = async (moduleId: string) => {
-        await deleteModule(moduleId);
-        setModules(modules?.filter((module) => module.moduleId !== moduleId));
-        setDeletingModule(undefined);
+        try {
+            await deleteModule(moduleId);
+            setModules(
+                modules?.filter((module) => module.moduleId !== moduleId),
+            );
+            setDeletingModule(undefined);
+            toast.success("Module Deleted!");
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(error.message);
+                toast.error(`Error deleting module: ${error.message}`);
+            }
+        } finally {
+            setDeletingModule(undefined);
+        }
     };
 
     const moduleColumns: Column<ModuleResponse>[] = [
@@ -185,8 +199,6 @@ const ModuleManagement = () => {
         fetchAllModules();
     }, [sortBy, search, page, pageSize]);
 
-    if (error) return <ErrorDisplay errorResp={error} />;
-
     if (!modules)
         return (
             <div className="flex flex-col items-center">
@@ -220,6 +232,7 @@ const ModuleManagement = () => {
                 isLoading={loading}
                 onSortChange={handleSortChange}
             />
+            {error && <ErrorDisplay errorResp={error} />}
             <Pagination
                 page={page}
                 pageSize={pageSize}
@@ -257,6 +270,7 @@ const ModuleManagement = () => {
                     }
                 />
             )}
+            <Toaster />
         </>
     );
 };
