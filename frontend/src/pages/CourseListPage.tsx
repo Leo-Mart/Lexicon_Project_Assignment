@@ -230,7 +230,7 @@ export default function CourseListPage() {
                 {deletingCourse && (
                     <ConfirmDialog
                         open={true}
-                        title="Delete Resource"
+                        title="Delete Course"
                         message={`Are you sure you want to delete the course: ${deletingCourse.name}`}
                         onCancel={() => setDeletingCourse(undefined)}
                         onConfirm={() =>
