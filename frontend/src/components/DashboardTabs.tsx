@@ -24,7 +24,7 @@ export default function DashboardTabs() {
     const activeTabParam = searchParams.get("tab");
 
     return (
-        <nav className="flex flex-col w-1/7 pr-3">
+        <nav className="flex flex-col pr-3 w-70">
             <ul className="flex flex-col gap-5 border-4 border-accent-teacher rounded-lg p-3 h-fit">
                 {tabs.map((tab) => {
                     const isActive = activeTabParam === tab.param;

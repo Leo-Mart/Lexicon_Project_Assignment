@@ -157,7 +157,7 @@ export default function CoursesDetails() {
                 <div className="grid grid-cols-6 gap-2">
                     <div>
                         {isAuthenticated && role === "Teacher" ? (
-                            <div className="flex flex-col fixed top-3/14 left-16 w-1/10">
+                            <div className="flex flex-col w-70 m-4">
                                 <DashboardTabs />
                                 <h3 className="text-text-dark dark:text-text-light">
                                     Teacher Control
