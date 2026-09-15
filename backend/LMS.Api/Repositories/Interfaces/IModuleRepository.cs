@@ -9,4 +9,6 @@ public interface IModuleRepository
     Task<Module> CreateModuleAsync(Module module);
     Task<Module> UpdateModuleAsync(Module module);
     Task<Module?> DeleteModuleByIdAsync(Guid moduleId);
+
+    Task<Guid?> GetCourseIdByModuleIdAsync(Guid moduleId, CancellationToken cancellationToken = default);
 }

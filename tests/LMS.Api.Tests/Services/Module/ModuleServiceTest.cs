@@ -162,5 +162,47 @@ public class ModuleServiceTests
         await Assert.ThrowsAsync<OverlappingDateException>(() => _service.CreateNewModule(request));
     }
 
+    [Fact]
+    public async Task GetCourseIdByModuleIdAsync_WhenModuleExists_ReturnsCourseId()
+    {
+        Guid moduleId = Guid.NewGuid();
+        Guid courseId = Guid.NewGuid();
+
+        _mockModuleRepo
+            .Setup(repository =>
+                repository.GetCourseIdByModuleIdAsync(
+                    moduleId,
+                    It.IsAny<CancellationToken>()))
+            .ReturnsAsync(courseId);
+
+        Guid? result = await _service.GetCourseIdByModuleIdAsync(moduleId);
+
+        Assert.Equal(courseId, result);
+
+        _mockModuleRepo.Verify(
+            repository =>
+                repository.GetCourseIdByModuleIdAsync(
+                    moduleId,
+                    It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task GetCourseIdByModuleIdAsync_WhenModuleDoesNotExist_ReturnsNull()
+    {
+        Guid moduleId = Guid.NewGuid();
+
+        _mockModuleRepo
+            .Setup(repository =>
+                repository.GetCourseIdByModuleIdAsync(
+                    moduleId,
+                    It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid?)null);
+
+        Guid? result = await _service.GetCourseIdByModuleIdAsync(moduleId);
+
+        Assert.Null(result);
+    }
     //TODO: Add test for UpdateModule as well.
 }

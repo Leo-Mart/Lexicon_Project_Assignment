@@ -39,12 +39,6 @@ public class ActivityControllerTests
             ModuleId = moduleId
         };
 
-        ModuleDto module = new()
-        {
-            ModuleId = moduleId,
-            CourseId = courseId
-        };
-
         CourseDto studentCourse = new()
         {
             CourseId = courseId
@@ -57,8 +51,10 @@ public class ActivityControllerTests
             .ReturnsAsync(activity);
 
         _moduleServiceMock
-            .Setup(service => service.GetModuleById(moduleId))
-            .ReturnsAsync(module);
+            .Setup(service => service.GetCourseIdByModuleIdAsync(
+            moduleId,
+            It.IsAny<CancellationToken>()))
+        .ReturnsAsync(courseId);
 
         _enrollmentServiceMock
             .Setup(service => service.GetStudentCourseAsync(
@@ -99,12 +95,6 @@ public class ActivityControllerTests
             ModuleId = moduleId
         };
 
-        ModuleDto module = new()
-        {
-            ModuleId = moduleId,
-            CourseId = otherCourseId
-        };
-
         CourseDto studentCourse = new()
         {
             CourseId = studentCourseId
@@ -117,8 +107,11 @@ public class ActivityControllerTests
             .ReturnsAsync(activity);
 
         _moduleServiceMock
-            .Setup(service => service.GetModuleById(moduleId))
-            .ReturnsAsync(module);
+            .Setup(service => service.GetCourseIdByModuleIdAsync(
+                moduleId,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(otherCourseId);
+        ;
 
         _enrollmentServiceMock
             .Setup(service => service.GetStudentCourseAsync(
@@ -180,7 +173,9 @@ public class ActivityControllerTests
             Times.Never);
 
         _moduleServiceMock.Verify(
-            service => service.GetModuleById(It.IsAny<Guid>()),
+            service => service.GetCourseIdByModuleIdAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<CancellationToken>()),
             Times.Never);
     }
 

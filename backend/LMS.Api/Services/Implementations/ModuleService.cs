@@ -150,4 +150,9 @@ public class ModuleService(
             }
         }
     }
+
+    public async Task<Guid?> GetCourseIdByModuleIdAsync(Guid moduleId, CancellationToken cancellationToken = default)
+    {
+        return await _moduleRepo.GetCourseIdByModuleIdAsync(moduleId, cancellationToken);
+    }
 }
