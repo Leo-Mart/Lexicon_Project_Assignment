@@ -153,8 +153,9 @@ export default function Submissions() {
             ];
             const entries = await Promise.all(
                 activityIds.map(async (id) => {
-                    const overdue = await fetchOverdueByActivityId(id);
-                    return [id, overdue] as const;
+                    const overdueSubmissions =
+                        await fetchOverdueByActivityId(id);
+                    return [id, overdueSubmissions] as const;
                 }),
             );
             setOverdueByActivity(new Map(entries));
@@ -183,11 +184,16 @@ export default function Submissions() {
     const handleReview = async (data: FeedbackRequest) => {
         if (!reviewing) return;
 
-        const updated = await setFeedback(reviewing.submissionId, data);
+        const updatedSubmission = await setFeedback(
+            reviewing.submissionId,
+            data,
+        );
 
         setSubmissions((prev) =>
             prev.map((s) =>
-                s.submissionId === updated.submissionId ? updated : s,
+                s.submissionId === updatedSubmission.submissionId
+                    ? updatedSubmission
+                    : s,
             ),
         );
         setReloadToken((t) => t + 1);

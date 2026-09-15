@@ -123,6 +123,11 @@ public static class ActivitySeeder
     public static readonly Guid AspNetCoreErrorHandlingLectureId =
         Guid.Parse("50000000-0000-0000-0000-000000000034");
 
+    public static readonly Guid AspNetCoreIdentity =
+        Guid.Parse("50000000-0000-0000-0000-000000000035");
+    public static readonly Guid AspNetCoreSeeding =
+          Guid.Parse("50000000-0000-0000-0000-000000000036");
+
     public static async Task SeedAsync(LMSDbContext context)
     {
         if (await context.Activities.AnyAsync())
@@ -421,12 +426,12 @@ public static class ActivitySeeder
             {
                 ActivityId = AspNetCorePracticeId,
                 ModuleId = ModuleSeeder.AspNetCoreModuleId,
-                Type = ActivityType.Practice,
+                Type = ActivityType.Task,
                 Name = "Routing & Dependency Injection Practice",
                 Description = "Practice defining routes and registering services with the built-in DI container.",
-                StartAt = now.AddDays(-13),
-                EndAt = now.AddDays(-13).AddHours(2),
-                Deadline = now.AddDays(-11),
+                StartAt = now.AddDays(-10),
+                EndAt = now.AddDays(-5).AddHours(2),
+                Deadline = now.AddDays(-5).AddHours(2),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -454,6 +459,32 @@ public static class ActivitySeeder
                 Description = "Live review of common mistakes seen in the Web API submissions so far.",
                 StartAt = now.AddDays(-9),
                 EndAt = now.AddDays(-9).AddHours(1),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+            new()
+            {
+                ActivityId = AspNetCoreIdentity,
+                ModuleId = ModuleSeeder.AspNetCoreModuleId,
+                Type = ActivityType.Task,
+                Name = "Add Identity Authentication",
+                Description = "Wire up ASP.NET Core Identity for user accounts, replacing the manual JWT login flow.",
+                StartAt = now.AddDays(-6),
+                EndAt = now.AddDays(3).AddHours(1),
+                Deadline = now.AddDays(3),
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+               new()
+            {
+                ActivityId = AspNetCoreSeeding,
+                ModuleId = ModuleSeeder.AspNetCoreModuleId,
+                Type = ActivityType.Task,
+                Name = "Database Seeding",
+                Description = "Write an EF Core seeder that inserts sample data on startup if the database is empty.",
+                StartAt = now.AddDays(-10),
+                EndAt = now.AddDays(0).AddHours(3),
+                Deadline = now.AddDays(0).AddHours(3),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -522,8 +553,8 @@ public static class ActivitySeeder
                 Name = "Write Integration Tests",
                 Description = "Add integration tests for the Web API's endpoints.",
                 StartAt = now.AddDays(-8),
-                EndAt = now.AddDays(6),
-                Deadline = now.AddDays(6),
+                EndAt = now.AddDays(1),
+                Deadline = now.AddDays(1),
                 CreatedAt = now,
                 UpdatedAt = now
             },

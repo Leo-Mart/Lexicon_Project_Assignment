@@ -9,10 +9,7 @@ import {
 } from "../services/submissionService";
 import type { SubmissionRequest } from "../interfaces/submission/SubmissionRequest";
 import type { SubmissionResponse } from "../interfaces/submission/SubmissionResponse";
-import {
-    SubmissionReviewStatus,
-    SubmissionReviewStatusNames,
-} from "../constants/SubmissionReviewStatus";
+import { SubmissionReviewStatus } from "../constants/SubmissionReviewStatus";
 import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
 import { useAuth } from "../hooks/useAuth";
@@ -24,6 +21,7 @@ import {
 } from "../types/formSchemas";
 import { createPortal } from "react-dom";
 import ModalActivityDetails from "./ModalActivityDetails";
+import StatusBadge from "./StatusBadge";
 import ResourceCard from "./ResourceCard";
 import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
 import {
@@ -107,6 +105,9 @@ export default function ActivityCard({
     startDay.setHours(0, 0, 0, 0);
     const endDay = new Date(activity.endAt);
     endDay.setHours(0, 0, 0, 0);
+    const deadlineDay =
+        activity.deadline != null ? new Date(activity.deadline) : null;
+    deadlineDay?.setHours(0, 0, 0, 0);
     const isPastActivity = endDay < today;
     const isFutureActivity = startDay > today;
     const dateColor = isPastActivity
@@ -133,78 +134,52 @@ export default function ActivityCard({
             ? ` · Deadline: ${ActivityDate(activity.deadline)} ${ActivityTime(activity.deadline)}`
             : "";
 
-    // Only meaningful once submitted.
-    const reviewStatusText = submission
-        ? submission.reviewStatus != null
-            ? SubmissionReviewStatusNames[submission.reviewStatus]
-            : "Not reviewed"
-        : null;
-
     // Corner badge, shown even collapsed: graded > overdue > submitted >
     // due soon > not submitted.
     const daysUntilDeadline =
         activity.deadline != null
-            ? Math.ceil(
-                  (new Date(activity.deadline).getTime() -
-                      new Date().getTime()) /
+            ? Math.round(
+                  (deadlineDay!.getTime() - today.getTime()) /
                       (1000 * 60 * 60 * 24),
               )
             : null;
-    let cornerBadge: { text: string; color: string; textColor: string } | null =
-        null;
-    if (!isStudent || !isSubmittable) {
+    let statusText: string | null = null;
+    if (isSubmittable && isStudent) {
         // Teachers, and non-submittable activity types, see no badge.
-    } else if (reviewStatusText === "Approved") {
-        cornerBadge = {
-            text: "Graded",
-            color: "bg-green-500",
-            textColor: "text-white",
-        };
-    } else if (reviewStatusText === "Needs completion") {
-        cornerBadge = {
-            text: "Needs completion",
-            color: "bg-bg-warning",
-            textColor: "text-text-dark",
-        };
-    } else if (missingAndLate) {
-        cornerBadge = {
-            text: "Overdue",
-            color: "bg-red-500",
-            textColor: "text-white",
-        };
-    } else if (submission) {
-        cornerBadge = {
-            text: submissionStatusText,
-            color: "bg-blue-400",
-            textColor: "text-white",
-        };
-    } else if (
-        hasStarted &&
-        daysUntilDeadline != null &&
-        daysUntilDeadline >= 0 &&
-        daysUntilDeadline <= 5
-    ) {
-        cornerBadge = {
-            text:
+        if (
+            submission != null &&
+            submission.reviewStatus === SubmissionReviewStatus.Approved
+        ) {
+            statusText = "Approved";
+        } else if (
+            submission != null &&
+            submission.reviewStatus === SubmissionReviewStatus.NeedsCompletion
+        ) {
+            statusText = "Incomplete";
+        } else if (missingAndLate) {
+            statusText = "Overdue";
+        } else if (submission) {
+            statusText = submissionStatusText;
+        } else if (
+            hasStarted &&
+            daysUntilDeadline != null &&
+            daysUntilDeadline >= 0 &&
+            daysUntilDeadline <= 5
+        ) {
+            statusText =
                 daysUntilDeadline === 0
                     ? "Due today"
-                    : `Due in ${daysUntilDeadline}d`,
-            color: "bg-bg-warning",
-            textColor: "text-text-dark",
-        };
-    } else if (hasStarted) {
-        cornerBadge = {
-            text: "Not submitted",
-            color: "bg-gray-400",
-            textColor: "text-white",
-        };
+                    : `Due in ${daysUntilDeadline}d`;
+        } else if (hasStarted) {
+            statusText = "Not submitted";
+        }
     }
 
     return (
         <div key={activity.activityId} className="relative w-80% m-3">
             <div className="rounded overflow-hidden shadow-lg bg-white">
                 <div
-                    className="bg-bg-header text-text-light w-full p-4 flex flex-row justify-between items-center gap-2 cursor-pointer"
+                    className="bg-bg-header w-full p-4 flex flex-row justify-between items-center gap-2 cursor-pointer"
                     role="button"
                     tabIndex={0}
                     aria-expanded={isExpanded}
@@ -226,7 +201,9 @@ export default function ActivityCard({
                         <h3 className="font-bold text-l bg-bg-window text-text-dark p-1.5 rounded">
                             {ActivityTypeNames[activity.type]}
                         </h3>
-                        <h2 className="font-bold text-xl">{activity.name}</h2>
+                        <h2 className="font-bold text-text-light text-xl">
+                            {activity.name}
+                        </h2>
                     </div>
                     <div className="flex flex-row justify-end items-center gap-2">
                         {activity.type === ActivityType.Lecture && (
@@ -237,13 +214,7 @@ export default function ActivityCard({
                                 {ActivityTime(activity.startAt)}
                             </span>
                         )}
-                        {cornerBadge && (
-                            <span
-                                className={`text-sm font-bold px-3 py-1.5 rounded ${cornerBadge.color} ${cornerBadge.textColor}`}
-                            >
-                                {cornerBadge.text}
-                            </span>
-                        )}
+                        {statusText && StatusBadge(statusText)}
                         {isAuthenticated && role === "Teacher" ? (
                             <div className="flex gap-1">
                                 <Button
