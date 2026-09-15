@@ -472,20 +472,22 @@ export default function Submissions() {
                     break;
                 case "course":
                     comparison = (
-                        lookups?.courseIdForActivity(a.activityId) ?? ""
+                        lookups?.courseNameForActivity(a.activityId) ?? ""
                     ).localeCompare(
-                        lookups?.courseIdForActivity(b.activityId) ?? "",
+                        lookups?.courseNameForActivity(b.activityId) ?? "",
                     );
                     break;
                 case "module":
                     comparison = (
-                        lookups?.moduleIdForActivity(a.activityId) ?? ""
+                        lookups?.moduleNameForActivity(a.activityId) ?? ""
                     ).localeCompare(
-                        lookups?.moduleIdForActivity(b.activityId) ?? "",
+                        lookups?.moduleNameForActivity(b.activityId) ?? "",
                     );
                     break;
                 case "activity":
-                    comparison = a.activityId.localeCompare(b.activityId);
+                    comparison = (
+                        lookups?.activityName(a.activityId) ?? ""
+                    ).localeCompare(lookups?.activityName(b.activityId) ?? "");
                     break;
                 case "deadline": {
                     const deadlineA = lookups?.deadlineForActivity(
