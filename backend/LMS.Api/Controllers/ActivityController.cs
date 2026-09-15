@@ -200,14 +200,14 @@ public class ActivityController : ControllerBase
             return NotFound();
         }
 
-        ModuleDto? module = await _moduleService.GetModuleById(moduleId);
+        Guid? moduleCourseId = await _moduleService.GetCourseIdByModuleIdAsync(moduleId, cancellationToken);
 
-        if (module is null)
+        if (moduleCourseId is null)
         {
             return NotFound();
         }
 
-        if (module.CourseId != studentCourse.CourseId)
+        if (moduleCourseId != studentCourse.CourseId)
         {
             return Forbid();
         }

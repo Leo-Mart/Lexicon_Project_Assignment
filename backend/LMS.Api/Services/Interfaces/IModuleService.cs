@@ -9,4 +9,6 @@ public interface IModuleService
     Task<ModuleDto> CreateNewModule(CreateNewModuleDto newModuleDto);
     Task<ModuleDto?> UpdateModule(Guid moduleId, UpdateModuleDto updateModule);
     Task<ModuleDto?> DeleteModule(Guid moduleId);
+
+    Task<Guid?> GetCourseIdByModuleIdAsync(Guid moduleId, CancellationToken cancellationToken = default);
 }
