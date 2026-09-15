@@ -32,7 +32,7 @@ import Button from "../components/Button";
 import ActivitySchedule from "../components/ActivitySchedule";
 import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
-// import DashboardTabs from "../components/DashboardTabs";
+import ErrorDisplay from "../components/ErrorDisplay";
 
 export default function ModulePage() {
     const { moduleId } = useParams<{ moduleId: string }>();
@@ -205,12 +205,18 @@ export default function ModulePage() {
     };
 
     const handleRemoveActivity = async (activityId: string) => {
-        await deleteActivity(activityId);
-        setModuleActivities(
-            moduleActivities!.filter(
-                (activity) => activity.activityId !== activityId,
-            ),
-        );
+        try {
+            await deleteActivity(activityId);
+            setModuleActivities(
+                moduleActivities!.filter(
+                    (activity) => activity.activityId !== activityId,
+                ),
+            );
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(error.message);
+            }
+        }
     };
 
     // Overdue < due today < needs completion < due soon < submitted/other <
@@ -259,8 +265,6 @@ export default function ModulePage() {
     };
 
     if (loading) return <div>Loading...</div>;
-    if (error)
-        return <div className="text-red-500 text-4xl">Error: {error}</div>;
     if (!module)
         return (
             <div className="flex flex-col items-center">
@@ -287,6 +291,9 @@ export default function ModulePage() {
                         Back to {module.course.name}
                     </Button>
                 </Link>
+            </div>
+            <div className="w-full text-center">
+                {error && <ErrorDisplay errorResp={error} />}
             </div>
             <div className="bg-bg dark:bg-bg-dark p-10 grid grid-flow-col grid-rows-[auto_1fr_1fr] grid-cols-2 gap-8 m-8">
                 {moduleActivities && (
