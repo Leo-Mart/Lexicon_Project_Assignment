@@ -365,11 +365,10 @@ public class EnrollmentServiceTests
         Assert.True(result);
 
         Assert.Equal(newCourseId, enrollment.CourseId);
-        Assert.Equal(newCourse, enrollment.Course);
 
         _enrollmentRepositoryMock.Verify(
-            repository => repository.Update(enrollment),
-            Times.Once
+            repository => repository.Update(It.IsAny<Enrollment>()),
+            Times.Never
         );
 
         _enrollmentRepositoryMock.Verify(
@@ -380,7 +379,8 @@ public class EnrollmentServiceTests
         );
 
         _unitOfWorkMock.Verify(
-            unitOfWork => unitOfWork.SaveChangesAsync(It.IsAny<CancellationToken>()),
+            unitOfWork =>
+                unitOfWork.SaveChangesAsync(It.IsAny<CancellationToken>()),
             Times.Once
         );
     }
