@@ -88,12 +88,12 @@ const ModuleManagement = () => {
             key: "name",
             field: "name",
             header: "Name",
-            render: (course) => (
+            render: (module) => (
                 <Link
                     className="font-bold underline text-buttons dark:text-buttons-dark text-lg"
-                    to={`/courses/${course.courseId}`}
+                    to={`/module/${module.moduleId}`}
                 >
-                    {course.name}
+                    {module.name}
                 </Link>
             ),
         },
