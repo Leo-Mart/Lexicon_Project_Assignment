@@ -1,5 +1,4 @@
 import { useSearchParams } from "react-router-dom";
-import DashboardTabs from "../components/DashboardTabs";
 import CourseListPage from "./CourseListPage";
 import ResourceManagement from "./ResourceManagement";
 import Users from "./Users";
@@ -30,7 +29,6 @@ export default function Dashboard() {
 
     return (
         <div className="bg-bg flex dark:bg-bg-dark min-h-screen p-10">
-            <DashboardTabs />
             <div className="w-full">
                 {activeTab === 1 && <CourseListPage />}
                 {activeTab === 2 && <Users />}

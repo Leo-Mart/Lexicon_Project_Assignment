@@ -554,8 +554,8 @@ export default function Submissions() {
     ).length;
 
     return (
-        <div className="p-4">
-            <h1 className="text-2xl font-bold text-text-dark dark:text-text-light mb-2">
+        <div className=" p-4">
+            <h1 className="mx-auto text-2xl text-text-light bg-bg-header p-1 pb-2 pl-4 pr-4 rounded-2xl font-bold w-fit ">
                 Submissions
             </h1>
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
