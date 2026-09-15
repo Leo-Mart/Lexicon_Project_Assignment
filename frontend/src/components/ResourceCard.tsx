@@ -35,7 +35,7 @@ const ResourceCard = ({
                     >
                         <div className="flex items-center gap-2">
                             <span
-                                className={`text-xl transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                                className={`text-3xl text-text-light transition-transform ${isExpanded ? "rotate-180" : ""}`}
                             >
                                 ▾
                             </span>
