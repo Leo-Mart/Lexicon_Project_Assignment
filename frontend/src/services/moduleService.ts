@@ -45,6 +45,13 @@ export const deleteModule = async (id: string): Promise<void> => {
         method: HttpMethod.DELETE,
     });
 
+    if (response.status === 500) {
+        const json = (await response.json()) as ErrorResponse;
+        console.error(json);
+        throw new Error(
+            "Error Deleting Module: Cannot delete module with submissions.",
+        );
+    }
     if (!response.ok) {
         throw new Error(`Could not delete the module: ${response.status}`);
     }
