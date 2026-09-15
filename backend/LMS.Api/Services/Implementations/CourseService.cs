@@ -77,7 +77,7 @@ public class CourseService(ICourseRepository courseRepo, IMapper mapper) : ICour
 
     public async Task<CourseDto?> UpdateCourse(Guid courseId, UpdateCourseDto updateCourseDto)
     {
-        Course? courseFromDb = await _courseRepo.GetCourseByIdAsync(courseId);
+        Course? courseFromDb = await _courseRepo.GetCourseForUpdateAsync(courseId);
 
         if (courseFromDb == null)
         {

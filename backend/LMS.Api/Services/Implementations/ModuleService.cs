@@ -79,7 +79,7 @@ public class ModuleService(
 
     public async Task<ModuleDto?> UpdateModule(Guid moduleId, UpdateModuleDto updateModule)
     {
-        var moduleFromDb = await _moduleRepo.GetModuleByIdAsync(moduleId);
+        var moduleFromDb = await _moduleRepo.GetModuleForUpdateAsync(moduleId);
         if (moduleFromDb == null)
         {
             return null;

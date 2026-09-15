@@ -204,5 +204,102 @@ public class ModuleServiceTests
 
         Assert.Null(result);
     }
-    //TODO: Add test for UpdateModule as well.
+    [Fact]
+    public async Task UpdateModule_WithValidData_ShouldReturnUpdatedModule()
+    {
+        Guid moduleId = Guid.NewGuid();
+        Guid courseId = Guid.NewGuid();
+
+        var existingModule = new ModuleEntity
+        {
+            ModuleId = moduleId,
+            CourseId = courseId,
+            Name = "Old Module",
+            Description = "Old description",
+            StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(7)),
+            EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(14)),
+        };
+
+        var course = new CourseEntity
+        {
+            CourseId = courseId,
+            StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date),
+            EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(30)),
+            Modules = new List<ModuleEntity>
+            {
+                existingModule
+            }
+        };
+
+        var request = new UpdateModuleDto
+        {
+            Name = "Updated Module",
+            Description = "Updated description",
+            StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(8)),
+            EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(15)),
+        };
+
+        _mockModuleRepo
+            .Setup(repository => repository.GetModuleForUpdateAsync(moduleId))
+            .ReturnsAsync(existingModule);
+
+        _mockCourseRepo
+            .Setup(repository => repository.GetCourseByIdAsync(courseId))
+            .ReturnsAsync(course);
+
+        _mockModuleRepo
+            .Setup(repository =>
+                repository.UpdateModuleAsync(It.IsAny<ModuleEntity>()))
+            .ReturnsAsync((ModuleEntity module) => module);
+
+        ModuleDto? result =
+            await _service.UpdateModule(moduleId, request);
+
+        Assert.NotNull(result);
+        Assert.Equal("Updated Module", result.Name);
+        Assert.Equal("Updated description", result.Description);
+
+        _mockModuleRepo.Verify(
+            repository => repository.GetModuleForUpdateAsync(moduleId),
+            Times.Once
+        );
+
+        _mockModuleRepo.Verify(
+            repository => repository.UpdateModuleAsync(existingModule),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task UpdateModule_WhenModuleDoesNotExist_ReturnsNull()
+    {
+        Guid moduleId = Guid.NewGuid();
+
+        var request = new UpdateModuleDto
+        {
+            Name = "Updated Module",
+            Description = "Updated description",
+            StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(7)),
+            EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(14)),
+        };
+
+        _mockModuleRepo
+            .Setup(repository => repository.GetModuleForUpdateAsync(moduleId))
+            .ReturnsAsync((ModuleEntity?)null);
+
+        ModuleDto? result =
+            await _service.UpdateModule(moduleId, request);
+
+        Assert.Null(result);
+
+        _mockModuleRepo.Verify(
+            repository => repository.GetModuleForUpdateAsync(moduleId),
+            Times.Once
+        );
+
+        _mockModuleRepo.Verify(
+            repository => repository.UpdateModuleAsync(It.IsAny<ModuleEntity>()),
+            Times.Never
+        );
+    }
 }
