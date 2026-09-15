@@ -16,6 +16,8 @@ import ModalCreateModule from "../components/ModalCreateModule";
 const MODULE_SORT_OPTIONS: SortOption[] = [
     { value: "name-asc", label: "Name A-Z" },
     { value: "name-desc", label: "Name Z-A" },
+    { value: "course-asc", label: "Course A-Z" },
+    { value: "course-desc", label: "Course Z-A" },
     { value: "description-asc", label: "Description A-Z" },
     { value: "description-desc", label: "Description Z-A" },
     { value: "start-asc", label: "Start Date Old-New" },
@@ -98,22 +100,35 @@ const ModuleManagement = () => {
             ),
         },
         {
+            key: "course",
+            field: "course",
+            header: "Course",
+            render: (module) => (
+                <Link
+                    className="font-bold underline text-buttons dark:text-buttons-dark text-lg"
+                    to={`/courses/${module.courseId}`}
+                >
+                    {module.course.name}
+                </Link>
+            ),
+        },
+        {
             key: "description",
             field: "description",
             header: "Description",
-            render: (course) => course.description,
+            render: (module) => module.description,
         },
         {
             key: "startDate",
             field: "startDate",
             header: "Start date",
-            render: (course) => course.startDate,
+            render: (module) => module.startDate,
         },
         {
             key: "endDate",
             field: "endDate",
             header: "End date",
-            render: (course) => course.endDate,
+            render: (module) => module.endDate,
         },
         {
             key: "actions",
