@@ -276,7 +276,7 @@ export default function ModulePage() {
                 <ModuleSideView module={module} />
             </div>
             <DashboardTabs isAbsolute={true} />
-            <div className="flex flex-col items-center text-text-dark dark:text-text-light">
+            <div className="flex flex-col items-center text-text-dark dark:text-text-light mt-8">
                 <h1 className="text-4xl pt-5">{module.name}</h1>
                 <div className="flex gap-5 pt-5">
                     <p className="text-2xl">Start: {module.startDate}</p>
