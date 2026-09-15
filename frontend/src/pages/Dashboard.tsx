@@ -4,7 +4,6 @@ import CourseListPage from "./CourseListPage";
 import ResourceManagement from "./ResourceManagement";
 import Users from "./Users";
 import Submissions from "./Submissions";
-import ActivityManagement from "./ActivityManagement";
 import ModuleManagement from "./ModuleManagement";
 
 export default function Dashboard() {
@@ -17,8 +16,10 @@ export default function Dashboard() {
                 return 2;
             case "resource-management":
                 return 3;
-            case "submissions":
+            case "module-management":
                 return 4;
+            case "submissions":
+                return 5;
             case "course-management":
             default:
                 return 1;
@@ -34,7 +35,8 @@ export default function Dashboard() {
                 {activeTab === 1 && <CourseListPage />}
                 {activeTab === 2 && <Users />}
                 {activeTab === 3 && <ResourceManagement />}
-                {activeTab === 4 && <Submissions />}
+                {activeTab === 4 && <ModuleManagement />}
+                {activeTab === 5 && <Submissions />}
             </div>
         </div>
     );
