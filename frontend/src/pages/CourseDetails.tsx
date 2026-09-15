@@ -167,12 +167,12 @@ export default function CoursesDetails() {
                     <div className="p-2 m-2 col-span-2 rounded-md">
                         <div className="flex flex-row justify-between">
                             <div></div>
-                            <h3 className="font-bold text-text-dark dark:text-text-light ml-5">
+                            <h3 className="text-xl font-bold text-text-dark dark:text-text-light ml-5">
                                 Modules
                             </h3>
                             {isAuthenticated && role === "Teacher" ? (
                                 <Button
-                                    className="hover:cursor-pointer justify-end"
+                                    className="hover:cursor-pointer justify-end mr-3"
                                     onClick={() =>
                                         setShowCreateModuleModal(true)
                                     }
@@ -211,12 +211,12 @@ export default function CoursesDetails() {
                     <div className="p-2 m-2 col-span-2 rounded-md">
                         <div className="flex flex-row justify-between">
                             <div></div>
-                            <h3 className="font-bold text-text-dark dark:text-text-light ml-18">
+                            <h3 className="text-xl font-bold text-text-dark dark:text-text-light ml-18">
                                 Course resources
                             </h3>
                             {isAuthenticated && role === "Teacher" ? (
                                 <Button
-                                    className="hover:cursor-pointer justify-end"
+                                    className="hover:cursor-pointer justify-end mr-3"
                                     onClick={() =>
                                         setShowCreateResourceForm(true)
                                     }
