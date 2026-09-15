@@ -34,7 +34,10 @@ const ModalCreateModule = (props: CreateModuleModalProps) => {
         undefined,
     );
     const [formData, setFormData] = useState<ModuleForm>({
-        courseId: props.moduleToEdit?.courseId ?? "",
+        courseId:
+            props.moduleToEdit !== undefined
+                ? (props.moduleToEdit?.courseId ?? "")
+                : (props.courseId ?? ""),
         name: props.moduleToEdit?.name ?? "",
         description: props.moduleToEdit?.description ?? "",
         startDate: props.moduleToEdit?.startDate ?? "",
