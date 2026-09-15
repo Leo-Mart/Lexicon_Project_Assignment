@@ -44,6 +44,10 @@ public class SubmissionsRepository(LMSDbContext _context) : ISubmissionsReposito
                 ? submissionsQuery.OrderByDescending(submission => submission.Activity.Module.Course.Name)
                 : submissionsQuery.OrderBy(submission => submission.Activity.Module.Course.Name),
 
+            "module" => query.Direction == "desc"
+                ? submissionsQuery.OrderByDescending(submission => submission.Activity.Module.Name)
+                : submissionsQuery.OrderBy(submission => submission.Activity.Module.Name),
+
             "activity" => query.Direction == "desc"
                 ? submissionsQuery.OrderByDescending(submission => submission.Activity.Name)
                 : submissionsQuery.OrderBy(submission => submission.Activity.Name),
