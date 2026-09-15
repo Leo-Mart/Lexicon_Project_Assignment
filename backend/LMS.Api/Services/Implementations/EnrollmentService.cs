@@ -100,9 +100,6 @@ public class EnrollmentService : IEnrollmentService
         else
         {
             enrollment.CourseId = courseId;
-            enrollment.Course = course;
-
-            _enrollmentRepository.Update(enrollment);
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
