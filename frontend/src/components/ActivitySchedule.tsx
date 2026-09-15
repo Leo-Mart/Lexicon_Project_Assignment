@@ -31,7 +31,7 @@ const ActivitySchedule = ({ activities, limit = 5 }: ActivityScheduleProps) => {
                         className="relative mb-6 sm:mb-0"
                     >
                         <div className="flex items-center">
-                            <div className="z-10 flex items-center justify-center w-6 h-6 ring-0 ring-buttons sm:ring-8  rounded-md">
+                            <div className="z-10 flex items-center justify-center w-6 h-6 ring-0 ring-bg-window sm:ring-8  rounded-md">
                                 <ClipboardCheck />
                             </div>
                             <div className="hiddensm:flex w-full bg-bg-dark h-px"></div>
