@@ -8,7 +8,11 @@ const tabs = [
     { label: "Submissions", param: "submissions" },
 ];
 
-export default function DashboardTabs() {
+interface DashboardTabsProps {
+    isAbsolute?: boolean;
+}
+
+export default function DashboardTabs({ isAbsolute }: DashboardTabsProps) {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -24,7 +28,11 @@ export default function DashboardTabs() {
     const activeTabParam = searchParams.get("tab");
 
     return (
-        <nav className="flex flex-col pr-3 w-70">
+        <nav
+            className={`flex flex-col pr-3 w-70 ${
+                isAbsolute ? "absolute" : ""
+            }`}
+        >
             <ul className="flex flex-col gap-5 border-4 border-accent-teacher rounded-lg p-3 h-fit">
                 {tabs.map((tab) => {
                     const isActive = activeTabParam === tab.param;
