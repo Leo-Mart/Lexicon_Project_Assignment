@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import Button from "./Button";
+import { useAuth } from "../hooks/useAuth";
 
 const tabs = [
     { label: "Course Management", param: "course-management" },
@@ -13,6 +14,7 @@ interface DashboardTabsProps {
 }
 
 export default function DashboardTabs({ isAbsolute }: DashboardTabsProps) {
+    const { isAuthenticated, role } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -26,6 +28,10 @@ export default function DashboardTabs({ isAbsolute }: DashboardTabsProps) {
 
     const searchParams = new URLSearchParams(location.search);
     const activeTabParam = searchParams.get("tab");
+
+    if (isAuthenticated && role !== "Teacher") {
+        return <></>;
+    }
 
     return (
         <nav
