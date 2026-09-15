@@ -71,7 +71,7 @@ const ResourceCard = ({
                         </div>
                     </div>
                     {isExpanded && (
-                        <div className="bg-bg-window text-text-dark w-full">
+                        <div className="bg-white text-text-dark w-full">
                             <div className="text-m p-3 flex justify-between">
                                 <p>{resource.description}</p>
                                 <p>
