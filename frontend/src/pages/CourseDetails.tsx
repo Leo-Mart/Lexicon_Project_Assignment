@@ -167,15 +167,21 @@ export default function CoursesDetails() {
                     <div className="p-2 m-2 col-span-2 rounded-md">
                         <div className="flex flex-row justify-between">
                             <div></div>
-                            <h3 className="font-bold text-text-dark dark:text-text-light ml-18">
+                            <h3 className="font-bold text-text-dark dark:text-text-light ml-5">
                                 Modules
                             </h3>
-                            <Button
-                                className="hover:cursor-pointer justify-end"
-                                onClick={() => setShowCreateModuleModal(true)}
-                            >
-                                Add module
-                            </Button>
+                            {isAuthenticated && role === "Teacher" ? (
+                                <Button
+                                    className="hover:cursor-pointer justify-end"
+                                    onClick={() =>
+                                        setShowCreateModuleModal(true)
+                                    }
+                                >
+                                    Add module
+                                </Button>
+                            ) : (
+                                <div></div>
+                            )}
                         </div>
 
                         <ul>
@@ -208,12 +214,18 @@ export default function CoursesDetails() {
                             <h3 className="font-bold text-text-dark dark:text-text-light ml-18">
                                 Course resources
                             </h3>
-                            <Button
-                                className="hover:cursor-pointer justify-end"
-                                onClick={() => setShowCreateResourceForm(true)}
-                            >
-                                Add resource
-                            </Button>
+                            {isAuthenticated && role === "Teacher" ? (
+                                <Button
+                                    className="hover:cursor-pointer justify-end"
+                                    onClick={() =>
+                                        setShowCreateResourceForm(true)
+                                    }
+                                >
+                                    Add resource
+                                </Button>
+                            ) : (
+                                <div></div>
+                            )}
                         </div>
                         <div className="">
                             {resources.map((resource) => (
