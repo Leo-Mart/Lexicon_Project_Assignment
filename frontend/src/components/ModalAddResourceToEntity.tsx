@@ -27,12 +27,12 @@ const ModalAddResourceToEntity = (props: ModalAddResourceToEntityProps) => {
     const [courses, setCourses] = useState<
         PagedResponse<CourseResponse> | undefined
     >(undefined);
-    const [modules, setModules] = useState<ModuleResponse[] | undefined>(
-        undefined,
-    );
-    const [activities, setActivites] = useState<ActivityResponse[] | undefined>(
-        undefined,
-    );
+    const [modules, setModules] = useState<
+        PagedResponse<ModuleResponse> | undefined
+    >(undefined);
+    const [activities, setActivites] = useState<
+        PagedResponse<ActivityResponse> | undefined
+    >(undefined);
 
     useEffect(() => {
         const fetchChoseEntities = async () => {
@@ -57,7 +57,13 @@ const ModalAddResourceToEntity = (props: ModalAddResourceToEntityProps) => {
 
                 case "module":
                     try {
-                        const resp = await fetchModules();
+                        const resp = await fetchModules({
+                            search: "",
+                            sortBy: "name",
+                            direction: "asc",
+                            page: 1,
+                            pageSize: 200,
+                        });
                         setModules(resp);
                     } catch (error) {
                         if (error instanceof Error) {
@@ -68,7 +74,13 @@ const ModalAddResourceToEntity = (props: ModalAddResourceToEntityProps) => {
 
                 case "activity":
                     try {
-                        const resp = await fetchActivities();
+                        const resp = await fetchActivities({
+                            search: "",
+                            sortBy: "name",
+                            direction: "asc",
+                            page: 1,
+                            pageSize: 200,
+                        });
                         setActivites(resp);
                     } catch (error) {
                         if (error instanceof Error) {
@@ -258,7 +270,7 @@ const ModalAddResourceToEntity = (props: ModalAddResourceToEntityProps) => {
                                     name="moduleId"
                                     className="bg-bg-header text-white border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
                                 >
-                                    {modules.map((module) => (
+                                    {modules.items.map((module) => (
                                         <option
                                             key={module.moduleId}
                                             value={module.moduleId}
@@ -278,7 +290,7 @@ const ModalAddResourceToEntity = (props: ModalAddResourceToEntityProps) => {
                                     name="activityId"
                                     className="bg-bg-header text-white border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
                                 >
-                                    {activities.map((activity) => (
+                                    {activities.items.map((activity) => (
                                         <option
                                             key={activity.activityId}
                                             value={activity.activityId}

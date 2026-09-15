@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 const tabs = [
     { label: "Course Management", param: "course-management" },
     { label: "User Management", param: "user-management" },
+    { label: "Module Management", param: "module-management" },
     { label: "Resource Management", param: "resource-management" },
     { label: "Submissions", param: "submissions" },
 ];

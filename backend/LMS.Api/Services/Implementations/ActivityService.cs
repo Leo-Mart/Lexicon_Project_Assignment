@@ -1,6 +1,7 @@
 using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.DTOs.Activities;
+using LMS.Api.DTOs.Common;
 using LMS.Api.Exceptions;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
@@ -29,11 +30,23 @@ public class ActivityService : IActivityService
         _mapper = mapper;
     }
 
-    public async Task<List<ActivityDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<ActivityDto>> GetAllAsync(
+        QueryParametersDto query,
+        CancellationToken cancellationToken = default
+    )
     {
-        List<Activity> activities = await _activityRepository.GetAllAsync(cancellationToken);
+        PagedResponse<Activity> result = await _activityRepository.GetAllAsync(
+            query,
+            cancellationToken
+        );
 
-        return _mapper.Map<List<ActivityDto>>(activities);
+        return new PagedResponse<ActivityDto>
+        {
+            Items = _mapper.Map<List<ActivityDto>>(result.Items),
+            TotalCount = result.TotalCount,
+            Page = result.Page,
+            PageSize = result.PageSize,
+        };
     }
 
     public async Task<ActivityDto?> GetByIdAsync(

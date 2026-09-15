@@ -1,6 +1,7 @@
 using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.DTOs.Activities;
+using LMS.Api.DTOs.Common;
 using LMS.Api.Enums.Model;
 using LMS.Api.Exceptions;
 using LMS.Api.Mappings;
@@ -41,19 +42,36 @@ public class ActivityServiceTests
     }
 
     [Fact]
-    public async Task GetAllAsync_ShouldReturnActivities()
+    public async Task GetAllAsync_ShouldReturnPagedActivities()
     {
+        QueryParametersDto query = new()
+        {
+            Search = "",
+            SortBy = "name",
+            Direction = "asc",
+            Page = 1,
+            PageSize = 20,
+        };
+
         List<Activity> activities = [CreateActivity("Activity 1"), CreateActivity("Activity 2")];
 
+        PagedResponse<Activity> repoResult = new()
+        {
+            Items = activities,
+            TotalCount = 2,
+            Page = 1,
+            PageSize = 20,
+        };
+
         _activityRepositoryMock
-            .Setup(repository => repository.GetAllAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(activities);
+            .Setup(repository => repository.GetAllAsync(query, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(repoResult);
 
-        List<ActivityDto> result = await _activityService.GetAllAsync();
+        PagedResponse<ActivityDto> result = await _activityService.GetAllAsync(query);
 
-        Assert.Equal(2, result.Count);
-        Assert.Equal("Activity 1", result[0].Name);
-        Assert.Equal("Activity 2", result[1].Name);
+        Assert.Equal(2, result.Items.Count);
+        Assert.Equal("Activity 1", result.Items[0].Name);
+        Assert.Equal("Activity 2", result.Items[1].Name);
     }
 
     [Fact]

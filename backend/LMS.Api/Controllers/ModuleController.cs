@@ -1,9 +1,8 @@
 using System.Security.Claims;
 using LMS.Api.Constants;
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Course;
-using LMS.Api.DTOs.Errors;
 using LMS.Api.DTOs.Module;
-using LMS.Api.Exceptions;
 using LMS.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,13 +28,15 @@ public class ModuleController(IModuleService moduleService, IEnrollmentService e
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Roles = RoleConstants.Teacher)]
-    public async Task<ActionResult<IEnumerable<ModuleDto>>> GetModules()
+    public async Task<ActionResult<PagedResponse<ModuleDto>>> GetModules(
+        [FromQuery] QueryParametersDto query,
+        CancellationToken cancellationToken
+    )
     {
-        var modules = await _moduleService.GetAllModules();
-        if (modules == null)
-        {
-            return NotFound();
-        }
+        PagedResponse<ModuleDto> modules = await _moduleService.GetAllModules(
+            query,
+            cancellationToken
+        );
 
         return Ok(modules);
     }
