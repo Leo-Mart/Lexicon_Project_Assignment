@@ -271,7 +271,9 @@ export default function ModulePage() {
 
     return (
         <>
-            <ModuleSideView module={module} />
+            <div className="flex flex-row-reverse">
+                <ModuleSideView module={module} />
+            </div>
             <div className="flex flex-col items-center text-text-dark dark:text-text-light">
                 <h1 className="text-4xl pt-5">{module.name}</h1>
                 <div className="flex gap-5 pt-5">
