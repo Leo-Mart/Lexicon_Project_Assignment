@@ -54,7 +54,7 @@ export default function UserSideView({ courseId }: { courseId: string }) {
         return (
             <div className="flex flex-col items-center">
                 <h1 className="text-4xl text-text-dark pt-5">
-                    No people connected to this course
+                    No students connected to this course
                 </h1>
             </div>
         );
@@ -103,7 +103,7 @@ export default function UserSideView({ courseId }: { courseId: string }) {
                     className={`bg-bg-window rotate-45 transition-transform duration-300 ease-in-out w-20 h-20 m-5 ${isExpanded ? "rotate-90" : "rotate-45"}`}
                     onClick={() => setIsExpanded(!isExpanded)}
                 >
-                    <p className="-rotate-45">Show people</p>
+                    <p className="-rotate-45">Show students</p>
                 </button>
             </div>
         </>
