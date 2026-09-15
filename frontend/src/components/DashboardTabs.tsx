@@ -45,7 +45,7 @@ export default function DashboardTabs() {
                                 onClick={() => handleTabClick(tab.param)}
                                 className={`size-full hover:cursor-pointer ${
                                     isActive
-                                        ? "bg-accent-teacher text-white"
+                                        ? "!bg-accent-teacher !text-white"
                                         : ""
                                 }`}
                             >
