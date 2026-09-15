@@ -86,7 +86,7 @@ public class ModuleService(
         }
 
         await ValidateModuleDatesAsync(
-            moduleFromDb.CourseId,
+            updateModule.CourseId,
             updateModule.StartDate,
             updateModule.EndDate,
             excludedModuleId: moduleId

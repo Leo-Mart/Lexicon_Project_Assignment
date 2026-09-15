@@ -68,7 +68,8 @@ const ModuleManagement = () => {
                 module.description = updatedModule.description;
                 module.startDate = updatedModule.startDate;
                 module.endDate = updatedModule.endDate;
-
+                module.courseId = updatedModule.courseId;
+                
                 return module;
             } else {
                 return module;

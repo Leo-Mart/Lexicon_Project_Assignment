@@ -233,6 +233,7 @@ public class ModuleServiceTests
 
         var request = new UpdateModuleDto
         {
+            CourseId = courseId,
             Name = "Updated Module",
             Description = "Updated description",
             StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(8)),
@@ -274,6 +275,7 @@ public class ModuleServiceTests
     public async Task UpdateModule_WhenModuleDoesNotExist_ReturnsNull()
     {
         Guid moduleId = Guid.NewGuid();
+        Guid courseId = Guid.NewGuid();
 
         var request = new UpdateModuleDto
         {
@@ -281,6 +283,7 @@ public class ModuleServiceTests
             Description = "Updated description",
             StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(7)),
             EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(14)),
+            CourseId = courseId,
         };
 
         _mockModuleRepo
