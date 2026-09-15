@@ -2,7 +2,6 @@ using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
 using LMS.Api.DTOs.Activities;
 using LMS.Api.DTOs.Common;
-using LMS.Api.Enums.Model;
 using LMS.Api.Exceptions;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
@@ -80,7 +79,6 @@ public class ActivityService : IActivityService
     {
         await ValidateActivityDatesAsync(
             request.ModuleId,
-            request.Type,
             request.StartAt,
             request.EndAt,
             validateNotBefore: true,
@@ -124,7 +122,6 @@ public class ActivityService : IActivityService
 
         await ValidateActivityDatesAsync(
             activity.ModuleId,
-            request.Type,
             request.StartAt,
             request.EndAt,
             excludedActivityId: activityId,
@@ -167,7 +164,6 @@ public class ActivityService : IActivityService
 
     private async Task ValidateActivityDatesAsync(
         Guid moduleId,
-        ActivityType type,
         DateTime startAt,
         DateTime endAt,
         Guid? excludedActivityId = null,
@@ -212,11 +208,6 @@ public class ActivityService : IActivityService
                 excludedActivityId.HasValue
                 && existingActivity.ActivityId == excludedActivityId.Value
             )
-            {
-                continue;
-            }
-
-            if (existingActivity.Type != type)
             {
                 continue;
             }
