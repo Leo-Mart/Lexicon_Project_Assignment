@@ -7,8 +7,8 @@ interface UserBadgeProps {
 export default function UserBadge({ role }: UserBadgeProps) {
     const roleClass =
         role === "Teacher"
-            ? "bg-blue-100 text-blue-700"
-            : "bg-green-100 text-green-700";
+            ? "bg-accent-teacher text-white"
+            : "bg-accent-student text-white";
 
     return (
         <span className={`px-2 py-1 text-xs rounded ${roleClass}`}>{role}</span>

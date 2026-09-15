@@ -1,4 +1,5 @@
 import type { ActivityType } from "../../constants/ActivityType";
+import type { ResourceResponse } from "../resource/ResourceResponse";
 
 export interface ActivityResponse {
     activityId: string;
@@ -11,4 +12,5 @@ export interface ActivityResponse {
     createdAt: string;
     updatedAt: string;
     deadline: string | null;
+    activityResources: ResourceResponse[];
 }

@@ -7,7 +7,6 @@ import {
     addResourceToCourse,
     createResource,
     deleteResource,
-    fetchResourcesForCourse,
     updateResource,
 } from "../services/resourceService";
 import { Link, useParams } from "react-router-dom";
@@ -34,7 +33,7 @@ export default function CoursesDetails() {
         startDate: "",
         endDate: "",
         modules: [],
-        resources: [],
+        courseResources: [],
     };
 
     const emptyResource = {
@@ -77,6 +76,7 @@ export default function CoursesDetails() {
             try {
                 const courseData = await fetchCourse(courseId);
                 setCourse(courseData);
+                setResources(courseData.courseResources);
             } catch (err) {
                 setError(
                     err instanceof Error
@@ -92,26 +92,8 @@ export default function CoursesDetails() {
         if (courseId === undefined) {
             return;
         }
-        const fetchAllResourcesForCourse = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const resourceData = await fetchResourcesForCourse(courseId);
-                setResources(resourceData);
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : "Failed to fetch resources",
-                );
-                console.error("Fetch error:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
 
         fetchChosenCourse(courseId);
-        fetchAllResourcesForCourse();
     }, [courseId]);
 
     const handleResourceEdit = async (

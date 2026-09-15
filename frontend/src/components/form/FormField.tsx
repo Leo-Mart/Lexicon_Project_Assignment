@@ -15,7 +15,10 @@ export default function FormField({
 }: FormFieldProps) {
     return (
         <div className="mb-4">
-            <label htmlFor={htmlFor} className="block mb-1 font-medium">
+            <label
+                htmlFor={htmlFor}
+                className="block mb-1 font-medium text-text-dark dark:text-text-light"
+            >
                 {label}
             </label>
 

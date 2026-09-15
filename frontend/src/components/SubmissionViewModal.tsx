@@ -55,7 +55,7 @@ export default function SubmissionViewModal({
                         </button>
                     </div>
                 </nav>
-                <div className="bg-bg py-3 px-3 flex-1 flex flex-col min-h-0">
+                <div className="bg-bg dark:bg-bg-dark py-3 px-3 flex-1 flex flex-col min-h-0">
                     {/* Grows to fill the modal's height; only this scrolls if the text is long. */}
                     <p className="whitespace-pre-wrap bg-bg-window dark:bg-bg-window-dark text-text-dark dark:text-text-light rounded p-2 mb-1 flex-1 min-h-0 overflow-y-auto">
                         {submission.text}

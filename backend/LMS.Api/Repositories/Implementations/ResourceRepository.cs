@@ -69,6 +69,7 @@ public class ResourceRepository : IResourceRepository
     {
         return await _context
             .Resources.AsNoTracking()
+            .Include(r => r.CreatedByTeacher)
             .FirstOrDefaultAsync(resource => resource.ResourceId == resourceId, cancellationToken);
     }
 

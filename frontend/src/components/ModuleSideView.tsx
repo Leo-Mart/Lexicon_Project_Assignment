@@ -63,17 +63,17 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
 
     return (
         <>
-            <div className="flex flex-row absolute mt-1 h-full">
+            <div className="flex flex-row absolute mt-1 h-full overflow-hidden">
                 {isExpanded && (
-                    <div className="bg-bg-window h-auto w-55 flex flex-col mx-1 z-50">
+                    <div className="bg-bg-window h-auto w-55 flex flex-col mx-1 overflow-y-scroll z-50">
                         <div className="border-b-4 border-dotted py-4">
                             <h3 className="px-2">Currently viewing module:</h3>
                             <ModuleSideViewPart module={module} />
                         </div>
 
                         <div className="border-b-4 border-dotted py-4">
-                            <h3 className="px-2">Upcoming Modules:</h3>
-                            {upcomingModules.map((m) => (
+                            <h3 className="px-2">Current Module:</h3>
+                            {currentModule.map((m) => (
                                 <ModuleSideViewPart
                                     module={m}
                                     key={m.moduleId}
@@ -81,8 +81,8 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
                             ))}
                         </div>
                         <div className="border-b-4 border-dotted py-4">
-                            <h3 className="px-2">Current Module:</h3>
-                            {currentModule.map((m) => (
+                            <h3 className="px-2">Upcoming Modules:</h3>
+                            {upcomingModules.map((m) => (
                                 <ModuleSideViewPart
                                     module={m}
                                     key={m.moduleId}
