@@ -38,6 +38,7 @@ public class ModuleRepository(LMSDbContext context) : IModuleRepository
     {
         return await _context
             .Modules.AsNoTracking()
+            .AsSplitQuery()
             .Include(m => m.Course)
             .Include(m => m.Activities.OrderBy(a => a.StartAt).ThenBy(a => a.Type))
                 .ThenInclude(a => a.ActivityResources)
@@ -69,5 +70,16 @@ public class ModuleRepository(LMSDbContext context) : IModuleRepository
 
         await _context.SaveChangesAsync();
         return module;
+    }
+
+    public async Task<Guid?> GetCourseIdByModuleIdAsync(
+    Guid moduleId,
+    CancellationToken cancellationToken = default)
+    {
+        return await _context.Modules
+            .AsNoTracking()
+            .Where(module => module.ModuleId == moduleId)
+            .Select(module => (Guid?)module.CourseId)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 }
