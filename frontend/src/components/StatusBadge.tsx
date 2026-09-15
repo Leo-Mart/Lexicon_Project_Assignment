@@ -11,6 +11,8 @@ export default function StatusBadge(
         bgColor = "bg-bg-warning";
     } else if (text === "Needs completion") {
         bgColor = "bg-bg-warning";
+    } else if (text === "Resubmitted") {
+        bgColor = "bg-accent-blue";
     } else if (text == "Overdue") {
         bgColor = "bg-btn-cancel";
     } else if (text == "Not submitted") {
