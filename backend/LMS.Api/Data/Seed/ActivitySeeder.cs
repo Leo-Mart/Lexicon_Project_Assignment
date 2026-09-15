@@ -93,7 +93,12 @@ public static class ActivitySeeder
     // happened to run at.
     private static DateTime LectureStart(DateTime now, int dayOffset) =>
         now.Date.AddDays(dayOffset).AddHours(10).AddMinutes(30);
-
+    private static DateTime LectureEnd(DateTime now, int dayOffset) =>
+   now.Date.AddDays(dayOffset).AddHours(12).AddMinutes(00);
+    private static DateTime TaskStart(DateTime now, int dayOffset) =>
+        now.Date.AddDays(dayOffset).AddHours(13).AddMinutes(00);
+    private static DateTime TaskEnd(DateTime now, int dayOffset) =>
+ now.Date.AddDays(dayOffset).AddHours(23).AddMinutes(59);
     // A lecture ahead of each of the topic-specific tasks, not just the one
     // at the very start of the module.
     public static readonly Guid AspNetCoreAuthLectureId =
@@ -146,8 +151,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Lecture,
                 Name = "Introduction to Git",
                 Description = "Introduction to version control, commits, branches and pull requests.",
-                StartAt = now.AddDays(-57),
-                EndAt = now.AddDays(-57).AddHours(2),
+                StartAt = LectureStart(now, -57),
+                EndAt = LectureEnd(now, -57),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -159,9 +164,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Git Workflow Exercise",
                 Description = "Practice branching, committing and opening a pull request.",
-                StartAt = now.AddDays(-55),
-                EndAt = now.AddDays(-52),
-                Deadline = now.AddDays(-52),
+                StartAt = TaskStart(now, -55),
+                EndAt = TaskEnd(now, -52),
+                Deadline = TaskEnd(now, -52),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -173,8 +178,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Lecture,
                 Name = "Programming Basics",
                 Description = "Introduction to variables, control flow and problem solving.",
-                StartAt = now.AddDays(-47),
-                EndAt = now.AddDays(-47).AddHours(2),
+                StartAt = LectureStart(now, -47),
+                EndAt = LectureEnd(now, -47),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -199,9 +204,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Simple Calculator",
                 Description = "Build a simple calculator that reads two numbers and an operator.",
-                StartAt = now.AddDays(-43),
-                EndAt = now.AddDays(-40),
-                Deadline = now.AddDays(-40),
+                StartAt = TaskStart(now, -43),
+                EndAt = TaskEnd(now, -40),
+                Deadline = TaskEnd(now, -40),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -213,8 +218,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Lecture,
                 Name = "OOP Concepts",
                 Description = "Classes, interfaces, inheritance and polymorphism in C#.",
-                StartAt = now.AddDays(-37),
-                EndAt = now.AddDays(-37).AddHours(2),
+                StartAt = LectureStart(now, -37),
+                EndAt = LectureEnd(now, -37),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -226,9 +231,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Class Design Exercise",
                 Description = "Model a small domain using classes, interfaces and inheritance.",
-                StartAt = now.AddDays(-35),
-                EndAt = now.AddDays(-31),
-                Deadline = now.AddDays(-31),
+                StartAt = TaskStart(now, -35),
+                EndAt = TaskEnd(now, -31),
+                Deadline = TaskEnd(now, -31),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -269,9 +274,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Console Calculator",
                 Description = "Build a console app that performs basic arithmetic using methods.",
-                StartAt = now.AddDays(-27),
-                EndAt = now.AddDays(-24),
-                Deadline = now.AddDays(-24),
+                StartAt = TaskStart(now, -27),
+                EndAt = TaskEnd(now, -24),
+                Deadline = TaskEnd(now, -24),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -283,9 +288,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Collections Exercise",
                 Description = "Work with lists, dictionaries and LINQ to solve small data problems.",
-                StartAt = now.AddDays(-23),
-                EndAt = now.AddDays(-18),
-                Deadline = now.AddDays(-18),
+                StartAt = TaskStart(now, -23),
+                EndAt = TaskEnd(now, -18),
+                Deadline = TaskEnd(now, -18),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -298,10 +303,23 @@ public static class ActivitySeeder
                 Name = "Introduction to ASP.NET Core",
                 Description = "Introduction to controllers, routing and dependency injection in ASP.NET Core.",
                 StartAt = LectureStart(now, -14),
-                EndAt = LectureStart(now, -14).AddHours(3),
+                EndAt = LectureEnd(now, -14),
                 CreatedAt = now,
                 UpdatedAt = now
             },
+            // new()
+            // {
+            //     ActivityId = LoggingTaskId,
+            //     ModuleId = ModuleSeeder.AspNetCoreModuleId,
+            //     Type = ActivityType.Task,
+            //     Name = "Add Logging",
+            //     Description = "Add structured logging to the Web API's endpoints.",
+            //     StartAt = now.AddDays(-13),
+            //     EndAt = now.AddDays(-9),
+            //     Deadline = now.AddDays(-9),
+            //     CreatedAt = now,
+            //     UpdatedAt = now
+            // },
 
             // Two lectures a week for the module's run - roughly one every
             // other day.
@@ -313,7 +331,7 @@ public static class ActivitySeeder
                 Name = "Routing & Controllers",
                 Description = "Attribute routing, route parameters and organizing endpoints across controllers.",
                 StartAt = LectureStart(now, -12),
-                EndAt = LectureStart(now, -12).AddHours(2),
+                EndAt = LectureEnd(now, -12),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -326,7 +344,7 @@ public static class ActivitySeeder
                 Name = "Dependency Injection & Configuration",
                 Description = "Service lifetimes, the built-in DI container, and reading configuration and secrets.",
                 StartAt = LectureStart(now, -10),
-                EndAt = LectureStart(now, -10).AddHours(2),
+                EndAt = LectureEnd(now, -10),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -339,7 +357,7 @@ public static class ActivitySeeder
                 Name = "Authentication & Authorization",
                 Description = "Securing a Web API with JWT bearer tokens and role-based authorization.",
                 StartAt = LectureStart(now, -8),
-                EndAt = LectureStart(now, -8).AddHours(2),
+                EndAt = LectureEnd(now, -8),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -352,7 +370,7 @@ public static class ActivitySeeder
                 Name = "Middleware & the Request Pipeline",
                 Description = "How a request flows through middleware, and where to hook in custom behavior.",
                 StartAt = LectureStart(now, -6),
-                EndAt = LectureStart(now, -6).AddHours(2),
+                EndAt = LectureEnd(now, -6),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -365,7 +383,7 @@ public static class ActivitySeeder
                 Name = "Input Validation & Model Binding",
                 Description = "Validating incoming request models with data annotations and returning clear errors.",
                 StartAt = LectureStart(now, -4),
-                EndAt = LectureStart(now, -4).AddHours(2),
+                EndAt = LectureEnd(now, -4),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -378,7 +396,7 @@ public static class ActivitySeeder
                 Name = "Structured Logging",
                 Description = "Using ILogger, log levels, and structured logging for a Web API.",
                 StartAt = LectureStart(now, -2),
-                EndAt = LectureStart(now, -2).AddHours(2),
+                EndAt = LectureEnd(now, -2),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -391,7 +409,7 @@ public static class ActivitySeeder
                 Name = "Pagination & Filtering Large Result Sets",
                 Description = "Paging list endpoints with page/pageSize query parameters and a total count.",
                 StartAt = LectureStart(now, 0),
-                EndAt = LectureStart(now, 0).AddHours(2),
+                EndAt = LectureEnd(now, 0),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -404,7 +422,7 @@ public static class ActivitySeeder
                 Name = "Testing ASP.NET Core APIs",
                 Description = "Integration testing a Web API with WebApplicationFactory.",
                 StartAt = LectureStart(now, 1),
-                EndAt = LectureStart(now, 1).AddHours(2),
+                EndAt = LectureEnd(now, 1),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -417,7 +435,7 @@ public static class ActivitySeeder
                 Name = "Error Handling & Problem Details",
                 Description = "Centralized exception handling and returning RFC 7807 Problem Details responses.",
                 StartAt = LectureStart(now, 4),
-                EndAt = LectureStart(now, 4).AddHours(2),
+                EndAt = LectureEnd(now, 4),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -429,9 +447,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Routing & Dependency Injection Practice",
                 Description = "Practice defining routes and registering services with the built-in DI container.",
-                StartAt = now.AddDays(-10),
-                EndAt = now.AddDays(-5).AddHours(2),
-                Deadline = now.AddDays(-5).AddHours(2),
+                StartAt = TaskStart(now, -10),
+                EndAt = TaskEnd(now, -5),
+                Deadline = TaskEnd(now, -5),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -443,9 +461,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Build a Web API",
                 Description = "Create a small ASP.NET Core Web API.",
-                StartAt = now.AddDays(-13),
-                EndAt = now.AddDays(-8),
-                Deadline = now.AddDays(-8),
+                StartAt = TaskStart(now, -13),
+                EndAt = TaskEnd(now, -8),
+                Deadline = TaskEnd(now, -8),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -457,8 +475,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Other,
                 Name = "Web API Code Review Session",
                 Description = "Live review of common mistakes seen in the Web API submissions so far.",
-                StartAt = now.AddDays(-9),
-                EndAt = now.AddDays(-9).AddHours(1),
+                StartAt = LectureStart(now, -9),
+                EndAt = LectureEnd(now, -9),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -469,9 +487,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Add Identity Authentication",
                 Description = "Wire up ASP.NET Core Identity for user accounts, replacing the manual JWT login flow.",
-                StartAt = now.AddDays(-6),
-                EndAt = now.AddDays(3).AddHours(1),
-                Deadline = now.AddDays(3),
+                StartAt = TaskStart(now, -6),
+                EndAt = TaskEnd(now, 3),
+                Deadline = TaskEnd(now, 3),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -482,9 +500,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Database Seeding",
                 Description = "Write an EF Core seeder that inserts sample data on startup if the database is empty.",
-                StartAt = now.AddDays(-10),
-                EndAt = now.AddDays(0).AddHours(6),
-                Deadline = now.AddDays(0).AddHours(6),
+                StartAt = TaskStart(now, -10),
+                EndAt = TaskEnd(now, 0),
+                Deadline = TaskEnd(now, 0),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -496,9 +514,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Add JWT Authentication",
                 Description = "Secure the Web API with JWT-based authentication and authorization.",
-                StartAt = now.AddDays(-12),
-                EndAt = now.AddDays(-6),
-                Deadline = now.AddDays(-6),
+                StartAt = TaskStart(now, -12),
+                EndAt = TaskEnd(now, -6),
+                Deadline = TaskEnd(now, -6),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -510,9 +528,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Add Input Validation",
                 Description = "Add request validation to the Web API's endpoints.",
-                StartAt = now.AddDays(-10),
-                EndAt = now.AddDays(-4),
-                Deadline = now.AddDays(-4),
+                StartAt = TaskStart(now, -10),
+                EndAt = TaskEnd(now, -4),
+                Deadline = TaskEnd(now, -4),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -524,13 +542,12 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Add Logging",
                 Description = "Add structured logging to the Web API's endpoints.",
-                StartAt = now.AddDays(-13),
-                EndAt = now.AddDays(-9),
-                Deadline = now.AddDays(-9),
+                StartAt = TaskStart(now, -13),
+                EndAt = TaskEnd(now, -9),
+                Deadline = TaskEnd(now, -9),
                 CreatedAt = now,
                 UpdatedAt = now
             },
-
             new()
             {
                 ActivityId = PaginationTaskId,
@@ -538,9 +555,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Add Pagination",
                 Description = "Add pagination to the Web API's list endpoints.",
-                StartAt = now.AddDays(-11),
-                EndAt = now.AddDays(-7),
-                Deadline = now.AddDays(-7),
+                StartAt = TaskStart(now, -11),
+                EndAt = TaskEnd(now, -7),
+                Deadline = TaskEnd(now, -7),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -552,9 +569,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Write Integration Tests",
                 Description = "Add integration tests for the Web API's endpoints.",
-                StartAt = now.AddDays(-8),
-                EndAt = now.AddDays(1),
-                Deadline = now.AddDays(1),
+                StartAt = TaskStart(now, -8),
+                EndAt = TaskEnd(now, 1),
+                Deadline = TaskEnd(now, 1),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -569,8 +586,8 @@ public static class ActivitySeeder
                 Type = ActivityType.Lecture,
                 Name = "Entity Framework Core Introduction",
                 Description = "Introduction to EF Core, DbContext and migrations.",
-                StartAt = now.AddDays(13),
-                EndAt = now.AddDays(13).AddHours(3),
+                StartAt = LectureStart(now, 13),
+                EndAt = LectureEnd(now, 13),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -582,9 +599,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Database Migrations",
                 Description = "Create and apply EF Core migrations for a small schema.",
-                StartAt = now.AddDays(14),
-                EndAt = now.AddDays(25),
-                Deadline = now.AddDays(25),
+                StartAt = TaskStart(now, 14),
+                EndAt = TaskEnd(now, 25),
+                Deadline = TaskEnd(now, 25),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -596,9 +613,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "Query Optimization",
                 Description = "Write efficient EF Core LINQ queries and inspect the generated SQL.",
-                StartAt = now.AddDays(18),
-                EndAt = now.AddDays(32),
-                Deadline = now.AddDays(32),
+                StartAt = TaskStart(now, 18),
+                EndAt = TaskEnd(now, 32),
+                Deadline = TaskEnd(now, 32),
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -623,9 +640,9 @@ public static class ActivitySeeder
                 Type = ActivityType.Task,
                 Name = "React Component Exercise",
                 Description = "Build a small React application using reusable components.",
-                StartAt = now.AddDays(-14),
-                EndAt = now.AddDays(-3),
-                Deadline = now.AddDays(-3),
+                StartAt = TaskStart(now, -14),
+                EndAt = TaskEnd(now, -3),
+                Deadline = TaskEnd(now, -3),
                 CreatedAt = now,
                 UpdatedAt = now
             }
