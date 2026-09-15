@@ -67,8 +67,8 @@ export default function UserSideView({ courseId }: { courseId: string }) {
                         <div className="p-4">
                             <h3 className="pb-3 font-semibold">
                                 {users.length === 0
-                                    ? "No people in this course"
-                                    : "People in this course:"}
+                                    ? "No students in this course"
+                                    : "Students in this course:"}
                             </h3>
                             <ul>
                                 {users

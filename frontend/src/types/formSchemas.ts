@@ -135,3 +135,37 @@ export const createResourceFormConfig: EntityFormConfig<ResourceRequest> = {
         },
     ],
 };
+
+export const editResourceFormConfig: EntityFormConfig<ResourceRequest> = {
+    title: "Edit Resource",
+    fields: [
+        {
+            name: "name",
+            label: "Name",
+            type: "text",
+            required: true,
+            maxLength: 100,
+        },
+        {
+            name: "description",
+            label: "Description",
+            type: "textarea",
+            required: true,
+            maxLength: 100,
+        },
+        {
+            name: "content",
+            label: "Content",
+            type: "textarea",
+            required: false,
+            maxLength: 100,
+        },
+        {
+            name: "uri",
+            label: "URL",
+            type: "url",
+            required: false,
+            maxLength: 100,
+        },
+    ],
+};

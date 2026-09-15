@@ -12,7 +12,7 @@ import type { Column } from "../types/Column";
 import type { SortOption } from "../types/SortOption";
 import { createPortal } from "react-dom";
 import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
-import { createResourceFormConfig } from "../types/formSchemas";
+import { editResourceFormConfig } from "../types/formSchemas";
 import { ActivityDate } from "../utils/ActivityTimeConverter";
 import Button from "../components/Button";
 import Spinner from "../components/Spinner";
@@ -282,7 +282,7 @@ const ResourceManagement = () => {
             )}
             {editingResource && (
                 <FormModal
-                    config={createResourceFormConfig}
+                    config={editResourceFormConfig}
                     initialValue={{
                         name: editingResource.name,
                         description: editingResource.description,
