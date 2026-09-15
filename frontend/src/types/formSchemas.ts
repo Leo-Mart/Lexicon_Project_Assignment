@@ -1,6 +1,7 @@
 import type { EntityFormConfig } from "../components/FormModal";
 import { ActivityType } from "../constants/ActivityType";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
+import type { ModuleRequest } from "../interfaces/module/ModuleRequest";
 import type { ResourceRequest } from "../interfaces/resource/ResourceRequest";
 
 export const createActivityFormConfig: EntityFormConfig<ActivityRequest> = {
@@ -65,6 +66,38 @@ export const createActivityFormConfig: EntityFormConfig<ActivityRequest> = {
             name: "deadline",
             label: "Set a deadline",
             type: "datetime-local",
+        },
+    ],
+};
+
+export const createModuleFormConfig: EntityFormConfig<ModuleRequest> = {
+    title: "Create new Module",
+    fields: [
+        {
+            name: "name",
+            label: "Name",
+            type: "text",
+            required: true,
+            maxLength: 100,
+        },
+        {
+            name: "description",
+            label: "Description",
+            type: "textarea",
+            required: true,
+            maxLength: 100,
+        },
+        {
+            name: "startDate",
+            label: "Start Date",
+            type: "date",
+            required: true,
+        },
+        {
+            name: "endDate",
+            label: "End Date",
+            type: "date",
+            required: true,
         },
     ],
 };

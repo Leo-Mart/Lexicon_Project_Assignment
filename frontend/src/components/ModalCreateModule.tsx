@@ -1,33 +1,96 @@
 import ModalWrapper from "./ModalWrapper";
 import Button from "./Button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ModuleRequest } from "../interfaces/module/ModuleRequest";
-import { createModule } from "../services/moduleService";
+import { createModule, updateModule } from "../services/moduleService";
 import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
+import ErrorDisplay from "./ErrorDisplay";
+import type { CourseResponse } from "../interfaces/course/CourseResponse";
+import { fetchCourses } from "../services/courseService";
 
 type CreateModuleModalProps = {
     open: boolean;
     onClose: () => void;
     handleUpdateState: (newModule: ModuleResponse) => void;
-    courseId: string;
+    courseId?: string;
+    isEditing?: boolean;
+    moduleToEdit?: ModuleResponse;
 };
 
 //const today = Date.now();
 const today = new Date();
 
+interface ModuleForm {
+    courseId: string;
+    name: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+}
+
 const ModalCreateModule = (props: CreateModuleModalProps) => {
     const [error, setError] = useState("");
+    const [courses, setCourses] = useState<CourseResponse[] | undefined>(
+        undefined,
+    );
+    const [formData, setFormData] = useState<ModuleForm>({
+        courseId: props.moduleToEdit?.courseId ?? "",
+        name: props.moduleToEdit?.name ?? "",
+        description: props.moduleToEdit?.description ?? "",
+        startDate: props.moduleToEdit?.startDate ?? "",
+        endDate: props.moduleToEdit?.endDate ?? "",
+    });
+
+    useEffect(() => {
+        console.log(props.moduleToEdit);
+        if (props.courseId === undefined) {
+            const getCourses = async () => {
+                try {
+                    const resp = await fetchCourses({
+                        search: "",
+                        sortBy: "name",
+                        direction: "asc",
+                        page: 1,
+                        pageSize: 200,
+                    });
+                    setCourses(resp.items);
+                } catch (error) {
+                    if (error instanceof Error) {
+                        setError(error.message);
+                    }
+                }
+            };
+
+            getCourses();
+        }
+    }, [props.courseId, props.moduleToEdit]);
+
     const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const formData = new FormData(e.currentTarget);
 
         const newModulePayload: ModuleRequest = {
-            courseId: props.courseId,
-            name: formData.get("name")!.toString(),
-            description: formData.get("description")!.toString(),
-            startDate: formData.get("startDate")!.toString(),
-            endDate: formData.get("endDate")!.toString(),
+            courseId: formData.courseId,
+            name: formData.name,
+            description: formData.description,
+            startDate: formData.startDate,
+            endDate: formData.endDate,
         };
+
+        if (props.isEditing) {
+            try {
+                const resp = await updateModule(
+                    props.moduleToEdit!.moduleId,
+                    newModulePayload,
+                );
+                props.handleUpdateState(resp);
+                props.onClose();
+            } catch (error) {
+                if (error instanceof Error) {
+                    setError(error.message);
+                }
+            }
+            return;
+        }
 
         try {
             const resp = await createModule(newModulePayload);
@@ -61,6 +124,13 @@ const ModalCreateModule = (props: CreateModuleModalProps) => {
                             placeholder="Module Name"
                             maxLength={50}
                             required
+                            value={formData.name}
+                            onChange={(event) =>
+                                setFormData({
+                                    ...formData,
+                                    name: event.target.value,
+                                })
+                            }
                         />
                     </div>
                     <div>
@@ -73,6 +143,13 @@ const ModalCreateModule = (props: CreateModuleModalProps) => {
                             maxLength={200}
                             rows={5}
                             required
+                            value={formData.description}
+                            onChange={(event) =>
+                                setFormData({
+                                    ...formData,
+                                    description: event.target.value,
+                                })
+                            }
                         />
                     </div>
                     <div className="mb-4">
@@ -84,6 +161,13 @@ const ModalCreateModule = (props: CreateModuleModalProps) => {
                             id="startDate"
                             name="startDate"
                             required
+                            value={formData.startDate}
+                            onChange={(event) =>
+                                setFormData({
+                                    ...formData,
+                                    startDate: event.target.value,
+                                })
+                            }
                         />
                     </div>
                     <div className="mb-4">
@@ -95,9 +179,42 @@ const ModalCreateModule = (props: CreateModuleModalProps) => {
                             id="endDate"
                             name="endDate"
                             required
+                            value={formData.endDate}
+                            onChange={(event) =>
+                                setFormData({
+                                    ...formData,
+                                    endDate: event.target.value,
+                                })
+                            }
                         />
                     </div>
-                    {error && <span className="text-red-700">{error}</span>}
+                    <fieldset className="flex mx-auto">
+                        {courses && (
+                            <div>
+                                <h3>Choose course to tie resources to:</h3>
+                                <select
+                                    name="courseId"
+                                    value={formData.courseId}
+                                    onChange={(event) =>
+                                        setFormData({
+                                            ...formData,
+                                            courseId: event.target.value,
+                                        })
+                                    }
+                                    className="bg-bg-header text-white border border-slate-500 rounded-md px-3 py-2 outline-none focus:border-slate-300"
+                                >
+                                    {courses.map((course) => (
+                                        <option
+                                            key={course.courseId}
+                                            value={course.courseId}
+                                            label={course.name}
+                                        />
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+                    </fieldset>
+                    {error && <ErrorDisplay errorResp={error} />}
                     <div className="flex gap-2 justify-center">
                         <Button
                             type="submit"

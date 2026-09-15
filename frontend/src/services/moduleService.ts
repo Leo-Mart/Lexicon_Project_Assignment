@@ -74,7 +74,7 @@ export const createModule = async (
 export const updateModule = async (
     id: string,
     updatedModule: ModuleRequest,
-): Promise<void> => {
+): Promise<ModuleResponse> => {
     const response = await authFetch(`${API_URL}/${id}`, {
         method: HttpMethod.PUT,
         headers: JSON_HEADERS,
@@ -84,4 +84,6 @@ export const updateModule = async (
     if (!response.ok) {
         throw new Error(`Could not update the module: ${response.status}`);
     }
+
+    return (await response.json()) as ModuleResponse;
 };

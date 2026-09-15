@@ -118,6 +118,7 @@ public class ModuleRepository(LMSDbContext context) : IModuleRepository
     {
         module.UpdatedAt = DateTime.UtcNow;
 
+        _context.Modules.Update(module);
         await _context.SaveChangesAsync();
         return module;
     }
