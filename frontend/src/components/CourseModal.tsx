@@ -92,7 +92,7 @@ export default function CourseModal({
                             <div className="mb-4">
                                 <label htmlFor="name">Name</label>
                                 <input
-                                    className="shadow appearance-none border rounded w-full bg-white p-2"
+                                    className="shadow appearance-none border rounded w-full bg-white p-2 text-text-dark"
                                     type="text"
                                     id="name"
                                     name="name"
@@ -111,7 +111,7 @@ export default function CourseModal({
                             <div className="mb-4">
                                 <label htmlFor="description">Description</label>
                                 <textarea
-                                    className="shadow appearance-none border rounded w-full bg-white p-2"
+                                    className="shadow appearance-none border rounded w-full bg-white p-2 text-text-dark"
                                     id="description"
                                     name="description"
                                     placeholder="Course description"
@@ -130,7 +130,7 @@ export default function CourseModal({
                             <div className="mb-4">
                                 <label htmlFor="startDate">Start date</label>
                                 <input
-                                    className="shadow appearance-none border rounded w-full bg-white p-2"
+                                    className="shadow appearance-none border rounded w-full bg-white p-2 text-text-dark"
                                     min={today.toLocaleDateString()}
                                     type="date"
                                     id="startDate"
@@ -148,7 +148,7 @@ export default function CourseModal({
                             <div className="mb-4">
                                 <label htmlFor="endDate">End date</label>
                                 <input
-                                    className="shadow appearance-none border rounded w-full bg-white p-2"
+                                    className="shadow appearance-none border rounded w-full bg-white p-2 text-text-dark"
                                     min={formData.startDate}
                                     type="date"
                                     id="endDate"
