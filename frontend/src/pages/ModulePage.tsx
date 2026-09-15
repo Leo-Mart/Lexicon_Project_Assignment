@@ -513,7 +513,22 @@ export default function ModulePage() {
                             </div>
                         </>
                     ) : (
-                        "Module has no activities"
+                        <div>
+                            <div className="flex justify-end">
+                                {isAuthenticated && role === "Teacher" ? (
+                                    <Button
+                                        onClick={() =>
+                                            setShowCreateActivityForm(true)
+                                        }
+                                    >
+                                        Add
+                                    </Button>
+                                ) : (
+                                    ""
+                                )}
+                            </div>
+                            Module has no activities
+                        </div>
                     )}
                 </div>
             </div>
