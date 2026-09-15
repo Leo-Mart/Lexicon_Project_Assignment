@@ -188,22 +188,26 @@ export default function CoursesDetails() {
                             Select module for more information
                         </h3>
                         <ul>
-                            {course.modules.map((module) => (
-                                <li className="p-3" key={module.moduleId}>
-                                    <Link to={`/module/${module.moduleId}`}>
-                                        <Button className="w-full hover:cursor-pointer">
-                                            <h2 className="font-extrabold p-2">
-                                                {module.name}
-                                            </h2>
-                                            <p>{module.description}</p>
-                                            <p>
-                                                {module.startDate} -{" "}
-                                                {module.endDate}
-                                            </p>
-                                        </Button>
-                                    </Link>
-                                </li>
-                            ))}
+                            {[...course.modules]
+                                .sort((a, b) =>
+                                    a.startDate.localeCompare(b.startDate),
+                                )
+                                .map((module) => (
+                                    <li className="p-3" key={module.moduleId}>
+                                        <Link to={`/module/${module.moduleId}`}>
+                                            <Button className="w-full hover:cursor-pointer">
+                                                <h2 className="font-extrabold p-2">
+                                                    {module.name}
+                                                </h2>
+                                                <p>{module.description}</p>
+                                                <p>
+                                                    {module.startDate} -{" "}
+                                                    {module.endDate}
+                                                </p>
+                                            </Button>
+                                        </Link>
+                                    </li>
+                                ))}
                         </ul>
                     </div>
 
