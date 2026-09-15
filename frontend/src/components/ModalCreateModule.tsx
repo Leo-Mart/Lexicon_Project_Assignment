@@ -42,7 +42,6 @@ const ModalCreateModule = (props: CreateModuleModalProps) => {
     });
 
     useEffect(() => {
-        console.log(props.moduleToEdit);
         if (props.courseId === undefined) {
             const getCourses = async () => {
                 try {

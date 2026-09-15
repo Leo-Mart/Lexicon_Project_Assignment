@@ -5,6 +5,7 @@ import type { CourseRequest } from "../interfaces/course/CourseRequest";
 import type { PagedResponse } from "../interfaces/common/PagedResponse";
 import type { QueryParameters } from "../interfaces/common/QueryParameters";
 import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
+import type { ErrorResponeWithoutDetails } from "../interfaces/error/ErrorResponseWithoutDetails";
 
 const API_URL = API_BASE_URL + "/courses";
 
@@ -71,6 +72,11 @@ export const createCourse = async (
         body: JSON.stringify(newCourse),
     });
 
+    if (response.status === 400) {
+        const err = (await response.json()) as ErrorResponeWithoutDetails;
+        throw new Error(err.message);
+    }
+
     if (!response.ok) {
         throw new Error(`Could not create the course: ${response.status}`);
     }
@@ -87,6 +93,11 @@ export const updateCourse = async (
         headers: JSON_HEADERS,
         body: JSON.stringify(updateCourse),
     });
+
+    if (response.status === 400) {
+        const err = (await response.json()) as ErrorResponeWithoutDetails;
+        throw new Error(err.message);
+    }
 
     if (!response.ok) {
         throw new Error(`Could not update the course: ${response.status}`);
