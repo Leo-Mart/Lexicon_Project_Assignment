@@ -21,6 +21,7 @@ import { createResourceFormConfig } from "../types/formSchemas";
 import UserSideView from "../components/UserSideView";
 import Divider from "../components/Divider";
 import { UserStatus } from "../constants/UserConstant";
+import DashboardTabs from "../components/DashboardTabs";
 
 export default function CoursesDetails() {
     const { courseId } = useParams<{ courseId: string }>();
@@ -156,37 +157,27 @@ export default function CoursesDetails() {
                 <div className="grid grid-cols-6 gap-2">
                     <div>
                         {isAuthenticated && role === "Teacher" ? (
-                            <div className="fixed top-3/14 left-16 w-1/10">
-                                <h3 className="text-text-dark dark:text-text-light">
-                                    Teacher Control
-                                </h3>
-                                <div className="flex flex-col gap-3 justify-center">
-                                    <Button
-                                        className="hover:cursor-pointer"
-                                        onClick={() =>
-                                            setShowCreateModuleModal(true)
-                                        }
-                                    >
-                                        Create new module
-                                    </Button>
-                                    <Button
-                                        className="hover:cursor-pointer"
-                                        onClick={() =>
-                                            setShowCreateResourceForm(true)
-                                        }
-                                    >
-                                        Create new resource
-                                    </Button>
-                                </div>
+                            <div className="flex flex-col w-70 m-4">
+                                <DashboardTabs />
                             </div>
                         ) : (
                             ""
                         )}
                     </div>
                     <div className="p-2 m-2 col-span-2 rounded-md">
-                        <h3 className="font-bold text-text-dark dark:text-text-light ">
-                            Select module for more information
-                        </h3>
+                        <div className="flex flex-row justify-between">
+                            <div></div>
+                            <h3 className="font-bold text-text-dark dark:text-text-light ml-18">
+                                Modules
+                            </h3>
+                            <Button
+                                className="hover:cursor-pointer justify-end"
+                                onClick={() => setShowCreateModuleModal(true)}
+                            >
+                                Add module
+                            </Button>
+                        </div>
+
                         <ul>
                             {[...course.modules]
                                 .sort((a, b) =>
@@ -211,11 +202,18 @@ export default function CoursesDetails() {
                         </ul>
                     </div>
 
-                    <div className="flex flex-col items-center p-2 m-2 rounded-md col-span-2">
-                        <div className="flex w-full">
-                            <h2 className="font-bold grow text-center text-text-dark dark:text-text-light">
-                                Course resources:{" "}
-                            </h2>
+                    <div className="p-2 m-2 col-span-2 rounded-md">
+                        <div className="flex flex-row justify-between">
+                            <div></div>
+                            <h3 className="font-bold text-text-dark dark:text-text-light ml-18">
+                                Course resources
+                            </h3>
+                            <Button
+                                className="hover:cursor-pointer justify-end"
+                                onClick={() => setShowCreateResourceForm(true)}
+                            >
+                                Add resource
+                            </Button>
                         </div>
                         <div className="">
                             {resources.map((resource) => (

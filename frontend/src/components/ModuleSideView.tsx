@@ -63,7 +63,7 @@ export default function ModuleSideView({ module }: { module: ModuleResponse }) {
 
     return (
         <>
-            <div className="flex flex-row absolute mt-1 h-full overflow-hidden">
+            <div className="flex flex-row-reverse absolute mt-1 h-full overflow-hidden">
                 {isExpanded && (
                     <div className="bg-bg-window h-auto w-55 flex flex-col mx-1 overflow-y-scroll z-50">
                         <div className="border-b-4 border-dotted py-4">

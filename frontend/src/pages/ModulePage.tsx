@@ -32,6 +32,7 @@ import Button from "../components/Button";
 import ActivitySchedule from "../components/ActivitySchedule";
 import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
+import DashboardTabs from "../components/DashboardTabs";
 
 export default function ModulePage() {
     const { moduleId } = useParams<{ moduleId: string }>();
@@ -271,8 +272,11 @@ export default function ModulePage() {
 
     return (
         <>
-            <ModuleSideView module={module} />
-            <div className="flex flex-col items-center text-text-dark dark:text-text-light">
+            <div className="flex flex-row-reverse">
+                <ModuleSideView module={module} />
+            </div>
+            <DashboardTabs isAbsolute={true} />
+            <div className="flex flex-col items-center text-text-dark dark:text-text-light mt-8">
                 <h1 className="text-4xl pt-5">{module.name}</h1>
                 <div className="flex gap-5 pt-5">
                     <p className="text-2xl">Start: {module.startDate}</p>

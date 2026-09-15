@@ -1,56 +1,37 @@
-import { useState } from "react";
-import Button from "../components/Button";
+import { useSearchParams } from "react-router-dom";
+import DashboardTabs from "../components/DashboardTabs";
 import CourseListPage from "./CourseListPage";
 import ResourceManagement from "./ResourceManagement";
 import Users from "./Users";
 import Submissions from "./Submissions";
 
-const tabs = [
-    { label: "Course Management" },
-    { label: "Resource Management" },
-    { label: "Submissions" },
-    { label: "User Management" },
-];
-
 export default function Dashboard() {
-    const [activeTab, setActiveTab] = useState(1);
+    const [searchParams] = useSearchParams();
+    const activeTabParam = searchParams.get("tab");
+
+    const getActiveTabIndex = () => {
+        switch (activeTabParam) {
+            case "user-management":
+                return 2;
+            case "resource-management":
+                return 3;
+            case "submissions":
+                return 4;
+            case "course-management":
+            default:
+                return 1;
+        }
+    };
+
+    const activeTab = getActiveTabIndex();
+
     return (
         <div className="bg-bg flex dark:bg-bg-dark min-h-screen p-10">
-            <nav className="flex flex-col w-1/7 pr-3">
-                <ul className="flex flex-col gap-5 border-4 border-accent-teacher rounded-lg p-3 h-fit">
-                    {tabs.map((tab, index) => {
-                        return (
-                            <li key={index}>
-                                <Button
-                                    onClick={() => setActiveTab(index + 1)}
-                                    className="size-full hover:cursor-pointer"
-                                >
-                                    {tab.label}
-                                </Button>
-                            </li>
-                        );
-                    })}
-                </ul>
-            </nav>
+            <DashboardTabs />
             <div className="w-full">
-                {activeTab === 1 && (
-                    <div>
-                        <CourseListPage />
-                    </div>
-                )}
-                {activeTab === 2 && (
-                    <div className="text-text-light">
-                        <div>
-                            {" "}
-                            <Users />
-                        </div>
-                    </div>
-                )}
-                {activeTab === 3 && (
-                    <div className="text-text-light">
-                        <ResourceManagement />
-                    </div>
-                )}
+                {activeTab === 1 && <CourseListPage />}
+                {activeTab === 2 && <Users />}
+                {activeTab === 3 && <ResourceManagement />}
                 {activeTab === 4 && <Submissions />}
             </div>
         </div>
