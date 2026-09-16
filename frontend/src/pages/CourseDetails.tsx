@@ -183,7 +183,20 @@ export default function CoursesDetails() {
                                 .map((module) => (
                                     <li className="p-3" key={module.moduleId}>
                                         <Link to={`/module/${module.moduleId}`}>
-                                            <Button className="w-full hover:cursor-pointer">
+                                            <Button
+                                                variant={
+                                                    new Date() >=
+                                                        new Date(
+                                                            module.startDate,
+                                                        ) &&
+                                                    new Date() <=
+                                                        new Date(module.endDate)
+                                                        ? "confirm"
+                                                        : "primary"
+                                                }
+
+                                                className="w-full hover:cursor-pointer"
+                                            >
                                                 <h2 className="font-extrabold p-2">
                                                     {module.name}
                                                 </h2>
