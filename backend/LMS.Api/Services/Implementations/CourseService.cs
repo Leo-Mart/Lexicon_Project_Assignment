@@ -1,6 +1,7 @@
 using AutoMapper;
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Course;
-using LMS.Api.Exceptions;
+using LMS.Api.DTOs.Module;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
 using LMS.Api.Services.Interfaces;
@@ -15,11 +16,7 @@ public class CourseService(ICourseRepository courseRepo, IMapper mapper) : ICour
 
     public async Task<CourseDto> CreateNewCourse(CreateNewCourseDto newCourse)
     {
-        ValidateCourseDates(
-       newCourse.StartDate,
-       newCourse.EndDate,
-       validateNotBefore: true
-   );
+        ValidateCourseDates(newCourse.StartDate, newCourse.EndDate, validateNotBefore: true);
 
         var courseToSave = _mapper.Map<Course>(newCourse);
 
@@ -39,16 +36,20 @@ public class CourseService(ICourseRepository courseRepo, IMapper mapper) : ICour
         return _mapper.Map<CourseDto>(deletedCourse);
     }
 
-    public async Task<IEnumerable<CourseDto>?> GetAllCourses()
+    public async Task<PagedResponse<CourseDto>> GetAllCourses(
+        QueryParametersDto query,
+        CancellationToken cancellationToken = default
+    )
     {
-        var courses = await _courseRepo.GetCoursesAsync();
-        if (courses == null)
-        {
-            // log / throw error?
-            return null;
-        }
+        PagedResponse<Course> result = await _courseRepo.GetCoursesAsync(query, cancellationToken);
 
-        return _mapper.Map<IEnumerable<CourseDto>>(courses);
+        return new PagedResponse<CourseDto>
+        {
+            Items = _mapper.Map<List<CourseDto>>(result.Items),
+            TotalCount = result.TotalCount,
+            Page = result.Page,
+            PageSize = result.PageSize,
+        };
     }
 
     public async Task<CourseDto?> GetCourseById(Guid courseId)
@@ -63,9 +64,21 @@ public class CourseService(ICourseRepository courseRepo, IMapper mapper) : ICour
         return _mapper.Map<CourseDto>(course);
     }
 
+    public async Task<IEnumerable<ModuleDto>?> GetModulesForCourse(Guid courseId)
+    {
+        var modules = await _courseRepo.GetModulesForCourseAsync(courseId);
+        if (modules == null)
+        {
+            return null;
+        }
+
+        return _mapper.Map<IEnumerable<ModuleDto>>(modules);
+    }
+
     public async Task<CourseDto?> UpdateCourse(Guid courseId, UpdateCourseDto updateCourseDto)
     {
-        var courseFromDb = await _courseRepo.GetCourseByIdAsync(courseId);
+        Course? courseFromDb = await _courseRepo.GetCourseForUpdateAsync(courseId);
+
         if (courseFromDb == null)
         {
             // log / throw error?
@@ -76,16 +89,18 @@ public class CourseService(ICourseRepository courseRepo, IMapper mapper) : ICour
         // which no longer sees the DTO at all.
         _mapper.Map(updateCourseDto, courseFromDb);
 
+        ValidateCourseDates(courseFromDb.StartDate, courseFromDb.EndDate);
+
         var updatedCourseFromDb = await _courseRepo.UpdateCourseAsync(courseFromDb);
 
         return _mapper.Map<CourseDto>(updatedCourseFromDb);
     }
 
     private static void ValidateCourseDates(
-    DateOnly startDate,
-    DateOnly endDate,
-    bool validateNotBefore = false
-)
+        DateOnly startDate,
+        DateOnly endDate,
+        bool validateNotBefore = false
+    )
     {
         DateRangeValidator.ValidateRange(startDate, endDate, "Course");
 

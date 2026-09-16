@@ -20,9 +20,9 @@ public class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
         builder.Property(submission => submission.SubmittedAt)
             .IsRequired();
 
-        builder.Property(submission => submission.Status)
-            .IsRequired()
-            .HasConversion<int>();
+        builder.Property(submission => submission.ReviewStatus)
+            .IsRequired(false)
+            .HasConversion<int?>();
 
         builder.Property(submission => submission.Feedback)
             .HasMaxLength(ModelConstants.DescriptionMaxLength)
@@ -39,6 +39,9 @@ public class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
 
         builder.Property(submission => submission.UpdatedAt)
             .IsRequired();
+
+        builder.Property(submission => submission.ResubmittedAt)
+            .IsRequired(false);
 
         builder.HasOne(submission => submission.Activity)
             .WithMany(activity => activity.Submissions)

@@ -1,11 +1,12 @@
 import type { ComponentProps } from "react";
 
-type Variant = "primary" | "confirm" | "cancel";
+type Variant = "primary" | "confirm" | "cancel" | "delete";
 
 const variants: Record<Variant, string> = {
     primary: "bg-buttons text-text-light",
     confirm: "bg-btn-confirm text-text-dark",
-    cancel: "bg-btn-cancel text-text-light",
+    cancel: "bg-buttons text-text-light",
+    delete: "bg-btn-cancel text-text-light",
 };
 
 type ButtonProps = ComponentProps<"button"> & {
@@ -21,7 +22,7 @@ export default function Button({
     return (
         <button
             type={type}
-            className={`rounded-md px-4 py-2 font-semibold hover:brightness-110 disabled:opacity-50 ${variants[variant]} ${className}`}
+            className={`rounded-md px-4 py-2 font-semibold hover:brightness-110 hover:cursor-pointer disabled:opacity-50 ${variants[variant]} ${className}`}
             {...props}
         />
     );

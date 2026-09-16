@@ -6,18 +6,19 @@ export default function ModuleSideViewPart({
 }: {
     module: ModuleResponse;
 }) {
-    // Parse the end date and check if it's in the past
-    const dateString: string = "2026-10-01T00:00:00Z";
+    // Parse the end date and check if it's in the past or in the future
+    const dateString: string = new Date().toString();
     const isPast = new Date(module.endDate) < new Date(dateString);
+    const isFuture = new Date(module.startDate) > new Date(dateString);
 
     return (
         <>
             <Link to={`/module/${module.moduleId}`} className="details-button">
                 <div
-                    className={`border-2 border-buttons text-l ${isPast ? "opacity-50 grayscale" : ""}`}
+                    className={`text-l  text-black font-semibold rounded p-2 m-1.5 ${isPast ? "bg-gray-300" : isFuture ? "bg-accent-blue" : "bg-btn-confirm"}`}
                 >
                     <h1 className="text-center">{module.name}</h1>
-                    <p>
+                    <p className="text-center">
                         {module.startDate} - {module.endDate}
                     </p>
                 </div>

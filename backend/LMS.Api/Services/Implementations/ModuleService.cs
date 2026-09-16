@@ -1,4 +1,5 @@
 using AutoMapper;
+using LMS.Api.DTOs.Common;
 using LMS.Api.DTOs.Module;
 using LMS.Api.Exceptions;
 using LMS.Api.Models;
@@ -36,7 +37,15 @@ public class ModuleService(
         var moduleToSave = _mapper.Map<Module>(newModule);
 
         var savedModule = await _moduleRepo.CreateModuleAsync(moduleToSave);
-        return _mapper.Map<ModuleDto>(savedModule);
+
+        var createdModule = await _moduleRepo.GetModuleByIdAsync(savedModule.ModuleId);
+
+        if (createdModule == null)
+        {
+            throw new InvalidOperationException("Created module could not be loaded.");
+        }
+
+        return _mapper.Map<ModuleDto>(createdModule);
     }
 
     public async Task<ModuleDto?> DeleteModule(Guid moduleId)
@@ -49,15 +58,20 @@ public class ModuleService(
         return _mapper.Map<ModuleDto>(deletedModule);
     }
 
-    public async Task<IEnumerable<ModuleDto>?> GetAllModules()
+    public async Task<PagedResponse<ModuleDto>> GetAllModules(
+        QueryParametersDto query,
+        CancellationToken cancellationToken = default
+    )
     {
-        var modules = await _moduleRepo.GetModulesAsync();
-        if (modules == null)
-        {
-            return null;
-        }
+        PagedResponse<Module> result = await _moduleRepo.GetModulesAsync(query, cancellationToken);
 
-        return _mapper.Map<IEnumerable<ModuleDto>>(modules);
+        return new PagedResponse<ModuleDto>
+        {
+            Items = _mapper.Map<List<ModuleDto>>(result.Items),
+            TotalCount = result.TotalCount,
+            Page = result.Page,
+            PageSize = result.PageSize,
+        };
     }
 
     public async Task<ModuleDto?> GetModuleById(Guid moduleId)
@@ -73,14 +87,14 @@ public class ModuleService(
 
     public async Task<ModuleDto?> UpdateModule(Guid moduleId, UpdateModuleDto updateModule)
     {
-        var moduleFromDb = await _moduleRepo.GetModuleByIdAsync(moduleId);
+        var moduleFromDb = await _moduleRepo.GetModuleForUpdateAsync(moduleId);
         if (moduleFromDb == null)
         {
             return null;
         }
 
         await ValidateModuleDatesAsync(
-            moduleFromDb.CourseId,
+            updateModule.CourseId,
             updateModule.StartDate,
             updateModule.EndDate,
             excludedModuleId: moduleId
@@ -129,10 +143,7 @@ public class ModuleService(
 
         foreach (Module existingModule in course.Modules)
         {
-            if (
-                excludedModuleId.HasValue
-                && existingModule.ModuleId == excludedModuleId.Value
-            )
+            if (excludedModuleId.HasValue && existingModule.ModuleId == excludedModuleId.Value)
             {
                 continue;
             }
@@ -152,5 +163,10 @@ public class ModuleService(
                 );
             }
         }
+    }
+
+    public async Task<Guid?> GetCourseIdByModuleIdAsync(Guid moduleId, CancellationToken cancellationToken = default)
+    {
+        return await _moduleRepo.GetCourseIdByModuleIdAsync(moduleId, cancellationToken);
     }
 }

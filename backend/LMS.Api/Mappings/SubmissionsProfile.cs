@@ -12,7 +12,10 @@ public class SubmissionsProfile : Profile
 {
     public SubmissionsProfile()
     {
-        CreateMap<Submission, SubmissionDto>();
+        // SubmittedLate is derived from Activity.Deadline, not stored on the submission.
+        CreateMap<Submission, SubmissionDto>()
+            .ForMember(dest => dest.SubmittedLate, opt => opt.MapFrom(src =>
+                src.Activity != null && src.Activity.Deadline != null && src.SubmittedAt > src.Activity.Deadline));
         CreateMap<SubmissionCreateDto, Submission>();
     }
 }

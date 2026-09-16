@@ -1,9 +1,18 @@
 import { lazy } from "react";
+import type { UserRole } from "../constants/UserConstant";
+const teacherOnly: UserRole[] = ["Teacher"];
 
 export const routes = [
     {
         path: "",
         component: lazy(() => import("../pages/Dashboard")),
+        createHeader: false,
+        isProtected: true,
+        allowedRoles: teacherOnly,
+    },
+    {
+        path: "*",
+        component: lazy(() => import("../pages/NotFound")),
         createHeader: false,
         isProtected: false,
     },
@@ -12,7 +21,8 @@ export const routes = [
         displayName: "Dashboard",
         component: lazy(() => import("../pages/Dashboard")),
         createHeader: true,
-        isProtected: false,
+        isProtected: true,
+        allowedRoles: teacherOnly,
     },
     {
         path: "/login",
@@ -29,23 +39,49 @@ export const routes = [
         isProtected: false,
     },
     {
-        path: "/module/:id",
+        path: "/module/:moduleId",
         displayName: "Module",
         component: lazy(() => import("../pages/ModulePage")),
         createHeader: false,
+        isProtected: true,
+    },
+    {
+        path: "/resources",
+        displayName: "Resources",
+        component: lazy(() => import("../pages/ResourceManagement")),
+        createHeader: false,
+        isProtected: true,
+        allowedRoles: teacherOnly,
     },
     {
         path: "/module",
         displayName: "Module",
         component: lazy(() => import("../pages/ModulePage")),
-        createHeader: true,
-        isProtected: false,
+        createHeader: false,
+        isProtected: true,
+        allowedRoles: teacherOnly,
     },
     {
         path: "/courselist",
         displayName: "Course list",
-        component: lazy(() => import("../pages/CourseList")),
-        createHeader: true,
-        isProtected: false,
+        component: lazy(() => import("../pages/CourseListPage")),
+        createHeader: false,
+        isProtected: true,
+        allowedRoles: teacherOnly,
+    },
+    {
+        path: "/courses/:courseId",
+        displayName: "Course details",
+        component: lazy(() => import("../pages/CourseDetails")),
+        createHeader: false,
+        isProtected: true,
+    },
+    {
+        path: "/users",
+        displayName: "Users",
+        component: lazy(() => import("../pages/Users")),
+        createHeader: false,
+        isProtected: true,
+        allowedRoles: teacherOnly,
     },
 ];

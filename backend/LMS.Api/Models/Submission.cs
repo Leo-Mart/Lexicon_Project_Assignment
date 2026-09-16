@@ -8,12 +8,15 @@ public class Submission
     public Guid StudentId { get; set; }
     public string Text { get; set; } = string.Empty;
     public DateTime SubmittedAt { get; set; }
-    public SubmissionStatus Status { get; set; }
+    public SubmissionReviewStatus? ReviewStatus { get; set; }
     public string? Feedback { get; set; }
     public Guid? FeedbackByTeacherId { get; set; }
     public DateTime? FeedbackAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    // Set only when the student resubmits after a needs-completion review - not
+    // reused for any other update, so it's a reliable "was this resubmitted?" signal.
+    public DateTime? ResubmittedAt { get; set; }
 
     public Activity Activity { get; set; } = null!;
     public User Student { get; set; } = null!;

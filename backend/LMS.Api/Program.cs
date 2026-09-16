@@ -32,8 +32,9 @@ string jwtAudience =
 string frontendUrl = builder.Configuration["Frontend:Url"] ?? "http://localhost:5173";
 
 builder.Services.AddDbContext<LMSDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -60,10 +61,12 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IModuleService, ModuleService>();
 builder.Services.AddScoped<IActivityService, ActivityService>();
+builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<IModuleRepository, ModuleRepository>();
 builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
+builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 
 builder.Services.AddScoped<ISubmissionsService, SubmissionsService>();
 builder.Services.AddScoped<ISubmissionsRepository, SubmissionsRepository>();

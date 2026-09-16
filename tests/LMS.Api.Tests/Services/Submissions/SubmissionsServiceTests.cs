@@ -1,7 +1,11 @@
 using AutoMapper;
 using LMS.Api.Data.UnitOfWork;
+using LMS.Api.DTOs.Activities;
+using LMS.Api.DTOs.Common;
+using LMS.Api.DTOs.Module;
 using LMS.Api.DTOs.Submissions;
 using LMS.Api.Enums.Model;
+using LMS.Api.Exceptions;
 using LMS.Api.Mappings;
 using LMS.Api.Models;
 using LMS.Api.Repositories.Interfaces;
@@ -15,12 +19,18 @@ namespace LMS.Api.Tests.Services.Submissions;
 public class SubmissionsServiceTests
 {
     private readonly Mock<ISubmissionsRepository> _submissionsRepositoryMock;
+    private readonly Mock<IActivityService> _activityServiceMock;
+    private readonly Mock<IModuleService> _moduleServiceMock;
+    private readonly Mock<IEnrollmentService> _enrollmentServiceMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly ISubmissionsService _submissionsService;
 
     public SubmissionsServiceTests()
     {
         _submissionsRepositoryMock = new Mock<ISubmissionsRepository>();
+        _activityServiceMock = new Mock<IActivityService>();
+        _moduleServiceMock = new Mock<IModuleService>();
+        _enrollmentServiceMock = new Mock<IEnrollmentService>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
 
         // A real mapper, not a mock: the service's job is to map, so a
@@ -32,6 +42,9 @@ public class SubmissionsServiceTests
 
         _submissionsService = new SubmissionsService(
             _submissionsRepositoryMock.Object,
+            _activityServiceMock.Object,
+            _moduleServiceMock.Object,
+            _enrollmentServiceMock.Object,
             _unitOfWorkMock.Object,
             mapper
         );
@@ -46,7 +59,6 @@ public class SubmissionsServiceTests
             StudentId = Guid.NewGuid(),
             Text = "Assignment handed in.",
             SubmittedAt = new DateTime(2026, 10, 1, 14, 30, 0, DateTimeKind.Utc),
-            Status = SubmissionStatus.Submitted,
             Feedback = "Good work.",
             FeedbackByTeacherId = Guid.NewGuid(),
             FeedbackAt = new DateTime(2026, 10, 3, 10, 0, 0, DateTimeKind.Utc),
@@ -75,7 +87,6 @@ public class SubmissionsServiceTests
         Assert.Equal(submissions[0].ActivityId, result[0].ActivityId);
         Assert.Equal(submissions[0].StudentId, result[0].StudentId);
         Assert.Equal(submissions[0].Text, result[0].Text);
-        Assert.Equal(submissions[0].Status, result[0].Status);
 
         _submissionsRepositoryMock.Verify(
             repository => repository.GetAllAsync(It.IsAny<CancellationToken>()),
@@ -93,6 +104,33 @@ public class SubmissionsServiceTests
         List<SubmissionDto> result = await _submissionsService.GetAllAsync();
 
         Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_WithSubmissions_ShouldReturnMappedPage()
+    {
+        List<Submission> submissions =
+        [
+            CreateSubmission(Guid.NewGuid()),
+            CreateSubmission(Guid.NewGuid())
+        ];
+        QueryParametersDto query = new() { Page = 1, PageSize = 10 };
+
+        _submissionsRepositoryMock
+            .Setup(repository => repository.GetPagedAsync(query, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PagedResponse<Submission>
+            {
+                Items = submissions,
+                TotalCount = 2,
+                Page = 1,
+                PageSize = 10
+            });
+
+        PagedResponse<SubmissionDto> result = await _submissionsService.GetPagedAsync(query);
+
+        Assert.Equal(2, result.Items.Count);
+        Assert.Equal(2, result.TotalCount);
+        Assert.Equal(submissions[0].SubmissionId, result.Items[0].SubmissionId);
     }
 
     [Fact]
@@ -115,6 +153,23 @@ public class SubmissionsServiceTests
     }
 
     [Fact]
+    public async Task GetByIdAsync_WithSubmissionAfterDeadline_ShouldBeLate()
+    {
+        Guid submissionId = Guid.NewGuid();
+        Submission submission = CreateSubmission(submissionId);
+        submission.Activity = new Activity { Deadline = submission.SubmittedAt.AddDays(-1) };
+
+        _submissionsRepositoryMock
+            .Setup(repository => repository.GetByIdAsync(submissionId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(submission);
+
+        SubmissionDto? result = await _submissionsService.GetByIdAsync(submissionId);
+
+        Assert.NotNull(result);
+        Assert.True(result.SubmittedLate);
+    }
+
+    [Fact]
     public async Task GetByIdAsync_WithMissingSubmission_ShouldReturnNull()
     {
         Guid submissionId = Guid.NewGuid();
@@ -126,5 +181,420 @@ public class SubmissionsServiceTests
         SubmissionDto? result = await _submissionsService.GetByIdAsync(submissionId);
 
         Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetByStudentIdAsync_WithSubmissions_ShouldReturnMappedSubmissions()
+    {
+        Guid studentId = Guid.NewGuid();
+        List<Submission> submissions = [CreateSubmission(Guid.NewGuid())];
+
+        _submissionsRepositoryMock
+            .Setup(repository => repository.GetByStudentIdAsync(studentId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(submissions);
+
+        List<SubmissionDto> result = await _submissionsService.GetByStudentIdAsync(studentId);
+
+        Assert.Single(result);
+        Assert.Equal(submissions[0].SubmissionId, result[0].SubmissionId);
+    }
+
+    [Fact]
+    public async Task GetByStudentIdAsync_WithNoSubmissions_ShouldReturnEmptyList()
+    {
+        Guid studentId = Guid.NewGuid();
+
+        _submissionsRepositoryMock
+            .Setup(repository => repository.GetByStudentIdAsync(studentId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+
+        List<SubmissionDto> result = await _submissionsService.GetByStudentIdAsync(studentId);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetByActivityIdAsync_WithSubmissions_ShouldReturnMappedSubmissions()
+    {
+        Guid activityId = Guid.NewGuid();
+        List<Submission> submissions = [CreateSubmission(Guid.NewGuid())];
+
+        _submissionsRepositoryMock
+            .Setup(repository => repository.GetByActivityIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(submissions);
+
+        List<SubmissionDto> result = await _submissionsService.GetByActivityIdAsync(activityId);
+
+        Assert.Single(result);
+        Assert.Equal(submissions[0].SubmissionId, result[0].SubmissionId);
+    }
+
+    [Fact]
+    public async Task GetByActivityIdAsync_WithNoSubmissions_ShouldReturnEmptyList()
+    {
+        Guid activityId = Guid.NewGuid();
+
+        _submissionsRepositoryMock
+            .Setup(repository => repository.GetByActivityIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+
+        List<SubmissionDto> result = await _submissionsService.GetByActivityIdAsync(activityId);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetOverdueByActivityIdAsync_WhenActivityMissing_ShouldReturnEmptyList()
+    {
+        Guid activityId = Guid.NewGuid();
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ActivityDto?)null);
+
+        List<OverdueSubmissionDto> result = await _submissionsService.GetOverdueByActivityIdAsync(activityId);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetOverdueByActivityIdAsync_WhenNoDeadline_ShouldReturnEmptyList()
+    {
+        Guid activityId = Guid.NewGuid();
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Deadline = null });
+
+        List<OverdueSubmissionDto> result = await _submissionsService.GetOverdueByActivityIdAsync(activityId);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetOverdueByActivityIdAsync_WhenDeadlineNotPassed_ShouldReturnEmptyList()
+    {
+        Guid activityId = Guid.NewGuid();
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Deadline = DateTime.UtcNow.AddDays(1) });
+
+        List<OverdueSubmissionDto> result = await _submissionsService.GetOverdueByActivityIdAsync(activityId);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetOverdueByActivityIdAsync_WhenModuleMissing_ShouldReturnEmptyList()
+    {
+        Guid activityId = Guid.NewGuid();
+        Guid moduleId = Guid.NewGuid();
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, ModuleId = moduleId, Deadline = DateTime.UtcNow.AddDays(-1) });
+        _moduleServiceMock
+            .Setup(service => service.GetModuleById(moduleId))
+            .ReturnsAsync((ModuleDto?)null);
+
+        List<OverdueSubmissionDto> result = await _submissionsService.GetOverdueByActivityIdAsync(activityId);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetOverdueByActivityIdAsync_WithUnsubmittedEnrollments_ShouldReturnOverdueStudents()
+    {
+        Guid activityId = Guid.NewGuid();
+        Guid moduleId = Guid.NewGuid();
+        Guid courseId = Guid.NewGuid();
+        Guid submittedStudentId = Guid.NewGuid();
+        Guid overdueStudentId = Guid.NewGuid();
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, ModuleId = moduleId, Deadline = DateTime.UtcNow.AddDays(-1) });
+        _moduleServiceMock
+            .Setup(service => service.GetModuleById(moduleId))
+            .ReturnsAsync(new ModuleDto { ModuleId = moduleId, CourseId = courseId });
+        _enrollmentServiceMock
+            .Setup(service => service.GetEnrollmentsByCourseIdAsync(courseId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+            [
+                new Enrollment { StudentId = submittedStudentId, CourseId = courseId, Student = new User { Name = "Submitted Student" } },
+                new Enrollment { StudentId = overdueStudentId, CourseId = courseId, Student = new User { Name = "Overdue Student" } }
+            ]);
+        Submission submittedSubmission = CreateSubmission(Guid.NewGuid());
+        submittedSubmission.StudentId = submittedStudentId;
+        _submissionsRepositoryMock
+            .Setup(repository => repository.GetByActivityIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([submittedSubmission]);
+
+        List<OverdueSubmissionDto> result = await _submissionsService.GetOverdueByActivityIdAsync(activityId);
+
+        OverdueSubmissionDto overdue = Assert.Single(result);
+        Assert.Equal(overdueStudentId, overdue.StudentId);
+        Assert.Equal(activityId, overdue.ActivityId);
+        Assert.Equal("Overdue Student", overdue.StudentName);
+    }
+
+    [Fact]
+    public async Task GetOverdueByActivityIdAsync_WhenAllEnrolledSubmitted_ShouldReturnEmptyList()
+    {
+        Guid activityId = Guid.NewGuid();
+        Guid moduleId = Guid.NewGuid();
+        Guid courseId = Guid.NewGuid();
+        Guid studentId = Guid.NewGuid();
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, ModuleId = moduleId, Deadline = DateTime.UtcNow.AddDays(-1) });
+        _moduleServiceMock
+            .Setup(service => service.GetModuleById(moduleId))
+            .ReturnsAsync(new ModuleDto { ModuleId = moduleId, CourseId = courseId });
+        _enrollmentServiceMock
+            .Setup(service => service.GetEnrollmentsByCourseIdAsync(courseId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new Enrollment { StudentId = studentId, CourseId = courseId, Student = new User { Name = "Submitted Student" } }]);
+        Submission submittedSubmission = CreateSubmission(Guid.NewGuid());
+        submittedSubmission.StudentId = studentId;
+        _submissionsRepositoryMock
+            .Setup(repository => repository.GetByActivityIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([submittedSubmission]);
+
+        List<OverdueSubmissionDto> result = await _submissionsService.GetOverdueByActivityIdAsync(activityId);
+
+        Assert.Empty(result);
+    }
+
+    private static SubmissionsCreateCommand CreateCommand(Guid activityId)
+    {
+        return new SubmissionsCreateCommand
+        {
+            StudentId = Guid.NewGuid(),
+            ActivityId = activityId,
+            Text = "Assignment handed in."
+        };
+    }
+
+    [Fact]
+    public async Task CreateSubmission_BeforeDeadline_ShouldNotBeLate()
+    {
+        Guid activityId = Guid.NewGuid();
+        SubmissionsCreateCommand command = CreateCommand(activityId);
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Type = ActivityType.Task, Deadline = DateTime.UtcNow.AddDays(1) });
+
+        SubmissionDto result = await _submissionsService.CreateSubmission(command, CancellationToken.None);
+
+        Assert.False(result.SubmittedLate);
+    }
+
+    [Fact]
+    public async Task CreateSubmission_AfterDeadline_ShouldBeLate()
+    {
+        Guid activityId = Guid.NewGuid();
+        SubmissionsCreateCommand command = CreateCommand(activityId);
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Type = ActivityType.Task, Deadline = DateTime.UtcNow.AddDays(-1) });
+
+        SubmissionDto result = await _submissionsService.CreateSubmission(command, CancellationToken.None);
+
+        Assert.True(result.SubmittedLate);
+    }
+
+    [Fact]
+    public async Task CreateSubmission_ForPracticeType_ShouldSucceed()
+    {
+        Guid activityId = Guid.NewGuid();
+        SubmissionsCreateCommand command = CreateCommand(activityId);
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Type = ActivityType.Practice, Deadline = DateTime.UtcNow.AddDays(1) });
+
+        SubmissionDto result = await _submissionsService.CreateSubmission(command, CancellationToken.None);
+
+        Assert.False(result.SubmittedLate);
+    }
+
+    [Fact]
+    public async Task CreateSubmission_WhenActivityNotFound_ShouldNotThrowAndNotBeLate()
+    {
+        // No activity to check the type or deadline against - the create
+        // still goes through, and there's nothing to be late against.
+        Guid activityId = Guid.NewGuid();
+        SubmissionsCreateCommand command = CreateCommand(activityId);
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ActivityDto?)null);
+
+        SubmissionDto result = await _submissionsService.CreateSubmission(command, CancellationToken.None);
+
+        Assert.False(result.SubmittedLate);
+    }
+
+    [Theory]
+    [InlineData(ActivityType.Lecture)]
+    [InlineData(ActivityType.ELearning)]
+    [InlineData(ActivityType.Other)]
+    public async Task CreateSubmission_ForNonSubmittableType_ShouldThrow(ActivityType type)
+    {
+        Guid activityId = Guid.NewGuid();
+        SubmissionsCreateCommand command = CreateCommand(activityId);
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Type = type });
+
+        await Assert.ThrowsAsync<InvalidActivityTypeException>(
+            () => _submissionsService.CreateSubmission(command, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task CreateSubmission_ShouldAgreeWithMappingProfile_WhenActivityIsLoaded()
+    {
+        // CreateSubmission sets SubmittedLate manually since the new submission's
+        // Activity nav isn't loaded; this checks that value against what the
+        // mapping profile would compute once the nav is loaded (e.g. via GetByIdAsync).
+        Guid activityId = Guid.NewGuid();
+        SubmissionsCreateCommand command = CreateCommand(activityId);
+        DateTime deadline = DateTime.UtcNow.AddSeconds(-1);
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Type = ActivityType.Task, Deadline = deadline });
+
+        Submission? createdSubmission = null;
+        _submissionsRepositoryMock
+            .Setup(repository => repository.CreateAsync(It.IsAny<Submission>(), It.IsAny<CancellationToken>()))
+            .Callback<Submission, CancellationToken>((submission, _) => createdSubmission = submission)
+            .Returns(Task.CompletedTask);
+
+        SubmissionDto result = await _submissionsService.CreateSubmission(command, CancellationToken.None);
+
+        createdSubmission!.Activity = new Activity { Deadline = deadline };
+        IMapper mapper = new MapperConfiguration(
+            cfg => cfg.AddProfile<SubmissionsProfile>(),
+            NullLoggerFactory.Instance
+        ).CreateMapper();
+        SubmissionDto mapped = mapper.Map<SubmissionDto>(createdSubmission);
+
+        // The deadline is already past, so both paths must land on true, not
+        // just agree with each other (which they'd also do if both were wrong).
+        Assert.True(result.SubmittedLate);
+        Assert.Equal(mapped.SubmittedLate, result.SubmittedLate);
+    }
+
+    [Fact]
+    public async Task SetFeedbackAsync_WithExistingSubmission_ShouldUpdateFeedbackAndReviewStatus()
+    {
+        Guid submissionId = Guid.NewGuid();
+        Submission submission = CreateSubmission(submissionId);
+
+        _submissionsRepositoryMock
+            .Setup(repository => repository.GetByIdAsync(submissionId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(submission);
+
+        SetFeedbackCommand command = new()
+        {
+            SubmissionId = submissionId,
+            TeacherId = Guid.NewGuid(),
+            Details = new SubmissionFeedbackDto { Feedback = "Needs more tests.", ReviewStatus = SubmissionReviewStatus.NeedsCompletion }
+        };
+
+        SubmissionDto? result = await _submissionsService.SetFeedbackAsync(command);
+
+        Assert.NotNull(result);
+        Assert.Equal(SubmissionReviewStatus.NeedsCompletion, result.ReviewStatus);
+        Assert.Equal("Needs more tests.", result.Feedback);
+    }
+
+    [Fact]
+    public async Task CreateSubmission_WithNoDeadline_ShouldNotBeLate()
+    {
+        Guid activityId = Guid.NewGuid();
+        SubmissionsCreateCommand command = CreateCommand(activityId);
+
+        _activityServiceMock
+            .Setup(service => service.GetByIdAsync(activityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ActivityDto { ActivityId = activityId, Type = ActivityType.Task, Deadline = null });
+
+        SubmissionDto result = await _submissionsService.CreateSubmission(command, CancellationToken.None);
+
+        Assert.False(result.SubmittedLate);
+    }
+
+    private static SubmissionsUpdateCommand CreateUpdateCommand(Guid submissionId)
+    {
+        return new SubmissionsUpdateCommand
+        {
+            SubmissionId = submissionId,
+            StudentId = Guid.NewGuid(),
+            Text = "Revised submission."
+        };
+    }
+
+    [Fact]
+    public async Task UpdateSubmission_WithNeedsCompletionSubmission_ShouldUpdateTextAndClearReview()
+    {
+        Guid submissionId = Guid.NewGuid();
+        Submission submission = CreateSubmission(submissionId);
+        submission.ReviewStatus = SubmissionReviewStatus.NeedsCompletion;
+
+        _submissionsRepositoryMock
+            .Setup(repository => repository.GetByIdAsync(submissionId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(submission);
+
+        SubmissionsUpdateCommand command = CreateUpdateCommand(submissionId);
+
+        SubmissionDto? result = await _submissionsService.UpdateSubmission(command, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal(command.Text, result.Text);
+        Assert.Null(result.ReviewStatus);
+        Assert.Null(result.Feedback);
+        Assert.Null(result.FeedbackByTeacherId);
+        Assert.Null(result.FeedbackAt);
+
+        _submissionsRepositoryMock.Verify(repository => repository.Update(submission), Times.Once);
+        _unitOfWorkMock.Verify(unitOfWork => unitOfWork.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateSubmission_WithMissingSubmission_ShouldReturnNull()
+    {
+        Guid submissionId = Guid.NewGuid();
+
+        _submissionsRepositoryMock
+            .Setup(repository => repository.GetByIdAsync(submissionId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Submission?)null);
+
+        SubmissionDto? result = await _submissionsService.UpdateSubmission(
+            CreateUpdateCommand(submissionId), CancellationToken.None);
+
+        Assert.Null(result);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(SubmissionReviewStatus.Approved)]
+    public async Task UpdateSubmission_WhenNotNeedingCompletion_ShouldThrow(SubmissionReviewStatus? reviewStatus)
+    {
+        Guid submissionId = Guid.NewGuid();
+        Submission submission = CreateSubmission(submissionId);
+        submission.ReviewStatus = reviewStatus;
+
+        _submissionsRepositoryMock
+            .Setup(repository => repository.GetByIdAsync(submissionId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(submission);
+
+        await Assert.ThrowsAsync<InvalidSubmissionStateException>(
+            () => _submissionsService.UpdateSubmission(CreateUpdateCommand(submissionId), CancellationToken.None));
     }
 }

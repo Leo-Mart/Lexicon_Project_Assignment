@@ -1,10 +1,40 @@
 import { NavLink } from "react-router-dom";
-import { routes } from "../routes/config"; // Adjust the import path
+import { routes } from "../routes/config";
 import UserInfo from "./UserInfo";
+import { useAuth } from "../hooks/useAuth";
+import DashboardTabs from "./DashboardTabs";
 
 export default function MainHeader() {
     // Filter routes that should appear in the header
-    const headerRoutes = routes.filter((route) => route.createHeader);
+
+    const { isAuthenticated, role, courseId, currentModuleId } = useAuth();
+    const homePath = currentModuleId
+        ? `/module/${currentModuleId}`
+        : `/courses/${courseId}`;
+
+    const headerRoutes = routes.filter((route) => {
+        if (!route.createHeader) {
+            return false;
+        }
+
+        if (isAuthenticated && route.path === "/login") {
+            return false;
+        }
+
+        if (!route.isProtected) {
+            return true;
+        }
+
+        if (!isAuthenticated) {
+            return false;
+        }
+
+        if (!route.allowedRoles) {
+            return true;
+        }
+
+        return role !== null && route.allowedRoles.includes(role);
+    });
 
     return (
         <nav
@@ -12,22 +42,33 @@ export default function MainHeader() {
             role="navigation"
         >
             <ul className="flex gap-5 text-3xl">
-                {headerRoutes.map((route) => {
-                    return (
-                        <li key={route.path}>
-                            <NavLink
-                                to={route.path || "/"} // Handle empty path
-                                end={
-                                    route.path === "" || route.path === "/index"
-                                }
-                            >
-                                {route.displayName || "Dashboard"}
-                            </NavLink>
-                        </li>
-                    );
-                })}
+                {isAuthenticated && role === "Student" && courseId && (
+                    <li>
+                        <NavLink to={homePath}>Home</NavLink>
+                    </li>
+                )}
+                {!isAuthenticated &&
+                    headerRoutes.map((route) => {
+                        return (
+                            <li key={route.path}>
+                                <NavLink
+                                    to={route.path || "/"} // Handle empty path
+                                    end={
+                                        route.path === "" ||
+                                        route.path === "/index"
+                                    }
+                                >
+                                    {route.displayName || "Dashboard"}
+                                </NavLink>
+                            </li>
+                        );
+                    })}
             </ul>
-            <div className="w-full flex justify-end px-2  md:w-auto md:absolute md:right-4 md:top-1/2 md:-translate-y-1/2 md:px-0">
+            <div className="flex justify-end"></div>
+            {isAuthenticated && role === "Teacher" && (
+                <DashboardTabs></DashboardTabs>
+            )}
+            <div className="w-full flex justify-end px-2 md:w-auto md:absolute md:right-4 md:top-1/2 md:-translate-y-1/2 md:px-0">
                 <UserInfo />
             </div>
         </nav>

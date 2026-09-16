@@ -1,0 +1,59 @@
+import { authFetch } from "./authService";
+import { API_BASE_URL, HttpMethod } from "../constants/Constants";
+import type { CourseResponse } from "../interfaces/course/CourseResponse";
+import type { EnrollmentUserResponse } from "../interfaces/enrollment/EnrollmentUserResponse";
+
+const API_URL = API_BASE_URL + "/enrollments";
+
+export const fetchStudentCourse = async (): Promise<CourseResponse> => {
+    const response = await authFetch(`${API_URL}/course`);
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch student course: ${response.status}`);
+    }
+
+    return (await response.json()) as CourseResponse;
+};
+
+export const fetchUsersForCourse = async (
+    courseId: string,
+): Promise<EnrollmentUserResponse[]> => {
+    const response = await authFetch(`${API_URL}/course/${courseId}`);
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch users: ${response.status}`);
+    }
+
+    return (await response.json()) as EnrollmentUserResponse[];
+};
+
+export const assignOrChangeCourse = async (
+    studentId: string,
+    courseId: string,
+): Promise<void> => {
+    const response = await authFetch(
+        `${API_URL}/students/${studentId}/course/${courseId}`,
+        {
+            method: HttpMethod.PUT,
+        },
+    );
+
+    if (!response.ok) {
+        throw new Error(
+            `Could not assign or change course: ${response.status}`,
+        );
+    }
+};
+
+export const removeCourse = async (studentId: string): Promise<void> => {
+    const response = await authFetch(
+        `${API_URL}/students/${studentId}/course`,
+        {
+            method: HttpMethod.DELETE,
+        },
+    );
+
+    if (!response.ok) {
+        throw new Error(`Could not remove course: ${response.status}`);
+    }
+};

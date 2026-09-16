@@ -140,7 +140,7 @@ namespace LMS.Api.Data.Migrations
                     b.Property<DateTime>("EnrolledAt")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("StudentId", "CourseId");
+                    b.HasKey("StudentId");
 
                     b.HasIndex("CourseId");
 
@@ -265,7 +265,10 @@ namespace LMS.Api.Data.Migrations
                     b.Property<Guid?>("FeedbackByTeacherId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Status")
+                    b.Property<DateTime?>("ResubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ReviewStatus")
                         .HasColumnType("int");
 
                     b.Property<Guid>("StudentId")
@@ -564,7 +567,7 @@ namespace LMS.Api.Data.Migrations
                     b.HasOne("LMS.Api.Models.User", "Student")
                         .WithOne("Enrollment")
                         .HasForeignKey("LMS.Api.Models.Enrollment", "StudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Course");

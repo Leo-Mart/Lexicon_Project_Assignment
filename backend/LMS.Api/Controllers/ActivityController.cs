@@ -1,6 +1,11 @@
-
+using System.Security.Claims;
+using LMS.Api.Constants;
 using LMS.Api.DTOs.Activities;
+using LMS.Api.DTOs.Common;
+using LMS.Api.DTOs.Course;
+using LMS.Api.DTOs.Module;
 using LMS.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LMS.Api.Controllers;
@@ -8,26 +13,44 @@ namespace LMS.Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Tags("Activities")]
+[Authorize]
 public class ActivityController : ControllerBase
 {
-
     private readonly IActivityService _activityService;
+    private readonly IModuleService _moduleService;
+    private readonly IEnrollmentService _enrollmentService;
 
-    public ActivityController(IActivityService activityService)
+    public ActivityController(
+        IActivityService activityService,
+        IModuleService moduleService,
+        IEnrollmentService enrollmentService
+    )
     {
         _activityService = activityService;
+        _moduleService = moduleService;
+        _enrollmentService = enrollmentService;
     }
 
     /// <summary>
-    /// Gets all activities.
+    /// Gets a paginated list of activities with optinal search and sorting.
     /// </summary>
+    /// <param name="query">
+    /// Query parameters for search, sorting, page number, and page size.
+    /// </param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of activities.</returns>
     [HttpGet]
     [ProducesResponseType(typeof(List<ActivityDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<ActivityDto>>> GetAllActivities(CancellationToken cancellationToken)
+    [Authorize(Roles = RoleConstants.Teacher)]
+    public async Task<ActionResult<PagedResponse<ActivityDto>>> GetAllActivities(
+        [FromQuery] QueryParametersDto query,
+        CancellationToken cancellationToken
+    )
     {
-        List<ActivityDto> activities = await _activityService.GetAllAsync(cancellationToken);
+        PagedResponse<ActivityDto> activities = await _activityService.GetAllAsync(
+            query,
+            cancellationToken
+        );
 
         return Ok(activities);
     }
@@ -41,13 +64,26 @@ public class ActivityController : ControllerBase
     [HttpGet("{activityId:guid}")]
     [ProducesResponseType(typeof(ActivityDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ActivityDto?>> GetActivityByIdAsync([FromRoute] Guid activityId, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<ActivityDto?>> GetActivityById(
+        [FromRoute] Guid activityId,
+        CancellationToken cancellationToken = default
+    )
     {
         ActivityDto? activity = await _activityService.GetByIdAsync(activityId, cancellationToken);
 
         if (activity is null)
         {
             return NotFound();
+        }
+
+        ActionResult? accessResult = await ValidateModuleAccessAsync(
+            activity.ModuleId,
+            cancellationToken
+        );
+
+        if (accessResult is not null)
+        {
+            return accessResult;
         }
 
         return Ok(activity);
@@ -60,9 +96,22 @@ public class ActivityController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of activities belonging to the module.</returns>
     [HttpGet("module/{moduleId:guid}")]
-    public async Task<ActionResult<List<ActivityDto>>> GetActivitiesByModuleIdAsync([FromRoute] Guid moduleId, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<List<ActivityDto>>> GetActivitiesByModuleIdAsync(
+        [FromRoute] Guid moduleId,
+        CancellationToken cancellationToken = default
+    )
     {
-        List<ActivityDto> activities = await _activityService.GetByModuleIdAsync(moduleId, cancellationToken);
+        ActionResult? accessResult = await ValidateModuleAccessAsync(moduleId, cancellationToken);
+
+        if (accessResult is not null)
+        {
+            return accessResult;
+        }
+
+        List<ActivityDto> activities = await _activityService.GetByModuleIdAsync(
+            moduleId,
+            cancellationToken
+        );
 
         return Ok(activities);
     }
@@ -75,7 +124,11 @@ public class ActivityController : ControllerBase
     [HttpDelete("{activityId:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteActivityAsync([FromRoute] Guid activityId, CancellationToken cancellationToken = default)
+    [Authorize(Roles = RoleConstants.Teacher)]
+    public async Task<IActionResult> DeleteActivityAsync(
+        [FromRoute] Guid activityId,
+        CancellationToken cancellationToken = default
+    )
     {
         bool deleted = await _activityService.DeleteAsync(activityId, cancellationToken);
 
@@ -97,7 +150,12 @@ public class ActivityController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateActivityAsyny([FromRoute] Guid activityId, [FromBody] ActivityUpdateDto request, CancellationToken cancellationToken)
+    [Authorize(Roles = RoleConstants.Teacher)]
+    public async Task<IActionResult> UpdateActivityAsyny(
+        [FromRoute] Guid activityId,
+        [FromBody] ActivityUpdateDto request,
+        CancellationToken cancellationToken
+    )
     {
         bool updated = await _activityService.UpdateAsync(activityId, request, cancellationToken);
 
@@ -118,15 +176,60 @@ public class ActivityController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(ActivityDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateActivityAsync([FromBody] ActivityCreateDto request, CancellationToken cancellationToken = default)
+    [Authorize(Roles = RoleConstants.Teacher)]
+    public async Task<IActionResult> CreateActivityAsync(
+        [FromBody] ActivityCreateDto request,
+        CancellationToken cancellationToken = default
+    )
     {
         ActivityDto activity = await _activityService.CreateAsync(request, cancellationToken);
 
         return CreatedAtAction(
-            nameof(GetActivityByIdAsync),
+            nameof(GetActivityById),
             new { activityId = activity.ActivityId },
             activity
         );
     }
-}
 
+    private async Task<ActionResult?> ValidateModuleAccessAsync(
+        Guid moduleId,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!User.IsInRole(RoleConstants.Student))
+        {
+            return null;
+        }
+
+        string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userIdClaim, out Guid studentId))
+        {
+            return Unauthorized();
+        }
+
+        CourseDto? studentCourse = await _enrollmentService.GetStudentCourseAsync(
+            studentId,
+            cancellationToken
+        );
+
+        if (studentCourse is null)
+        {
+            return NotFound();
+        }
+
+        Guid? moduleCourseId = await _moduleService.GetCourseIdByModuleIdAsync(moduleId, cancellationToken);
+
+        if (moduleCourseId is null)
+        {
+            return NotFound();
+        }
+
+        if (moduleCourseId != studentCourse.CourseId)
+        {
+            return Forbid();
+        }
+
+        return null;
+    }
+}

@@ -33,6 +33,16 @@ public class GlobalExceptionHandler : IExceptionHandler
                 title = "Overlapping dates";
                 break;
 
+            case InvalidActivityTypeException invalidActivityTypeException:
+                statusCode = invalidActivityTypeException.StatusCode;
+                title = "Invalid activity type";
+                break;
+
+            case InvalidSubmissionStateException invalidSubmissionStateException:
+                statusCode = invalidSubmissionStateException.StatusCode;
+                title = "Invalid submission state";
+                break;
+
             case KeyNotFoundException:
                 statusCode = StatusCodes.Status404NotFound;
                 title = "Resource not found";

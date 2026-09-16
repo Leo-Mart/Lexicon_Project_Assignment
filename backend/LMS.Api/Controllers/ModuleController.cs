@@ -1,16 +1,22 @@
-using LMS.Api.DTOs.Errors;
+using System.Security.Claims;
+using LMS.Api.Constants;
+using LMS.Api.DTOs.Common;
+using LMS.Api.DTOs.Course;
 using LMS.Api.DTOs.Module;
-using LMS.Api.Exceptions;
 using LMS.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LMS.Api.Controllers;
 
 [Route("/api/modules")]
 [ApiController]
-public class ModuleController(IModuleService moduleService) : ControllerBase
+[Authorize]
+public class ModuleController(IModuleService moduleService, IEnrollmentService enrollmentService)
+    : ControllerBase
 {
     private readonly IModuleService _moduleService = moduleService;
+    private readonly IEnrollmentService _enrollmentService = enrollmentService;
 
     /// <summary>
     /// Retrieves a full list of all available modules.
@@ -21,13 +27,16 @@ public class ModuleController(IModuleService moduleService) : ControllerBase
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<IEnumerable<ModuleDto>>> GetModules()
+    [Authorize(Roles = RoleConstants.Teacher)]
+    public async Task<ActionResult<PagedResponse<ModuleDto>>> GetModules(
+        [FromQuery] QueryParametersDto query,
+        CancellationToken cancellationToken
+    )
     {
-        var modules = await _moduleService.GetAllModules();
-        if (modules == null)
-        {
-            return NotFound();
-        }
+        PagedResponse<ModuleDto> modules = await _moduleService.GetAllModules(
+            query,
+            cancellationToken
+        );
 
         return Ok(modules);
     }
@@ -50,6 +59,13 @@ public class ModuleController(IModuleService moduleService) : ControllerBase
             return NotFound();
         }
 
+        ActionResult? accessResult = await ValidateModuleAccessAsync(module);
+
+        if (accessResult is not null)
+        {
+            return accessResult;
+        }
+
         return module;
     }
 
@@ -61,31 +77,17 @@ public class ModuleController(IModuleService moduleService) : ControllerBase
     /// <response code="201">Successfully created module, and returns the newly created module.</response>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
+    [Authorize(Roles = RoleConstants.Teacher)]
     public async Task<ActionResult<ModuleDto>> CreateNewModule(
         [FromBody] CreateNewModuleDto newModuleDto
     )
     {
-        try
-        {
-            var savedModule = await _moduleService.CreateNewModule(newModuleDto);
-            return CreatedAtAction(
-                "GetmoduleById",
-                new { moduleId = savedModule.ModuleId },
-                savedModule
-            );
-        }
-        catch (InvalidDateException exc)
-        {
-            return BadRequest(
-                new ErrorResponse { Message = exc.Message, StatusCode = exc.StatusCode }
-            );
-        }
-        catch (OverlappingDateException exc)
-        {
-            return BadRequest(
-                new ErrorResponse { Message = exc.Message, StatusCode = exc.StatusCode }
-            );
-        }
+        var savedModule = await _moduleService.CreateNewModule(newModuleDto);
+        return CreatedAtAction(
+            "GetmoduleById",
+            new { moduleId = savedModule.ModuleId },
+            savedModule
+        );
     }
 
     /// <summary>
@@ -97,6 +99,7 @@ public class ModuleController(IModuleService moduleService) : ControllerBase
     /// <response code="200">module was successfully updated and returned.</response>
     [HttpPut("{moduleId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(Roles = RoleConstants.Teacher)]
     public async Task<ActionResult<ModuleDto>> UpdateModule(
         [FromRoute] Guid moduleId,
         [FromBody] UpdateModuleDto updateModuleDto
@@ -115,6 +118,7 @@ public class ModuleController(IModuleService moduleService) : ControllerBase
     [HttpDelete("{moduleId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = RoleConstants.Teacher)]
     public async Task<IActionResult> Deletemodule([FromRoute] Guid moduleId)
     {
         var deletedmodule = await _moduleService.DeleteModule(moduleId);
@@ -124,5 +128,34 @@ public class ModuleController(IModuleService moduleService) : ControllerBase
         }
 
         return NoContent();
+    }
+
+    private async Task<ActionResult?> ValidateModuleAccessAsync(ModuleDto module)
+    {
+        if (!User.IsInRole(RoleConstants.Student))
+        {
+            return null;
+        }
+
+        string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userIdClaim, out Guid studentId))
+        {
+            return Unauthorized();
+        }
+
+        CourseDto? studentCourse = await _enrollmentService.GetStudentCourseAsync(studentId);
+
+        if (studentCourse is null)
+        {
+            return NotFound();
+        }
+
+        if (module.CourseId != studentCourse.CourseId)
+        {
+            return Forbid();
+        }
+
+        return null;
     }
 }

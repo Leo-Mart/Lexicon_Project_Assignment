@@ -2,17 +2,32 @@ import { authFetch } from "./authService";
 import { API_BASE_URL, HttpMethod, JSON_HEADERS } from "../constants/Constants";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import type { CourseRequest } from "../interfaces/course/CourseRequest";
+import type { PagedResponse } from "../interfaces/common/PagedResponse";
+import type { QueryParameters } from "../interfaces/common/QueryParameters";
+import type { ModuleResponse } from "../interfaces/module/ModuleResponse";
+import type { ErrorResponeWithoutDetails } from "../interfaces/error/ErrorResponseWithoutDetails";
+import type { ErrorResponse } from "../interfaces/error/ErrorResponse";
 
 const API_URL = API_BASE_URL + "/courses";
 
-export const fetchCourses = async (): Promise<CourseResponse[]> => {
-    const response = await authFetch(API_URL);
+export const fetchCourses = async (
+    query: QueryParameters,
+): Promise<PagedResponse<CourseResponse>> => {
+    const params = new URLSearchParams({
+        search: query.search,
+        sortBy: query.sortBy,
+        direction: query.direction,
+        page: query.page.toString(),
+        pageSize: query.pageSize.toString(),
+    });
+
+    const response = await authFetch(`${API_URL}?${params.toString()}`);
 
     if (!response.ok) {
-        throw new Error(`Failed to fetch course: ${response.status}`);
+        throw new Error(`Failed to fetch courses: ${response.status}`);
     }
 
-    return (await response.json()) as CourseResponse[];
+    return (await response.json()) as PagedResponse<CourseResponse>;
 };
 
 export const fetchCourse = async (id: string): Promise<CourseResponse> => {
@@ -25,10 +40,32 @@ export const fetchCourse = async (id: string): Promise<CourseResponse> => {
     return (await response.json()) as CourseResponse;
 };
 
+export const fetchModulesForCourse = async (
+    courseId: string,
+): Promise<ModuleResponse[]> => {
+    const response = await authFetch(`${API_URL}/${courseId}/get-modules`);
+
+    if (!response.ok) {
+        throw new Error(
+            `Failed to fetch modules for course: ${response.status}`,
+        );
+    }
+
+    return (await response.json()) as ModuleResponse[];
+};
+
 export const deleteCourse = async (id: string): Promise<void> => {
     const response = await authFetch(`${API_URL}/${id}`, {
         method: HttpMethod.DELETE,
     });
+
+    if (response.status === 500) {
+        const json = (await response.json()) as ErrorResponse;
+        console.error(json);
+        throw new Error(
+            "Error Deleting Course: Cannot delete course with submissions.",
+        );
+    }
 
     if (!response.ok) {
         throw new Error(`Could not delete the course: ${response.status}`);
@@ -43,6 +80,11 @@ export const createCourse = async (
         headers: JSON_HEADERS,
         body: JSON.stringify(newCourse),
     });
+
+    if (response.status === 400) {
+        const err = (await response.json()) as ErrorResponeWithoutDetails;
+        throw new Error(err.message);
+    }
 
     if (!response.ok) {
         throw new Error(`Could not create the course: ${response.status}`);
@@ -60,6 +102,11 @@ export const updateCourse = async (
         headers: JSON_HEADERS,
         body: JSON.stringify(updateCourse),
     });
+
+    if (response.status === 400) {
+        const err = (await response.json()) as ErrorResponeWithoutDetails;
+        throw new Error(err.message);
+    }
 
     if (!response.ok) {
         throw new Error(`Could not update the course: ${response.status}`);

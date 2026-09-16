@@ -1,24 +1,41 @@
-import Button from "../components/Button";
-import Schedule from "../components/Schedule";
-import { useNavigate } from "react-router-dom";
-
-//import { routes } from "../routes/config"; // Adjust the import path
+import { useSearchParams } from "react-router-dom";
+import CourseListPage from "./CourseListPage";
+import ResourceManagement from "./ResourceManagement";
+import Users from "./Users";
+import Submissions from "./Submissions";
+import ModuleManagement from "./ModuleManagement";
 
 export default function Dashboard() {
-    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const activeTabParam = searchParams.get("tab");
 
-    const handleNavigation = () => {
-        navigate("/courselist");
+    const getActiveTabIndex = () => {
+        switch (activeTabParam) {
+            case "user-management":
+                return 2;
+            case "resource-management":
+                return 3;
+            case "module-management":
+                return 4;
+            case "submissions":
+                return 5;
+            case "course-management":
+            default:
+                return 1;
+        }
     };
 
+    const activeTab = getActiveTabIndex();
+
     return (
-        <div className="bg-bg-light h-[calc(100vh-8rem)] p-10 grid grid-flow-col grid-rows-3 gap-8 grid-cols-5">
-            <Button onClick={handleNavigation} className="col-span-2">
-                Course Management
-            </Button>
-            <Button className="col-span-2">User Control</Button>
-            <Button className="col-span-2">Resource Manager</Button>
-            <Schedule />
+        <div className="bg-bg flex dark:bg-bg-dark min-h-screen p-10">
+            <div className="w-full">
+                {activeTab === 1 && <CourseListPage />}
+                {activeTab === 2 && <Users />}
+                {activeTab === 3 && <ResourceManagement />}
+                {activeTab === 4 && <ModuleManagement />}
+                {activeTab === 5 && <Submissions />}
+            </div>
         </div>
     );
 }

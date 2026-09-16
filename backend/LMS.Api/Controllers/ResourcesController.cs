@@ -1,5 +1,9 @@
 using System.Security.Claims;
 using LMS.Api.Constants;
+using LMS.Api.DTOs.Activities;
+using LMS.Api.DTOs.Common;
+using LMS.Api.DTOs.Course;
+using LMS.Api.DTOs.Module;
 using LMS.Api.DTOs.Resources;
 using LMS.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -14,21 +18,40 @@ namespace LMS.Api.Controllers;
 public class ResourcesController : ControllerBase
 {
     private readonly IResourceService _resourceService;
+    private readonly IEnrollmentService _enrollmentService;
+    private readonly IModuleService _moduleService;
+    private readonly IActivityService _activityService;
 
-    public ResourcesController(IResourceService resourceService)
+    public ResourcesController(
+        IResourceService resourceService,
+        IEnrollmentService enrollmentService,
+        IModuleService moduleService,
+        IActivityService activityService)
     {
         _resourceService = resourceService;
+        _enrollmentService = enrollmentService;
+        _moduleService = moduleService;
+        _activityService = activityService;
     }
 
     /// <summary>
-    /// Gets all resources.
+    /// Gets a paginated list of resources with optional search and sorting.
     /// </summary>
+    /// <param name="query">
+    /// Query parameters for search, sorting, page number, and page size.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancellation token for the request.
+    /// </param>
     [HttpGet]
-    [ProducesResponseType(typeof(List<ResourceDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(
+        typeof(PagedResponse<ResourceDto>),
+        StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<List<ResourceDto>>> GetAll(CancellationToken cancellationToken)
+    [Authorize(Roles = RoleConstants.Teacher)]
+    public async Task<ActionResult<PagedResponse<ResourceDto>>> GetAll([FromQuery] QueryParametersDto query, CancellationToken cancellationToken)
     {
-        List<ResourceDto> resources = await _resourceService.GetAllAsync(cancellationToken);
+        PagedResponse<ResourceDto> resources = await _resourceService.GetAllAsync(query, cancellationToken);
 
         return Ok(resources);
     }
@@ -66,6 +89,12 @@ public class ResourcesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<List<ResourceDto>>> GetByCourseId([FromRoute] Guid courseId, CancellationToken cancellationToken)
     {
+        ActionResult? accessResult = await ValidateCourseAccessAsync(courseId, cancellationToken);
+
+        if (accessResult is not null)
+        {
+            return accessResult;
+        }
         List<ResourceDto> resources = await _resourceService.GetByCourseIdAsync(courseId, cancellationToken);
 
         return Ok(resources);
@@ -81,6 +110,12 @@ public class ResourcesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<List<ResourceDto>>> GetByModuleId([FromRoute] Guid moduleId, CancellationToken cancellationToken)
     {
+        ActionResult? accessResult = await ValidateModuleAccessAsync(moduleId, cancellationToken);
+
+        if (accessResult is not null)
+        {
+            return accessResult;
+        }
         List<ResourceDto> resources = await _resourceService.GetByModuleIdAsync(moduleId, cancellationToken);
 
         return Ok(resources);
@@ -97,6 +132,13 @@ public class ResourcesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<List<ResourceDto>>> GetByActivityId([FromRoute] Guid activityId, CancellationToken cancellationToken)
     {
+        ActionResult? accessResult = await ValidateActivityAccessAsync(activityId, cancellationToken);
+
+        if (accessResult is not null)
+        {
+            return accessResult;
+        }
+
         List<ResourceDto> resources = await _resourceService.GetByActivityIdAsync(activityId, cancellationToken);
 
         return Ok(resources);
@@ -248,5 +290,88 @@ public class ResourcesController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    private async Task<ActionResult?> ValidateCourseAccessAsync(Guid courseId, CancellationToken cancellationToken)
+    {
+        if (!User.IsInRole(RoleConstants.Student))
+        {
+            return null;
+        }
+
+        string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userIdClaim, out Guid studentId))
+        {
+            return Unauthorized();
+        }
+
+        CourseDto? studentCourse =
+            await _enrollmentService.GetStudentCourseAsync(studentId, cancellationToken);
+
+        if (studentCourse is null)
+        {
+            return NotFound();
+        }
+
+        if (studentCourse.CourseId != courseId)
+        {
+            return Forbid();
+        }
+
+        return null;
+    }
+
+    private async Task<ActionResult?> ValidateModuleAccessAsync(Guid moduleId, CancellationToken cancellationToken)
+    {
+        if (!User.IsInRole(RoleConstants.Student))
+        {
+            return null;
+        }
+
+        string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userIdClaim, out Guid studentId))
+        {
+            return Unauthorized();
+        }
+
+        CourseDto? studentCourse = await _enrollmentService.GetStudentCourseAsync(studentId, cancellationToken);
+
+        if (studentCourse is null)
+        {
+            return NotFound();
+        }
+
+        ModuleDto? module = await _moduleService.GetModuleById(moduleId);
+
+        if (module is null)
+        {
+            return NotFound();
+        }
+
+        if (module.CourseId != studentCourse.CourseId)
+        {
+            return Forbid();
+        }
+
+        return null;
+    }
+
+    private async Task<ActionResult?> ValidateActivityAccessAsync(Guid activityId, CancellationToken cancellationToken)
+    {
+        if (!User.IsInRole(RoleConstants.Student))
+        {
+            return null;
+        }
+
+        ActivityDto? activity = await _activityService.GetByIdAsync(activityId, cancellationToken);
+
+        if (activity is null)
+        {
+            return NotFound();
+        }
+
+        return await ValidateModuleAccessAsync(activity.ModuleId, cancellationToken);
     }
 }

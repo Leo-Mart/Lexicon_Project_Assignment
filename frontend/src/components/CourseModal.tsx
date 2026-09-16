@@ -1,9 +1,10 @@
 import { useState } from "react";
 import "../index.css";
-import Button from "../components/Button";
+import Button from "./Button";
 import type { CourseResponse } from "../interfaces/course/CourseResponse";
 import { createCourse } from "../services/courseService";
 import { updateCourse } from "../services/courseService";
+import ErrorDisplay from "./ErrorDisplay";
 
 interface ModalProps {
     selectedCourse: CourseResponse;
@@ -25,9 +26,12 @@ export default function CourseModal({
         startDate: selectedCourse.startDate,
         endDate: selectedCourse.endDate,
         modules: [],
+        courseResources: [],
     });
+    const [error, setError] = useState<string | undefined>(undefined);
 
     const handleOnSubmit = async (e: React.SubmitEvent) => {
+        setError(undefined);
         e.preventDefault();
 
         try {
@@ -42,7 +46,9 @@ export default function CourseModal({
             }
             //onClose();
         } catch (error) {
-            console.error("Error on saving:", error);
+            if (error instanceof Error) {
+                setError(error.message);
+            }
         }
     };
 
@@ -54,6 +60,7 @@ export default function CourseModal({
             startDate: "",
             endDate: "",
             modules: [],
+            courseResources: [],
         });
     }
 
@@ -74,9 +81,9 @@ export default function CourseModal({
                             &#10005;
                         </button>
                     </nav>
-                    <div className="bg-bg py-3 px-3">
+                    <div className="bg-bg dark:bg-bg-dark text-text-dark dark:text-text-light py-3 px-3">
                         <form
-                            className="px-8 pt-6 pb-8 mb-4"
+                            className="px-8 pt-6 pb-8 mb-4 text-text-dark dark:text-text-light"
                             onSubmit={handleOnSubmit}
                         >
                             <div>
@@ -90,7 +97,7 @@ export default function CourseModal({
                             <div className="mb-4">
                                 <label htmlFor="name">Name</label>
                                 <input
-                                    className="shadow appearance-none border rounded w-full bg-white p-2"
+                                    className="shadow appearance-none border rounded w-full bg-white p-2 text-text-dark"
                                     type="text"
                                     id="name"
                                     name="name"
@@ -109,7 +116,7 @@ export default function CourseModal({
                             <div className="mb-4">
                                 <label htmlFor="description">Description</label>
                                 <textarea
-                                    className="shadow appearance-none border rounded w-full bg-white p-2"
+                                    className="shadow appearance-none border rounded w-full bg-white p-2 text-text-dark"
                                     id="description"
                                     name="description"
                                     placeholder="Course description"
@@ -128,7 +135,7 @@ export default function CourseModal({
                             <div className="mb-4">
                                 <label htmlFor="startDate">Start date</label>
                                 <input
-                                    className="shadow appearance-none border rounded w-full bg-white p-2"
+                                    className="shadow appearance-none border rounded w-full bg-white p-2 text-text-dark"
                                     min={today.toLocaleDateString()}
                                     type="date"
                                     id="startDate"
@@ -146,7 +153,7 @@ export default function CourseModal({
                             <div className="mb-4">
                                 <label htmlFor="endDate">End date</label>
                                 <input
-                                    className="shadow appearance-none border rounded w-full bg-white p-2"
+                                    className="shadow appearance-none border rounded w-full bg-white p-2 text-text-dark"
                                     min={formData.startDate}
                                     type="date"
                                     id="endDate"
@@ -162,6 +169,7 @@ export default function CourseModal({
                                     required
                                 />
                             </div>
+                            {error && <ErrorDisplay errorResp={error} />}
                             <div className="mt-6">
                                 <Button
                                     type="submit"

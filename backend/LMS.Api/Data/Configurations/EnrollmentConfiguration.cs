@@ -11,11 +11,7 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollment>
     {
         builder.ToTable("Enrollments");
 
-        builder.HasKey(enrollment => new
-        {
-            enrollment.StudentId,
-            enrollment.CourseId
-        });
+        builder.HasKey(enrollment => enrollment.StudentId);
 
         builder.HasIndex(enrollment => enrollment.StudentId)
             .IsUnique();
@@ -26,7 +22,7 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollment>
         builder.HasOne(enrollment => enrollment.Student)
             .WithOne(user => user.Enrollment)
             .HasForeignKey<Enrollment>(enrollment => enrollment.StudentId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(enrollment => enrollment.Course)
             .WithMany(course => course.Enrollments)

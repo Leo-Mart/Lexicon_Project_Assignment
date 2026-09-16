@@ -2,17 +2,29 @@ import { authFetch } from "./authService";
 import { API_BASE_URL, HttpMethod, JSON_HEADERS } from "../constants/Constants";
 import type { ActivityResponse } from "../interfaces/activity/ActivityResponse";
 import type { ActivityRequest } from "../interfaces/activity/ActivityRequest";
+import type { ErrorResponse } from "../interfaces/error/ErrorResponse";
+import type { QueryParameters } from "../interfaces/common/QueryParameters";
+import type { PagedResponse } from "../interfaces/common/PagedResponse";
 
 const API_URL = API_BASE_URL + "/activity";
 
-export const fetchActivitys = async (): Promise<ActivityResponse[]> => {
-    const response = await authFetch(API_URL);
+export const fetchActivities = async (
+    query: QueryParameters,
+): Promise<PagedResponse<ActivityResponse>> => {
+    const params = new URLSearchParams({
+        search: query.search,
+        sortBy: query.sortBy,
+        direction: query.direction,
+        page: query.page.toString(),
+        pageSize: query.pageSize.toString(),
+    });
+    const response = await authFetch(`${API_URL}?${params.toString()}`);
 
     if (!response.ok) {
         throw new Error(`Failed to fetch activity: ${response.status}`);
     }
 
-    return (await response.json()) as ActivityResponse[];
+    return (await response.json()) as PagedResponse<ActivityResponse>;
 };
 
 export const fetchActivity = async (id: string): Promise<ActivityResponse> => {
@@ -30,6 +42,14 @@ export const deleteActivity = async (id: string): Promise<void> => {
         method: HttpMethod.DELETE,
     });
 
+    if (response.status == 500) {
+        const json = (await response.json()) as ErrorResponse;
+        console.error(json);
+        throw new Error(
+            "Error Deleting activity: Cannot delete activity with submissions.",
+        );
+    }
+
     if (!response.ok) {
         throw new Error(`Could not delete the activity: ${response.status}`);
     }
@@ -44,14 +64,19 @@ export const createActivity = async (
         body: JSON.stringify(newActivity),
     });
 
+    if (response.status === 400) {
+        const err = (await response.json()) as ErrorResponse;
+        throw new Error(err.detail);
+    }
+
     if (!response.ok) {
-        throw new Error(`Could not create the course: ${response.status}`);
+        throw new Error(`Could not create the activity: ${response.status}`);
     }
 
     return (await response.json()) as ActivityResponse;
 };
 
-export const updateCourse = async (
+export const updateActivity = async (
     id: string,
     updatedActivity: ActivityRequest,
 ): Promise<void> => {

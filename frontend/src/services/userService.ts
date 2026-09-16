@@ -1,30 +1,35 @@
 import { authFetch } from "./authService";
 import { API_BASE_URL, HttpMethod, JSON_HEADERS } from "../constants/Constants";
-import type { UserDto } from "../interfaces/user/UserDto";
-import type { UserCreateDto } from "../interfaces/user/UserCreateDto";
-import type { UserUpdateDto } from "../interfaces/user/UserUpdateDto";
+import type { UserResponse } from "../interfaces/user/UserResponse";
+import type { UserCreateRequest as UserCreateRequest } from "../interfaces/user/UserCreateRequest";
+import type { UserUpdateRequest } from "../interfaces/user/UserUpdateRequest";
 import type { UserStatusUpdateDto } from "../interfaces/user/UserStatusUpdateDto";
+import type { UserWithCourseResponse } from "../interfaces/user/UserWithCourseResponse";
+import type { PagedResponse } from "../interfaces/common/PagedResponse";
+import type { QueryParameters } from "../interfaces/common/QueryParameters";
+import { BadRequestError } from "../errors/BadRequestError";
+import type { PasswordErrorsResponse } from "../interfaces/error/PasswordErrorsResponse";
 
 const API_URL = API_BASE_URL + "/users";
 
-export const fetchUsers = async (): Promise<UserDto[]> => {
+export const fetchUsers = async (): Promise<UserResponse[]> => {
     const response = await authFetch(API_URL);
 
     if (!response.ok) {
         throw new Error(`Failed to fetch user: ${response.status}`);
     }
 
-    return (await response.json()) as UserDto[];
+    return (await response.json()) as UserResponse[];
 };
 
-export const fetchUser = async (id: string): Promise<UserDto> => {
+export const fetchUser = async (id: string): Promise<UserResponse> => {
     const response = await authFetch(`${API_URL}/${id}`);
 
     if (!response.ok) {
         throw new Error(`Failed to fetch user: ${response.status}`);
     }
 
-    return (await response.json()) as UserDto;
+    return (await response.json()) as UserResponse;
 };
 
 export const deleteUser = async (id: string): Promise<void> => {
@@ -37,25 +42,33 @@ export const deleteUser = async (id: string): Promise<void> => {
     }
 };
 
-export const createCourse = async (
-    newUser: UserCreateDto,
-): Promise<UserDto> => {
+export const createUser = async (
+    newUser: UserCreateRequest,
+): Promise<UserResponse> => {
     const response = await authFetch(API_URL, {
         method: HttpMethod.POST,
         headers: JSON_HEADERS,
         body: JSON.stringify(newUser),
     });
 
+    if (response.status === 400) {
+        const json = (await response.json()) as PasswordErrorsResponse[];
+        const pwErrors: string[] = json.map((err) => {
+            return err.description;
+        });
+        throw new BadRequestError("Could not create user", pwErrors);
+    }
+
     if (!response.ok) {
         throw new Error(`Could not create the user: ${response.status}`);
     }
 
-    return (await response.json()) as UserDto;
+    return (await response.json()) as UserResponse;
 };
 
 export const updateUser = async (
     id: string,
-    updatedUser: UserUpdateDto,
+    updatedUser: UserUpdateRequest,
 ): Promise<void> => {
     const response = await authFetch(`${API_URL}/${id}`, {
         method: HttpMethod.PUT,
@@ -81,4 +94,28 @@ export const updateUserStatus = async (
     if (!response.ok) {
         throw new Error(`Could not update user status: ${response.status}`);
     }
+};
+
+export const fetchUsersWithCourse = async (
+    query: QueryParameters,
+): Promise<PagedResponse<UserWithCourseResponse>> => {
+    const params = new URLSearchParams({
+        search: query.search,
+        sortBy: query.sortBy,
+        direction: query.direction,
+        page: query.page.toString(),
+        pageSize: query.pageSize.toString(),
+    });
+
+    const response = await authFetch(
+        `${API_URL}/with-course?${params.toString()}`,
+    );
+
+    if (!response.ok) {
+        throw new Error(
+            `Failed to fetch users with course: ${response.status}`,
+        );
+    }
+
+    return (await response.json()) as PagedResponse<UserWithCourseResponse>;
 };
