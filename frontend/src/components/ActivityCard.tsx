@@ -156,6 +156,8 @@ export default function ActivityCard({
             submission.reviewStatus === SubmissionReviewStatus.NeedsCompletion
         ) {
             statusText = "Incomplete";
+        } else if (submission != null && submission.resubmittedAt != null) {
+            statusText = "Resubmitted";
         } else if (missingAndLate) {
             statusText = "Overdue";
         } else if (submission) {
