@@ -33,6 +33,7 @@ import {
 } from "../constants/UserConstant";
 import { BadRequestError } from "../errors/BadRequestError";
 import type { ErrorMessage } from "../interfaces/error/ErrorMessage";
+import toast, { Toaster } from "react-hot-toast";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 20;
@@ -101,6 +102,7 @@ export default function Users() {
 
             setShowUserForm(false);
             setRefreshKey((current) => current + 1);
+            toast.success("User Created!");
         } catch (error) {
             if (error instanceof BadRequestError) {
                 const errResp: ErrorMessage = {
@@ -163,6 +165,7 @@ export default function Users() {
 
             setEditingUser(null);
             setRefreshKey((current) => current + 1);
+            toast.success("User Updated!");
         } catch (error) {
             setUserFormError(
                 error instanceof Error
@@ -176,6 +179,8 @@ export default function Users() {
         await deleteUser(id);
 
         setRefreshKey((current) => current + 1);
+
+        toast.success("User Deleted!");
     };
 
     const handleAssignCourse = async (courseId: string) => {
@@ -190,6 +195,7 @@ export default function Users() {
 
             setAssigningUser(null);
             setRefreshKey((current) => current + 1);
+            toast.success(`User: ${assigningUser.name} assigned to course!`);
         } catch (error) {
             setAssignCourseError(
                 error instanceof Error
@@ -421,6 +427,7 @@ export default function Users() {
                     />
                 </ModalWrapper>
             )}
+            <Toaster />
         </div>
     );
 }

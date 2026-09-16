@@ -411,7 +411,10 @@ export default function ActivityCard({
                     title="Delete Activity"
                     message={`Are you sure you want to delete the activity: ${activity.name}`}
                     onCancel={() => setConfirmDeleteOpen(false)}
-                    onConfirm={() => deleteActivity(activity.activityId)}
+                    onConfirm={() => {
+                        deleteActivity(activity.activityId);
+                        setConfirmDeleteOpen(false);
+                    }}
                 />
             )}
             {showEditActivityForm && (

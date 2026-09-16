@@ -13,6 +13,8 @@ import type { Column } from "../types/Column";
 import { Link } from "react-router-dom";
 import Button from "../components/Button";
 import ConfirmDialog from "../components/ConfirmDialog";
+import ErrorDisplay from "../components/ErrorDisplay";
+import toast, { Toaster } from "react-hot-toast";
 
 const COURSES_SORT_OPTIONS: SortOption[] = [
     { value: "name-asc", label: "Name A-Z" },
@@ -39,7 +41,7 @@ export default function CourseListPage() {
 
     const [courses, setCourses] = useState<CourseResponse[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | undefined>(undefined);
 
     const [search, setSearch] = useState("");
     const [isCourseModalVisible, setIsCourseModalVisible] = useState(false);
@@ -69,10 +71,12 @@ export default function CourseListPage() {
                     c.courseId === returnData.courseId ? returnData : c,
                 ),
             );
+            toast.success("Course Updated!");
         } else
         //show added course in the list
         {
             setCourses([...courses, returnData]);
+            toast.success("Course Created!");
         }
     };
 
@@ -92,16 +96,28 @@ export default function CourseListPage() {
     >(undefined);
 
     const handleDeleteCourse = async (courseId: string) => {
-        await deleteCourse(courseId);
-        setCourses(courses!.filter((course) => course.courseId !== courseId));
-        setDeletingCourse(undefined);
+        try {
+            await deleteCourse(courseId);
+            setCourses(
+                courses!.filter((course) => course.courseId !== courseId),
+            );
+            setDeletingCourse(undefined);
+            toast.success("Course Deleted!");
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(error.message);
+                toast.error(`Error deleting course: ${error.message}`);
+            }
+        } finally {
+            setDeletingCourse(undefined);
+        }
     };
 
     // READ ALL
     useEffect(() => {
         const fetchAllCourses = async () => {
             setLoading(true);
-            setError(null);
+            setError(undefined);
             try {
                 const [sortField, sortDirection = "asc"] = sortBy.split("-");
 
@@ -183,8 +199,6 @@ export default function CourseListPage() {
         },
     ];
 
-    if (error)
-        return <div className="text-red-500 text-4xl">Error: {error}</div>;
     if (isFirstLoad) return <p>Loading...</p>;
     if (!courses)
         return (
@@ -247,6 +261,8 @@ export default function CourseListPage() {
                 isLoading={loading}
                 onSortChange={handleSortChange}
             />
+            {error && <ErrorDisplay errorResp={error} />}
+            <Toaster />
         </>
     );
 }

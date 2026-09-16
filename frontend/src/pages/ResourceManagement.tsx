@@ -23,6 +23,7 @@ import ModalCreateResource from "../components/ModalCreateResource";
 import ModalAddResourceToEntity from "../components/ModalAddResourceToEntity";
 import ConfirmDialog from "../components/ConfirmDialog";
 import FormModal from "../components/FormModal";
+import toast, { Toaster } from "react-hot-toast";
 
 const RESOURCE_SORT_OPTIONS: SortOption[] = [
     { value: "name-asc", label: "Name A-Z" },
@@ -74,6 +75,7 @@ const ResourceManagement = () => {
                 try {
                     await addResourceToCourse(resourceId, entityId);
                     setAddingResourceToEntity(undefined);
+                    toast.success("Resource Assigned to course!");
                 } catch (error) {
                     if (error instanceof Error) {
                         setError(error.message);
@@ -86,6 +88,7 @@ const ResourceManagement = () => {
                 try {
                     await addResourceToModule(resourceId, entityId);
                     setAddingResourceToEntity(undefined);
+                    toast.success("Resource Assigned to module!");
                 } catch (error) {
                     if (error instanceof Error) {
                         setError(error.message);
@@ -97,6 +100,7 @@ const ResourceManagement = () => {
                 try {
                     await addResourceToActivity(resourceId, entityId);
                     setAddingResourceToEntity(undefined);
+                    toast.success("Resource Assigned to activity!");
                 } catch (error) {
                     if (error instanceof Error) {
                         setError(error.message);
@@ -129,6 +133,7 @@ const ResourceManagement = () => {
             },
         );
         setResources(updatedResources);
+        toast.success("Resource Updated!");
     };
     const handleDeleteResource = async (resourceId: string) => {
         await deleteResource(resourceId);
@@ -136,6 +141,7 @@ const ResourceManagement = () => {
             resources!.filter((resource) => resource.resourceId !== resourceId),
         );
         setDeletingResource(undefined);
+        toast.success("Resource Deleted!");
     };
 
     useEffect(() => {
@@ -295,6 +301,7 @@ const ResourceManagement = () => {
                     onClose={() => setEditingResource(undefined)}
                 />
             )}
+            <Toaster />
         </div>
     );
 };

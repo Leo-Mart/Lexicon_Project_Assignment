@@ -18,7 +18,9 @@ export default function ConfirmDialog({
 }: ConfirmDialogProps) {
     return (
         <ModalWrapper open={open} onClose={onCancel} title={title}>
-            <p className="mb-6">{message}</p>
+            <p className="mb-6 text-text-dark dark:text-text-light">
+                {message}
+            </p>
 
             <div className="flex justify-end gap-3">
                 <Button type="button" variant="primary" onClick={onCancel}>

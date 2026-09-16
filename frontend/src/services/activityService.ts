@@ -42,6 +42,14 @@ export const deleteActivity = async (id: string): Promise<void> => {
         method: HttpMethod.DELETE,
     });
 
+    if (response.status == 500) {
+        const json = (await response.json()) as ErrorResponse;
+        console.error(json);
+        throw new Error(
+            "Error Deleting activity: Cannot delete activity with submissions.",
+        );
+    }
+
     if (!response.ok) {
         throw new Error(`Could not delete the activity: ${response.status}`);
     }
