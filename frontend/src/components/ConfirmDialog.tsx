@@ -23,12 +23,11 @@ export default function ConfirmDialog({
             </p>
 
             <div className="flex justify-end gap-3">
+                <Button type="button" variant="delete" onClick={onConfirm}>
+                    Delete
+                </Button>
                 <Button type="button" variant="primary" onClick={onCancel}>
                     Cancel
-                </Button>
-
-                <Button type="button" variant="cancel" onClick={onConfirm}>
-                    Delete
                 </Button>
             </div>
         </ModalWrapper>

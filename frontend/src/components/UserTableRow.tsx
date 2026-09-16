@@ -41,7 +41,7 @@ export default function UserTableRow({
                 <div className="flex gap-2">
                     <Button onClick={() => onEdit(user.id)}>Edit</Button>
 
-                    <Button variant="cancel" onClick={() => onDelete(user.id)}>
+                    <Button variant="delete" onClick={() => onDelete(user.id)}>
                         Delete
                     </Button>
                     {user.role === "Student" && !user.courseId && (

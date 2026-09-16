@@ -59,7 +59,7 @@ const ResourceCard = ({
                                         onClick={() =>
                                             setConfirmDeleteOpen(true)
                                         }
-                                        variant="cancel"
+                                        variant="delete"
                                         className=" hover:cursor-pointer"
                                     >
                                         Delete

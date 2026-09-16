@@ -158,7 +158,7 @@ const ModuleManagement = () => {
                         Edit
                     </Button>
                     <Button
-                        variant="cancel"
+                        variant="delete"
                         className="hover:cursor-pointer"
                         onClick={() => setDeletingModule(module)}
                     >

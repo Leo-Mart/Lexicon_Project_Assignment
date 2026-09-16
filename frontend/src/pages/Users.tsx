@@ -241,7 +241,7 @@ export default function Users() {
             render: (user) => (
                 <div className="flex gap-2">
                     <Button onClick={() => handleEdit(user)}>Edit</Button>
-                    <Button variant="cancel" onClick={() => handleDelete(user)}>
+                    <Button variant="delete" onClick={() => handleDelete(user)}>
                         Delete
                     </Button>
                     {user.role === "Student" && !user.courseId && (

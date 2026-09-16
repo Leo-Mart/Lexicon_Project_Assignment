@@ -189,7 +189,7 @@ export default function CourseListPage() {
                         Create Resource
                     </Button>
                     <Button
-                        variant="cancel"
+                        variant="delete"
                         onClick={() => setDeletingCourse(course)}
                     >
                         Delete

@@ -232,7 +232,7 @@ export default function ActivityCard({
                                     Edit
                                 </Button>
                                 <Button
-                                    variant="cancel"
+                                    variant="delete"
                                     onClick={() => setConfirmDeleteOpen(true)}
                                     className="hover:cursor-pointer"
                                 >

@@ -1,11 +1,12 @@
 import type { ComponentProps } from "react";
 
-type Variant = "primary" | "confirm" | "cancel";
+type Variant = "primary" | "confirm" | "cancel" | "delete";
 
 const variants: Record<Variant, string> = {
     primary: "bg-buttons text-text-light",
     confirm: "bg-btn-confirm text-text-dark",
-    cancel: "bg-btn-cancel text-text-light",
+    cancel: "bg-buttons text-text-light",
+    delete: "bg-btn-cancel text-text-light",
 };
 
 type ButtonProps = ComponentProps<"button"> & {

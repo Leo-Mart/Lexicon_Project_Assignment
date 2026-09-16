@@ -89,7 +89,7 @@ export default function CourseTable({
                                     Create Resource
                                 </Button>
                                 <Button
-                                    variant="cancel"
+                                    variant="delete"
                                     onClick={() => onDelete(course)}
                                 >
                                     Delete

@@ -215,7 +215,7 @@ const ResourceManagement = () => {
                         Add to Entity
                     </Button>
                     <Button
-                        variant="cancel"
+                        variant="delete"
                         className="hover:cursor-pointer"
                         onClick={() => setDeletingResource(resource)}
                     >
